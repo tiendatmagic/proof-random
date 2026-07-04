@@ -46,6 +46,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Loại bỏ hoàn toàn hiệu ứng chuyển động (transition, duration) và phóng to (scale hover) của toàn bộ các card hệ thống trong CSS.
 - [x] Xây dựng Custom Select Component dùng chung có thiết kế Glassmorphism và thay thế toàn bộ thẻ `<select>` native trong ứng dụng.
 - [x] Thiết kế lại Custom Select Component có giao diện Slate tinh tế và định vị fixed thông minh theo mẫu dự án cũ cafe-blockchain.
-- [x] Xây dựng Custom Checkbox Component dùng chung và thay thế các checkbox native trên Dashboard.
+- [x] Xây dựng Custom Checkbox Component dùng chung (sử dụng model signal hai chiều tránh lỗi toggle) và thay thế các checkbox native trên Dashboard.
+- [x] Sửa lỗi checkbox custom không tích được bằng cách loại bỏ input native ẩn và tự động toggle trực tiếp bằng model signal hai chiều.
+- [x] Dọn dẹp toàn bộ các import và imports component không sử dụng (SpinnerComponent, SkeletonLoaderComponent) ở Dashboard, Detail, History và Verify để xóa các cảnh báo NG8113.
 
 

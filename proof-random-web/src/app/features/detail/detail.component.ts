@@ -5,13 +5,12 @@ import { Web3Service } from '../../core/services/web3.service';
 import { ToastService } from '../../core/services/toast.service';
 import { jsPDF } from 'jspdf';
 import { CardComponent } from '../../shared/components/card/card.component';
-import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 import { SkeletonLoaderComponent } from '../../shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, CardComponent, SpinnerComponent, SkeletonLoaderComponent],
+  imports: [CommonModule, RouterLink, CardComponent, SkeletonLoaderComponent],
   templateUrl: './detail.component.html'
 })
 export class DetailComponent implements OnDestroy {

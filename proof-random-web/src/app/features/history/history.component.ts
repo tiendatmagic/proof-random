@@ -4,14 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Web3Service } from '../../core/services/web3.service';
 import { CardComponent } from '../../shared/components/card/card.component';
-import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 import { SkeletonLoaderComponent } from '../../shared/components/skeleton-loader/skeleton-loader.component';
 import { SelectComponent, SelectOption } from '../../shared/components/select/select.component';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CardComponent, SpinnerComponent, SkeletonLoaderComponent, SelectComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CardComponent, SkeletonLoaderComponent, SelectComponent],
   templateUrl: './history.component.html'
 })
 export class HistoryComponent {
