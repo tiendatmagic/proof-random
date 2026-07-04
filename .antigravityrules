@@ -1,0 +1,68 @@
+# Cấu hình Quy chuẩn Dev-Vibe — Antigravity Agent Configuration
+# Trình chỉnh sửa IDE: ANTIGRAVITY
+
+# 🔌 Hệ thống Kỹ năng Agent Skills Tự động (Modular Agent Skills)
+# Bạn được nạp các module kỹ năng chuyên sâu tại thư mục `.agent/skills/`.
+# TRƯỚC KHI thực hiện bất kỳ lệnh lập trình hoặc chỉnh sửa file nào, bạn BẮT BUỘC phải đọc tệp `SKILL.md` tương ứng trong `.agent/skills/` để tuân thủ thiết kế và tiêu chuẩn chất lượng.
+
+## 📁 Danh sách Skills đã nạp trong dự án:
+- api-patterns
+- app-builder
+- architecture
+- bash-linux
+- batch-operations
+- behavioral-modes
+- brainstorming
+- clean-code
+- code-review-checklist
+- code-review-graph
+- context-compression
+- coordinator-mode
+- database-design
+- deployment-procedures
+- documentation-templates
+- frontend-design
+- game-development
+- geo-fundamentals
+- i18n-localization
+- intelligent-routing
+- lint-and-validate
+- mcp-builder
+- memory-system
+- mobile-design
+- nextjs-react-expert
+- nodejs-best-practices
+- parallel-agents
+- performance-profiling
+- plan-writing
+- powershell-windows
+- python-patterns
+- red-team-tactics
+- rust-pro
+- seo-fundamentals
+- server-management
+- simplify-code
+- skillify
+- systematic-debugging
+- tailwind-patterns
+- tdd-workflow
+- testing-patterns
+- verify-changes
+- vulnerability-scanner
+- web-design-guidelines
+- webapp-testing
+
+## 🚀 Công nghệ & Ngôn ngữ của dự án:
+- NEXTJS
+- TYPESCRIPT
+- NODEJS
+- PYTHON
+- RUST
+- CSHARP
+
+## 💡 Hướng dẫn Nguyên lý cốt lõi (Universal Guidelines):
+1. **Tinh giản & Tối giản (Keep it Simple):** Ưu tiên giải pháp tối giản hoạt động được ngay. Không over-engineering hoặc viết các cấu trúc phức tạp khi chưa cần thiết.
+2. **Quy chuẩn tên gọi:** CamelCase cho biến địa phương, PascalCase cho hàm và lớp.
+3. **Phân rã Hàm nhỏ (Atomic Methods):** Một hàm hoặc phương thức không được dài quá 25 dòng code. Nếu quá, hãy phân tách ra các hàm con nguyên tử độc lập.
+4. **Không viết Comment thừa:** Code tự giải thích qua cách đặt tên biến và cấu trúc hàm rõ ràng.
+5. **Chất lượng kiểm thử:** Áp dụng mô hình AAA (Arrange-Act-Assert) để xây dựng test suite rõ ràng.
