@@ -550,11 +550,13 @@
         </div>
 
         <!-- Show Vietlott details when done -->
-        <div *ngIf="vietlottDone() && selectedVietlottType() !== 'Keno'" class="animate-fade-in text-center space-y-2">
+        <div *ngIf="vietlottDone()" class="animate-fade-in text-center space-y-2">
           <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-            Giải thưởng Vietlott {{ selectedVietlottType() === 'Power655' ? 'Power 6/55' : 'Mega 6/45' }}
+            <span *ngIf="selectedVietlottType() === 'Power655'">Giải thưởng Vietlott Power 6/55</span>
+            <span *ngIf="selectedVietlottType() === 'Mega645'">Giải thưởng Vietlott Mega 6/45</span>
+            <span *ngIf="selectedVietlottType() === 'Keno'">Kết quả xổ số Vietlott Keno</span>
           </div>
-          <h3 class="text-xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+          <h3 class="text-xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all max-w-md mx-auto leading-relaxed">
             {{ vietlottNumbers().join(' - ') }} <span *ngIf="selectedVietlottType() === 'Power655'"> (+ {{ vietlottBonus() }})</span>
           </h3>
         </div>
@@ -815,25 +817,7 @@
             class="text-[10px] font-bold text-slate-400 uppercase tracking-widest md:text-right block"
             >Xuất báo cáo kết quả</span
           >
-          <div class="flex flex-wrap gap-2">
-            <button
-              (click)="exportAsPDF()"
-              class="btn btn-success btn-sm cursor-pointer font-extrabold flex items-center gap-1.5"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
-              Xuất file PDF
-            </button>
-            <button
-              (click)="exportAsCSV()"
-              class="btn btn-info btn-sm cursor-pointer font-extrabold flex items-center gap-1.5"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-              Xuất file CSV
-            </button>
+          <div class="flex flex-wrap gap-2 md:justify-end">
             <button
               (click)="exportAsJSON()"
               class="btn btn-cancel btn-sm cursor-pointer font-extrabold flex items-center gap-1.5"
