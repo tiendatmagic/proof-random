@@ -5,34 +5,15 @@ import { WEB3_CONFIG } from '../config/web3.config';
 import { PROOF_RANDOM_ABI } from './proof-random-abi';
 
 // ABI tối giản của Chainlink VRF Coordinator V2Plus để đọc thông tin subscription
-// getSubscription trả về một struct Subscription (tuple)
+// Dùng human-readable ABI string để ethers.js v6 decode result object đúng tên trường
 const VRF_COORDINATOR_ABI = [
-  {
-    inputs: [{ internalType: 'uint256', name: 'subId', type: 'uint256' }],
-    name: 'getSubscription',
-    outputs: [
-      {
-        components: [
-          { internalType: 'uint96',  name: 'balance',       type: 'uint96'  },
-          { internalType: 'uint96',  name: 'nativeBalance',  type: 'uint96'  },
-          { internalType: 'uint64',  name: 'reqCount',       type: 'uint64'  },
-          { internalType: 'address', name: 'owner',          type: 'address' },
-          { internalType: 'address[]', name: 'consumers',   type: 'address[]' }
-        ],
-        internalType: 'struct VRFCoordinatorV2_5.Subscription',
-        name: '',
-        type: 'tuple'
-      }
-    ],
-    stateMutability: 'view',
-    type: 'function'
-  }
+  'function getSubscription(uint256 subId) view returns (uint96 balance, uint96 nativeBalance, uint64 reqCount, address owner, address[] consumers)'
 ];
 
-// Địa chỉ VRF Coordinator V2.5 chính xác trên từng mạng
+// Địa chỉ VRF Coordinator V2.5 chính xác trên từng mạng (fallback nếu cần)
 const VRF_COORDINATORS: Record<string, string> = {
   '42161':   '0x5C210e48983947b7F8Ee713D9b1E003565e3F030', // Arbitrum One
-  '421614':  '0x5CE801a2c317E05C558F87353f2257D5f25a3D61', // Arbitrum Sepolia (chính xác)
+  '421614':  '0x5CE801a2c317E05C558F87353f2257D5f25a3D61', // Arbitrum Sepolia
 };
 
 // Tích hợp Reown AppKit cho WalletConnect
@@ -562,23 +543,35 @@ export class Web3Service {
 
   /**
    * Lấy số dư LINK trong Chainlink VRF Subscription của contract
-   * Đọc s_subscriptionId từ contract, sau đó truy vấn VRF Coordinator
+   * Đọc cả s_vrfCoordinator và s_subscriptionId trực tiếp từ contract
    */
   public async getLinkSubscriptionBalance(): Promise<{ balance: string; subscriptionId: string } | null> {
     try {
-      const coordinatorAddress = VRF_COORDINATORS[this.configuredChainId()];
-      if (!coordinatorAddress) return null;
-
       const rpcProvider = new JsonRpcProvider(this.rpcUrl());
       const proofContract = new Contract(this.contractAddress(), PROOF_RANDOM_ABI, rpcProvider);
 
-      // Đọc subscription ID từ contract
-      const subId: bigint = await proofContract['s_subscriptionId']();
-      if (!subId || subId === 0n) return null;
+      // Đọc cả hai giá trị song song để tiết kiệm RPC round-trip
+      const [subId, coordinatorAddress]: [bigint, string] = await Promise.all([
+        proofContract['s_subscriptionId'](),
+        proofContract['s_vrfCoordinator']()
+      ]);
+
+      if (!subId || subId === 0n) {
+        console.warn('[Web3] s_subscriptionId = 0, bỏ qua');
+        return null;
+      }
+      if (!coordinatorAddress || coordinatorAddress === '0x0000000000000000000000000000000000000000') {
+        console.warn('[Web3] s_vrfCoordinator rỗng, bỏ qua');
+        return null;
+      }
+
+      console.log('[Web3] subId:', subId.toString(), '| coordinator:', coordinatorAddress);
 
       // Truy vấn Chainlink VRF Coordinator để lấy balance
       const coordinator = new Contract(coordinatorAddress, VRF_COORDINATOR_ABI, rpcProvider);
       const subInfo = await coordinator['getSubscription'](subId);
+      console.log('[Web3] subInfo:', subInfo);
+
       // getSubscription trả về tuple/struct - truy cập theo tên trường
       const balanceJuels: bigint = subInfo.balance ?? subInfo[0];
 
