@@ -2,7 +2,7 @@
   
   <!-- OVERVIEW STATISTICS GRID -->
   <ng-container *ngIf="!isStatsLoading(); else statsSkeleton">
-    <section class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Card 1: Tổng số phiên bốc thăm -->
       <app-card>
         <div class="flex flex-col items-start gap-3">
@@ -50,6 +50,27 @@
             <h3 class="text-2xl font-black text-slate-800 dark:text-white mt-1">
                {{ totalUsers() }}
             </h3>
+          </div>
+        </div>
+      </app-card>
+
+      <!-- Card 4: Số dư LINK Oracle (VRF Subscription) -->
+      <app-card>
+        <div class="flex flex-col items-start gap-3">
+          <div class="w-12 h-12 shrink-0 min-w-12 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-500 flex items-center justify-center shadow-md shadow-sky-500/10">
+            <!-- LINK Icon SVG (biểu tượng chuỗi xích) -->
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Số dư Oracle (LINK)</p>
+            <h3 class="text-2xl font-black text-slate-800 dark:text-white mt-1">
+              {{ linkBalance() }} <span class="text-sm font-bold text-sky-500">LINK</span>
+            </h3>
+            <p *ngIf="subscriptionId()" class="text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1 font-mono truncate" [title]="'Sub ID: ' + subscriptionId()">
+              Sub ID: {{ subscriptionId() }}
+            </p>
           </div>
         </div>
       </app-card>

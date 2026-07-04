@@ -4,6 +4,37 @@ import { Subject } from 'rxjs';
 import { WEB3_CONFIG } from '../config/web3.config';
 import { PROOF_RANDOM_ABI } from './proof-random-abi';
 
+// ABI tối giản của Chainlink VRF Coordinator V2Plus để đọc thông tin subscription
+// getSubscription trả về một struct Subscription (tuple)
+const VRF_COORDINATOR_ABI = [
+  {
+    inputs: [{ internalType: 'uint256', name: 'subId', type: 'uint256' }],
+    name: 'getSubscription',
+    outputs: [
+      {
+        components: [
+          { internalType: 'uint96',  name: 'balance',       type: 'uint96'  },
+          { internalType: 'uint96',  name: 'nativeBalance',  type: 'uint96'  },
+          { internalType: 'uint64',  name: 'reqCount',       type: 'uint64'  },
+          { internalType: 'address', name: 'owner',          type: 'address' },
+          { internalType: 'address[]', name: 'consumers',   type: 'address[]' }
+        ],
+        internalType: 'struct VRFCoordinatorV2_5.Subscription',
+        name: '',
+        type: 'tuple'
+      }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  }
+];
+
+// Địa chỉ VRF Coordinator V2.5 chính xác trên từng mạng
+const VRF_COORDINATORS: Record<string, string> = {
+  '42161':   '0x5C210e48983947b7F8Ee713D9b1E003565e3F030', // Arbitrum One
+  '421614':  '0x5CE801a2c317E05C558F87353f2257D5f25a3D61', // Arbitrum Sepolia (chính xác)
+};
+
 // Tích hợp Reown AppKit cho WalletConnect
 import { createAppKit } from '@reown/appkit';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
@@ -527,6 +558,36 @@ export class Web3Service {
     }
 
     return null;
+  }
+
+  /**
+   * Lấy số dư LINK trong Chainlink VRF Subscription của contract
+   * Đọc s_subscriptionId từ contract, sau đó truy vấn VRF Coordinator
+   */
+  public async getLinkSubscriptionBalance(): Promise<{ balance: string; subscriptionId: string } | null> {
+    try {
+      const coordinatorAddress = VRF_COORDINATORS[this.configuredChainId()];
+      if (!coordinatorAddress) return null;
+
+      const rpcProvider = new JsonRpcProvider(this.rpcUrl());
+      const proofContract = new Contract(this.contractAddress(), PROOF_RANDOM_ABI, rpcProvider);
+
+      // Đọc subscription ID từ contract
+      const subId: bigint = await proofContract['s_subscriptionId']();
+      if (!subId || subId === 0n) return null;
+
+      // Truy vấn Chainlink VRF Coordinator để lấy balance
+      const coordinator = new Contract(coordinatorAddress, VRF_COORDINATOR_ABI, rpcProvider);
+      const subInfo = await coordinator['getSubscription'](subId);
+      // getSubscription trả về tuple/struct - truy cập theo tên trường
+      const balanceJuels: bigint = subInfo.balance ?? subInfo[0];
+
+      const balanceLink = parseFloat(formatEther(balanceJuels)).toFixed(4);
+      return { balance: balanceLink, subscriptionId: subId.toString() };
+    } catch (err) {
+      console.error('[Web3] Lấy số dư LINK subscription lỗi:', err);
+      return null;
+    }
   }
 
   /**

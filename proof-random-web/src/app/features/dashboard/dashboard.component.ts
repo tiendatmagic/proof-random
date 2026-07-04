@@ -23,6 +23,8 @@ export class DashboardComponent {
   public readonly totalSessions = signal<number>(0);
   public readonly totalDraws = signal<number>(0);
   public readonly totalUsers = signal<number>(0);
+  public readonly linkBalance = signal<string>('--');
+  public readonly subscriptionId = signal<string>('');
   public readonly recentDraws = signal<any[]>([]);
   public readonly isStatsLoading = signal<boolean>(true);
 
@@ -100,6 +102,16 @@ export class DashboardComponent {
         completedCount = recent.filter(r => r.fulfilled).length;
       }
       this.totalDraws.set(completedCount);
+
+      // Lấy số dư LINK từ VRF Subscription
+      const linkInfo = await this.web3Service.getLinkSubscriptionBalance();
+      if (linkInfo) {
+        this.linkBalance.set(linkInfo.balance);
+        this.subscriptionId.set(linkInfo.subscriptionId);
+      } else {
+        this.linkBalance.set('N/A');
+        this.subscriptionId.set('');
+      }
 
     } catch (err) {
       console.warn('[Dashboard] Tải thống kê blockchain lỗi:', err);

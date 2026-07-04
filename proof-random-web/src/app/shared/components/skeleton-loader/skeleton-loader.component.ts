@@ -9,8 +9,8 @@ import { CommonModule } from '@angular/common';
     <div class="animate-pulse-slow w-full" [ngSwitch]="type()">
       
       <!-- Stats skeleton -->
-      <div *ngSwitchCase="'stats'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div *ngFor="let i of [1,2,3]" class="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-[15px] p-6 h-[98px] flex items-center gap-4 shadow-sm">
+      <div *ngSwitchCase="'stats'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div *ngFor="let i of [1,2,3,4]" class="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-[15px] p-6 h-[98px] flex items-center gap-4 shadow-sm">
           <div class="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-800/80"></div>
           <div class="flex-1 space-y-2.5">
             <div class="h-3 bg-slate-200 dark:bg-slate-800/80 rounded w-2/3"></div>
