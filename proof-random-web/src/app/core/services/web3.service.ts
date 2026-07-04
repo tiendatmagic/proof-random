@@ -234,16 +234,27 @@ export class Web3Service {
     if (!address || address === '0x0000000000000000000000000000000000000000') {
       throw new Error('Địa chỉ Smart Contract chưa được cấu hình. Vui lòng deploy và cập nhật web3.config.ts.');
     }
+    // Read-only: luôn dùng JsonRpcProvider
+    const jsonRpcProvider = new JsonRpcProvider(this.rpcUrl());
+    return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
+  }
 
-    if (withSigner && this.walletConnected() && typeof window !== 'undefined' && (window as any).ethereum) {
-      const browserProvider = new BrowserProvider((window as any).ethereum);
-      // Lấy signer từ BrowserProvider của ví
-      return new Contract(address, PROOF_RANDOM_ABI, browserProvider.getSigner() as any);
-    } else {
-      // Dùng RPC công cộng để thực hiện lệnh gọi Read-only
-      const jsonRpcProvider = new JsonRpcProvider(this.rpcUrl());
-      return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
+  /**
+   * Lấy contract với signer để gửi transaction (Write)
+   * ethers.js v6: getSigner() là async, phải await
+   */
+  public async getContractWithSigner(): Promise<Contract> {
+    const address = this.contractAddress();
+    if (!address || address === '0x0000000000000000000000000000000000000000') {
+      throw new Error('Địa chỉ Smart Contract chưa được cấu hình.');
     }
+    if (!this.walletConnected() || typeof window === 'undefined' || !(window as any).ethereum) {
+      throw new Error('Vui lòng kết nối ví điện tử trước khi thực hiện.');
+    }
+    const browserProvider = new BrowserProvider((window as any).ethereum);
+    // ethers v6: getSigner() là async
+    const signer = await browserProvider.getSigner();
+    return new Contract(address, PROOF_RANDOM_ABI, signer);
   }
 
   /**
@@ -264,7 +275,8 @@ export class Web3Service {
     }
 
     try {
-      const contract = this.getContract(true);
+      // Dùng getContractWithSigner() để đảm bảo được await getSigner() đúng cách (ethers v6)
+      const contract = await this.getContractWithSigner();
       const tx = await contract['requestDraw'](drawType, param1, param2, eventName, participants);
       console.log('[Web3] Giao dịch gửi requestDraw:', tx.hash);
       const receipt = await tx.wait();
