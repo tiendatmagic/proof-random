@@ -1,0 +1,32 @@
+# Nhật ký hoạt động ProofRandom DApp
+
+## Yêu cầu dự án
+Xây dựng DApp ProofRandom hoàn chỉnh:
+- **Frontend**: Angular 22, ethers.js v6, tích hợp Reown AppKit (WalletConnect), thiết kế Glassmorphism Neon Pink/Purple.
+- **Blockchain/Smart Contract**: Solidity, OpenZeppelin, Hardhat, Chainlink VRF v2.5.
+- **Tính năng chính**:
+  1. Trang chủ: Thống kê, tạo phiên bốc thăm mới với 9 chế độ quay (Random Number, Random Name, Multiple Winners, Coin Flip, Dice, Even/Odd, Random Color, Random Letter, Random Team).
+  2. Draw History: Bộ lọc lịch sử bốc thăm.
+  3. Detail: Xem chi tiết phiên, danh sách tham gia, người thắng, tx hash, requestId, v.v.
+  4. Verification: Nhập requestId/tx hash để chạy lại thuật toán verify deterministic khớp với kết quả on-chain.
+  5. Share & Export: Copy Link, Copy Result, Share mạng xã hội, QR Code. Xuất PDF, CSV, JSON.
+
+## Tiến độ thực hiện
+- [x] Nghiên cứu cấu trúc mã nguồn tham chiếu `cafe-blockchain`.
+- [x] Nghiên cứu hệ thống design quy chuẩn (font Quicksand, Tailwind v4, biến màu dynamic).
+- [x] Lên kế hoạch triển khai chi tiết và tạo file `implementation_plan.md` trong thư mục artifacts.
+- [x] Đảm bảo cấu trúc file `.gitignore` đầy đủ và chính xác tại thư mục gốc và thư mục `proof-random-web`.
+- [x] Thêm script `start` vào `package.json` gốc để tự động chạy frontend Angular (`ng serve`) trong thư mục `proof-random-web`.
+- [x] Đổi tên toàn bộ dự án từ FairDraw sang ProofRandom trên cả Frontend và Smart Contract.
+- [x] Xây dựng và biên dịch thành công Smart Contract `ProofRandom.sol` tích hợp Chainlink VRF v2.5.
+- [x] Hoàn thiện 100% các trang giao diện (Dashboard, Lịch sử, Chi tiết phiên, Xác minh).
+- [x] Tích hợp WalletConnect AppKit và Ethers.js v6, lọc tự động nếu sai mạng.
+- [x] Khắc phục các lỗi Typescript strict type check và parser template của Angular.
+- [x] Thiết kế logo trong suốt và favicon (PNG & ICO), tích hợp thành công vào giao diện Frontend.
+- [x] Đồng bộ hóa hệ thống biến môi trường của Angular (`src/environments`).
+- [x] Chuyển đổi mặc định sang Arbitrum One Mainnet (`42161`) cho ví và cấu hình dApp.
+- [x] Sửa lỗi vỡ style CSS Tailwind v4 (chuyển đổi sang `styles.css` và định vị `@source`).
+- [x] Thiết lập Project ID chính thức của người dùng và hiển thị chính xác danh sách các ví ưu tiên (MetaMask, Bitget Wallet, Binance Wallet, SafePal).
+- [x] Khắc phục triệt để lỗi lệch chiều cao input/button ở verify và lỗi icon đè chữ placeholder ở history/verify.
+- [x] Thiết kế Context Menu ví tích hợp các action: sao chép địa chỉ ví, chi tiết ví và ngắt kết nối ví, đi kèm HostListener click outside tự đóng.
+- [x] Thiết kế lại Toast Notification Glassmorphism mượt mà giống hệt mẫu (hỗ trợ Light/Dark mode, progress bar chạy ở đáy và logic clear() trong ToastService).

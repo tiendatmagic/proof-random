@@ -1,0 +1,187 @@
+<div class="space-y-6 animate-fade-in">
+  
+  <!-- PAGE TITLE & TITLE BAR -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white">Lịch sử bốc thăm phi tập trung</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+        Tất cả các phiên bốc thăm được ghi nhận công khai và lưu vết minh bạch trên mạng lưới.
+      </p>
+    </div>
+    
+    <button (click)="loadAllHistory()" class="btn btn-secondary btn-sm flex items-center gap-1.5 self-start cursor-pointer">
+      <svg class="w-3.5 h-3.5" [ngClass]="{'animate-spin': isLoading()}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
+      </svg>
+      Làm mới dữ liệu
+    </button>
+  </div>
+
+  <!-- FILTERS CONTROL PANEL -->
+  <div class="app-card">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <!-- Lọc theo Tên phiên -->
+      <div class="space-y-1.5">
+        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tìm kiếm theo tên phiên</label>
+        <div class="relative flex items-center">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input 
+            type="text" 
+            [(ngModel)]="filterSearch" 
+            placeholder="Nhập từ khóa tìm kiếm..." 
+            class="form-input !pl-10"
+          />
+        </div>
+      </div>
+
+      <!-- Lọc theo Người tạo -->
+      <div class="space-y-1.5">
+        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Lọc theo ví người tạo (Creator)</label>
+        <div class="relative flex items-center">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+          </svg>
+          <input 
+            type="text" 
+            [(ngModel)]="filterCreator" 
+            placeholder="0x12a3..." 
+            class="form-input !pl-10"
+          />
+        </div>
+      </div>
+
+      <!-- Lọc theo Loại bốc thăm -->
+      <div class="space-y-1.5">
+        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Loại bốc thăm</label>
+        <select [(ngModel)]="filterType" class="form-input cursor-pointer">
+          <option [value]="0">Tất cả chế độ</option>
+          <option [value]="1">Quay số ngẫu nhiên (Random Number)</option>
+          <option [value]="2">Chọn 1 tên ngẫu nhiên (Random Name)</option>
+          <option [value]="3">Chọn nhiều người thắng (Multiple Winners)</option>
+          <option [value]="4">Lật đồng xu (Coin Flip)</option>
+          <option [value]="5">Quay xúc xắc (Dice Roll)</option>
+          <option [value]="6">Chẵn / Lẻ (Even / Odd)</option>
+          <option [value]="7">Màu sắc ngẫu nhiên (Random Color)</option>
+          <option [value]="8">Chữ cái ngẫu nhiên (Random Letter)</option>
+          <option [value]="9">Chia đội ngẫu nhiên (Random Team)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- DATA TABLE & PAGINATION -->
+  <div class="app-card p-0 overflow-hidden relative min-h-[350px]">
+    
+    <!-- Spinner loading -->
+    <div *ngIf="isLoading()" class="absolute inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-[1px] flex items-center justify-center z-20">
+      <div class="w-10 h-10 border-2 border-slate-300 border-t-purple-600 rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Bảng chứa dữ liệu lịch sử -->
+    <div class="overflow-x-auto">
+      <table class="app-table">
+        <thead>
+          <tr>
+            <th>Mã bốc thăm (ID)</th>
+            <th>Tên phiên bốc thăm</th>
+            <th>Chế độ quay</th>
+            <th>Người tạo (Creator)</th>
+            <th>Tx Hash / Block</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of paginatedDraws()">
+            <!-- ID thô -->
+            <td class="font-mono text-xs font-bold text-[var(--color-primary)]">
+              {{ item.requestId.substring(0,8) }}...{{ item.requestId.substring(item.requestId.length-6) }}
+            </td>
+            <!-- Tên & Mô tả -->
+            <td class="max-w-[200px] truncate">
+              <span class="font-extrabold text-slate-800 dark:text-white block">{{ item.eventName.split(' | ')[0] }}</span>
+              <span class="text-[10px] text-slate-400 block font-semibold truncate mt-0.5" *ngIf="item.eventName.split(' | ')[1]">
+                {{ item.eventName.split(' | ')[1] }}
+              </span>
+            </td>
+            <!-- Loại quay -->
+            <td>
+              <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-950/40 text-slate-500 border border-slate-200/20">
+                {{ getDrawTypeName(item.drawType) }}
+              </span>
+            </td>
+            <!-- Ví creator -->
+            <td class="font-mono text-xs text-slate-400">
+              <a [href]="web3Service.explorerUrl() + '/address/' + item.creator" target="_blank" class="hover:text-[var(--color-primary)] hover:underline">
+                {{ item.creator.substring(0,6) }}...{{ item.creator.substring(item.creator.length-4) }}
+              </a>
+            </td>
+            <!-- Block & Tx Hash -->
+            <td>
+              <span class="text-xs font-semibold block text-slate-500 dark:text-slate-400">Khối: {{ item.blockNumber }}</span>
+              <a [href]="web3Service.explorerUrl() + '/tx/' + item.txHash" target="_blank" class="font-mono text-[10px] text-slate-400 hover:text-[var(--color-primary)] hover:underline truncate block max-w-[120px]">
+                {{ item.txHash.substring(0,10) }}...
+              </a>
+            </td>
+            <!-- Nút chi tiết -->
+            <td>
+              <a [routerLink]="['/detail', item.requestId]" class="btn btn-secondary btn-sm select-none">
+                Chi tiết
+              </a>
+            </td>
+          </tr>
+
+          <!-- Trạng thái trống (Không có kết quả khớp bộ lọc) -->
+          <tr *ngIf="paginatedDraws().length === 0 && !isLoading()">
+            <td colspan="6" class="text-center py-16 font-bold text-slate-400">
+              <svg class="w-10 h-10 mx-auto mb-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Không tìm thấy phiên bốc thăm nào khớp với bộ lọc của bạn.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PHÂN TRANG (PAGINATION FOOTER BAR) -->
+    <div class="px-6 py-4 bg-slate-50/50 dark:bg-slate-950/20 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between flex-wrap gap-4 shrink-0">
+      <div class="text-xs font-bold text-slate-400 dark:text-slate-500">
+        Hiển thị bản ghi {{ filteredDraws().length === 0 ? 0 : (currentPage - 1) * pageSize + 1 }} - 
+        {{ Math.min(currentPage * pageSize, filteredDraws().length) }} trên tổng số 
+        {{ filteredDraws().length }} phiên lọc được
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button 
+          (click)="setPage(currentPage - 1)" 
+          [disabled]="currentPage === 1"
+          class="btn btn-cancel btn-sm flex items-center justify-center p-2 cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+        >
+          <!-- Left Arrow Icon SVG -->
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <span class="text-xs font-extrabold text-slate-600 dark:text-slate-300 px-3">
+          Trang {{ currentPage }} / {{ totalPages() }}
+        </span>
+
+        <button 
+          (click)="setPage(currentPage + 1)" 
+          [disabled]="currentPage === totalPages()"
+          class="btn btn-cancel btn-sm flex items-center justify-center p-2 cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
+        >
+          <!-- Right Arrow Icon SVG -->
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

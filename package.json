@@ -1,0 +1,24 @@
+{
+  "name": "proof-random-contracts",
+  "version": "1.0.0",
+  "description": "Smart contracts for FairDraw using Chainlink VRF",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "deploy:sepolia": "npx hardhat run scripts/deploy.ts --network arbitrumSepolia",
+    "deploy:mainnet": "npx hardhat run scripts/deploy.ts --network arbitrum",
+    "start": "npm --prefix proof-random-web run start"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/node": "^20.11.24",
+    "dotenv": "^17.4.2",
+    "hardhat": "^2.22.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "@chainlink/contracts": "^1.2.0",
+    "@openzeppelin/contracts": "^5.0.2"
+  }
+}

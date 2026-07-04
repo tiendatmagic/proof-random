@@ -1,0 +1,342 @@
+/* Local Quicksand font files. */
+@import 'tailwindcss';
+@source './app/**/*.html';
+@source './app/**/*.ts';
+
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/quicksand/quicksand-vietnamese.woff2') format('woff2');
+  unicode-range:
+    U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301,
+    U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/quicksand/quicksand-latin-ext.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Quicksand';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('/fonts/quicksand/quicksand-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --dynamic-primary: #ff00dd;
+  --dynamic-secondary: #8000ff;
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Quicksand', sans-serif;
+
+  /* Cấu hình hệ màu sắc chủ đạo động của DApp */
+  --color-primary: var(--dynamic-primary, #ff00dd);
+  --color-secondary: var(--dynamic-secondary, #8000ff);
+
+  --color-primary-50: color-mix(in srgb, var(--color-primary) 5%, white);
+  --color-primary-100: color-mix(in srgb, var(--color-primary) 12%, white);
+  --color-primary-500: var(--color-primary);
+  --color-primary-600: color-mix(in srgb, var(--color-primary) 90%, black);
+  --color-primary-700: color-mix(in srgb, var(--color-primary) 80%, black);
+
+  /* Ghi đè màu purple hệ thống để tự động chuyển đổi các class Tailwind */
+  --color-purple-50: color-mix(in srgb, var(--color-primary) 5%, white);
+  --color-purple-100: color-mix(in srgb, var(--color-primary) 12%, white);
+  --color-purple-400: var(--color-secondary);
+  --color-purple-500: var(--color-primary);
+  --color-purple-600: var(--color-primary);
+  --color-purple-700: color-mix(in srgb, var(--color-primary) 90%, black);
+  --color-purple-950: color-mix(in srgb, var(--color-primary) 10%, black);
+
+  --color-dark-50: #f8fafc;
+  --color-dark-100: #f1f5f9;
+  --color-dark-800: #0f172a;
+  --color-dark-900: #020617;
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  /* Giới hạn bo góc tối đa 15px trên toàn hệ thống */
+  --radius-xl: 15px;
+  --radius-2xl: 15px;
+  --radius-3xl: 15px;
+  --radius-4xl: 15px;
+
+  /* Cấu hình mở rộng responsive breakpoint cho màn hình lớn */
+  --breakpoint-3xl: 1920px;
+  --breakpoint-4xl: 2560px;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #0f172a;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+}
+
+/* Tùy biến thanh cuộn */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Dark Mode Support */
+body.dark {
+  background-color: #030712;
+  color: #f3f4f6;
+}
+
+body.dark ::-webkit-scrollbar-thumb {
+  background: #374151;
+}
+
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* ==================== BUTTON SYSTEM ==================== */
+.btn {
+  @apply inline-flex items-center justify-center gap-1.5 font-bold text-sm rounded-xl transition-all duration-200 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed px-4.5 py-2.5;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-1.5 font-bold text-sm rounded-xl transition-all duration-200 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed px-4.5 py-2.5 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] hover:opacity-90 text-white shadow-md shadow-[var(--color-primary)]/15 hover:shadow-[var(--color-primary)]/25;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-1.5 font-bold text-sm rounded-xl transition-all duration-200 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed px-4.5 py-2.5;
+  background-color: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  color: var(--color-primary);
+}
+.btn-secondary:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+.dark .btn-secondary,
+body.dark .btn-secondary {
+  background-color: color-mix(in srgb, var(--color-secondary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  color: var(--color-secondary);
+}
+.dark .btn-secondary:hover,
+body.dark .btn-secondary:hover {
+  background-color: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 45%, transparent);
+}
+
+.btn-danger {
+  @apply inline-flex items-center justify-center gap-1.5 font-bold text-sm rounded-xl transition-all duration-200 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed px-4.5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-500/15 hover:shadow-rose-500/25;
+}
+
+.btn-cancel {
+  @apply inline-flex items-center justify-center gap-1.5 font-bold text-sm rounded-xl transition-all duration-200 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed px-4.5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-300;
+}
+
+.btn-success {
+  @apply inline-flex items-center justify-center gap-1.5 font-bold text-sm rounded-xl transition-all duration-200 cursor-pointer active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed px-4.5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white shadow-md shadow-emerald-500/15 hover:shadow-emerald-500/25;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-xs rounded-lg gap-1;
+}
+
+.btn-md {
+  @apply px-4.5 py-2.5 text-sm rounded-xl gap-1.5;
+}
+
+.btn-lg {
+  @apply px-6 py-3.5 text-base rounded-[12px] gap-2 font-extrabold;
+}
+
+.btn-full {
+  @apply w-full justify-center;
+}
+
+/* ==================== INPUT SYSTEM ==================== */
+.form-input {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  @apply h-[42px] w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
+}
+
+.form-input-sm {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  @apply h-[32px] w-full text-xs font-semibold rounded-lg bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
+}
+
+.form-input-lg {
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+  @apply h-[48px] text-base rounded-[12px];
+}
+
+.search-input {
+  padding-left: 2.25rem !important;
+  padding-right: 1rem !important;
+  @apply h-[42px] w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
+}
+
+/* ==================== TAB GROUP SYSTEM ==================== */
+.tab-group {
+  @apply h-[42px] flex items-center gap-1 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/40 dark:border-slate-800/40 overflow-x-auto flex-nowrap shrink-0 max-w-full;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tab-group::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-item {
+  @apply h-8 px-4 rounded-lg text-xs font-semibold transition-all cursor-pointer inline-flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 whitespace-nowrap shrink-0;
+}
+
+.tab-item.active {
+  @apply bg-white dark:bg-slate-900 text-[var(--color-primary)] dark:text-[var(--color-secondary)] shadow-sm font-bold;
+}
+
+/* ==================== CARD SYSTEM ==================== */
+.app-card {
+  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-200/50 dark:shadow-lg dark:shadow-slate-900/30 rounded-[15px] transition-all duration-300 p-6;
+}
+
+.app-card-interactive {
+  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-200/50 dark:shadow-lg dark:shadow-slate-900/30 rounded-[15px] transition-all duration-300 cursor-pointer hover:scale-[1.01] hover:border-[var(--color-primary)]/40 dark:hover:border-[var(--color-secondary)]/40 p-6;
+}
+
+.app-card.p-0, .app-card-interactive.p-0 { padding: 0px !important; }
+.app-card.p-3, .app-card-interactive.p-3 { padding: 0.75rem !important; }
+.app-card.p-4, .app-card-interactive.p-4 { padding: 1rem !important; }
+.app-card.p-5, .app-card-interactive.p-5 { padding: 1.25rem !important; }
+.app-card.p-6, .app-card-interactive.p-6 { padding: 1.5rem !important; }
+
+/* ==================== TABLE SYSTEM ==================== */
+.app-table {
+  @apply w-full text-left border-collapse min-w-[800px];
+}
+
+.app-table thead tr {
+  @apply border-b border-slate-200/60 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20;
+}
+
+.app-table th {
+  @apply p-4 text-xs font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap;
+}
+
+.app-table th:first-child, .app-table td:first-child { @apply pl-6; }
+.app-table th:last-child, .app-table td:last-child { @apply pr-6; }
+
+.app-table tbody tr {
+  @apply hover:bg-slate-50/40 dark:hover:bg-slate-800/10 transition-colors text-sm border-b border-slate-100 dark:border-slate-800/50;
+}
+
+.app-table td {
+  @apply p-4 text-slate-700 dark:text-slate-300 whitespace-nowrap;
+}
+
+/* ==================== MODAL SYSTEM ==================== */
+.app-modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+}
+
+.app-modal-backdrop {
+  @apply fixed inset-0 bg-black/40;
+}
+
+.app-modal-content {
+  @apply relative bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-3xl transition-all duration-300 p-6 max-w-sm w-full shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] text-slate-800 dark:text-slate-200 flex flex-col;
+}
+
+.app-modal-header {
+  @apply flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0;
+}
+
+.app-modal-title {
+  @apply text-base font-extrabold text-slate-800 dark:text-white truncate pr-4;
+}
+
+.app-modal-close {
+  @apply text-slate-400 hover:text-slate-600 p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all cursor-pointer;
+}
+
+.app-modal-body {
+  @apply py-5 space-y-3 flex-1 overflow-y-auto;
+}
+
+.app-modal-footer {
+  @apply flex items-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0;
+}
+
+/* ==================== TOAST SYSTEM ==================== */
+@keyframes toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.toast-progress-success {
+  animation: toastProgress 3000ms linear forwards;
+}
+
+.toast-progress-error {
+  animation: toastProgress 4000ms linear forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.toast-animate {
+  animation: toastSlideIn 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

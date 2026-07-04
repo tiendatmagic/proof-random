@@ -1,0 +1,567 @@
+<div class="space-y-8 animate-fade-in">
+  
+  <!-- OVERVIEW STATISTICS GRID -->
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Card 1: Tổng số phiên bốc thăm -->
+    <div class="app-card relative overflow-hidden group">
+      <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-[var(--color-primary)]/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-300"></div>
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-[var(--color-primary)] flex items-center justify-center shadow-md shadow-[var(--color-primary)]/10">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tổng số phiên bốc thăm</p>
+          <h3 class="text-2xl font-black text-slate-800 dark:text-white mt-1">
+            <ng-container *ngIf="!isStatsLoading(); else loader">
+              {{ totalSessions() }}
+            </ng-container>
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Tổng số lượt quay (fulfilled) -->
+    <div class="app-card relative overflow-hidden group">
+      <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-[var(--color-secondary)]/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-300"></div>
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-[var(--color-secondary)] flex items-center justify-center shadow-md shadow-[var(--color-secondary)]/10">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.5" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Lượt quay thành công</p>
+          <h3 class="text-2xl font-black text-slate-800 dark:text-white mt-1">
+            <ng-container *ngIf="!isStatsLoading(); else loader">
+              {{ totalDraws() }}
+            </ng-container>
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Số người dùng (ví duy nhất) -->
+    <div class="app-card relative overflow-hidden group">
+      <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl group-hover:scale-125 transition-transform duration-300"></div>
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center shadow-md shadow-emerald-500/10">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Nhà sáng lập (Creators)</p>
+          <h3 class="text-2xl font-black text-slate-800 dark:text-white mt-1">
+            <ng-container *ngIf="!isStatsLoading(); else loader">
+              {{ totalUsers() }}
+            </ng-container>
+          </h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <ng-template #loader>
+    <span class="inline-block w-4 h-4 border-2 border-slate-300 border-t-purple-600 rounded-full animate-spin"></span>
+  </ng-template>
+
+  <!-- MAIN CREATE DRAW FORM -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    
+    <!-- LEFT & CENTER COLUMN (Form cấu hình) -->
+    <div class="lg:col-span-2 space-y-6">
+      <div class="app-card">
+        <div class="flex items-center gap-2.5 pb-4 border-b border-slate-100 dark:border-slate-800/50 mb-6">
+          <div class="w-2.5 h-6 bg-gradient-to-b from-[var(--color-primary)] to-[var(--color-secondary)] rounded-full"></div>
+          <h2 class="text-xl font-extrabold text-slate-800 dark:text-white">Tạo phiên bốc thăm mới</h2>
+        </div>
+
+        <form (ngSubmit)="onSubmitDraw()" class="space-y-6">
+          <!-- Tên sự kiện & Mô tả -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Tên phiên bốc thăm *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="eventName" 
+                name="eventName" 
+                placeholder="Ví dụ: Giveaway Livestream #12" 
+                class="form-input" 
+                required
+              />
+            </div>
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Mô tả ngắn</label>
+              <input 
+                type="text" 
+                [(ngModel)]="description" 
+                name="description" 
+                placeholder="Ví dụ: Tặng 3 chiếc tai nghe AirPod cho viewer" 
+                class="form-input"
+              />
+            </div>
+          </div>
+
+          <!-- Chế độ quay bốc thăm -->
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Chế độ quay số/bốc thăm</label>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button 
+                type="button" 
+                (click)="drawType = 1"
+                [ngClass]="{'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold': drawType === 1}"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
+                  <span class="text-xs font-black">12</span>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Quay số</div>
+                  <div class="text-[10px] text-slate-400">Random Number</div>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                (click)="drawType = 2"
+                [ngClass]="{'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold': drawType === 2}"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Quay 1 tên</div>
+                  <div class="text-[10px] text-slate-400">Random Name</div>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                (click)="drawType = 3"
+                [ngClass]="{'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold': drawType === 3}"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Nhiều người thắng</div>
+                  <div class="text-[10px] text-slate-400">Multiple Winners</div>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                (click)="drawType = 4"
+                [ngClass]="{'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold': drawType === 4}"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Lật đồng xu</div>
+                  <div class="text-[10px] text-slate-400">Coin Flip</div>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                (click)="drawType = 5"
+                [ngClass]="{'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold': drawType === 5}"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
+                  <span class="text-xs font-black">⚅</span>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Xúc xắc</div>
+                  <div class="text-[10px] text-slate-400">Dice Roll</div>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                (click)="drawType = 6"
+                [ngClass]="{'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold': drawType === 6}"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
+                  <span class="text-xs font-extrabold">2/3</span>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Chẵn / Lẻ</div>
+                  <div class="text-[10px] text-slate-400">Even / Odd</div>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                (click)="drawType = 7"
+                [ngClass]="{'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold': drawType === 7}"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
+                  <div class="w-4 h-4 rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500"></div>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Màu ngẫu nhiên</div>
+                  <div class="text-[10px] text-slate-400">Random Color</div>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                (click)="drawType = 8"
+                [ngClass]="{'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold': drawType === 8}"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
+                  <span class="text-xs font-black">A-Z</span>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Chữ cái</div>
+                  <div class="text-[10px] text-slate-400">Random Letter</div>
+                </div>
+              </button>
+
+              <button 
+                type="button" 
+                (click)="drawType = 9"
+                [ngClass]="{'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold': drawType === 9}"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Chia đội</div>
+                  <div class="text-[10px] text-slate-400">Random Team</div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Nhập danh sách người tham gia (Hiển thị có điều kiện cho chế độ 2, 3, 9) -->
+          <div *ngIf="drawType === 2 || drawType === 3 || drawType === 9" class="space-y-4 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Danh sách người tham gia (Nhập mỗi người 1 dòng) *</label>
+              <!-- Nút upload CSV -->
+              <label class="btn btn-secondary btn-sm flex items-center gap-1 cursor-pointer select-none">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                Tải lên CSV
+                <input 
+                  type="file" 
+                  accept=".csv,.txt" 
+                  (change)="onCsvFileSelected($event)" 
+                  class="hidden"
+                />
+              </label>
+            </div>
+            
+            <textarea 
+              [(ngModel)]="participantsText" 
+              name="participantsText"
+              rows="6" 
+              placeholder="Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C"
+              class="w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white p-4 focus:outline-none focus:border-[var(--color-primary)] transition-all font-mono"
+            ></textarea>
+
+            <!-- Tiền xử lý checkbox options -->
+            <div class="flex flex-wrap gap-x-6 gap-y-2 pt-1">
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer">
+                <input type="checkbox" [(ngModel)]="optRemoveDuplicates" name="optRemoveDuplicates" class="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)]/20" />
+                Bỏ trùng lặp
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer">
+                <input type="checkbox" [(ngModel)]="optTrimSpaces" name="optTrimSpaces" class="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)]/20" />
+                Bỏ khoảng trắng đầu/cuối
+              </label>
+              <label class="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer">
+                <input type="checkbox" [(ngModel)]="optRemoveEmptyLines" name="optRemoveEmptyLines" class="rounded text-[var(--color-primary)] focus:ring-[var(--color-primary)]/20" />
+                Bỏ dòng trống
+              </label>
+            </div>
+
+            <!-- Tổng số người tham gia hiện tại -->
+            <div class="text-xs font-extrabold text-slate-400 dark:text-slate-500 flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950/20 px-3.5 py-2.5 rounded-lg border border-slate-200/30 dark:border-slate-800/30 w-fit">
+              <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]"></span>
+              Tổng số người tham gia hợp lệ: {{ getProcessedParticipants().length }}
+            </div>
+          </div>
+
+          <!-- Nút kích hoạt Draw (Request Draw) -->
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-800/50">
+            <button 
+              type="submit" 
+              [disabled]="isPendingTx()"
+              class="btn-primary w-full h-12 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-[var(--color-primary)]/20 font-black text-base"
+            >
+              <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Bắt đầu bốc thăm (Draw)
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN (Cài đặt phụ thuộc theo chế độ quay đang chọn) -->
+    <div class="space-y-6">
+      <div class="app-card min-h-[360px] flex flex-col justify-between">
+        
+        <div>
+          <div class="flex items-center gap-2 pb-3.5 border-b border-slate-100 dark:border-slate-800/50 mb-5">
+            <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <h3 class="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">Cài đặt chế độ quay</h3>
+          </div>
+
+          <!-- 1. Random Number config -->
+          <div *ngIf="drawType === 1" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Quay ra một số ngẫu nhiên nằm trong khoảng số Min và Max của bạn.
+            </p>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Số tối thiểu (Min)</label>
+                <input type="number" [(ngModel)]="numMin" class="form-input" />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Số tối đa (Max)</label>
+                <input type="number" [(ngModel)]="numMax" class="form-input" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Random Name config -->
+          <div *ngIf="drawType === 2" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Chọn ngẫu nhiên 1 người may mắn duy nhất từ danh sách người tham gia ở cột bên trái.
+            </p>
+            <div class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30">
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Số lượng người thắng</div>
+              <div class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]"></span>
+                1 Người chiến thắng (Winner)
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Multiple Winners config -->
+          <div *ngIf="drawType === 3" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Chọn ra danh sách K người chiến thắng không trùng nhau từ danh sách người tham gia.
+            </p>
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Số lượng người thắng (K)</label>
+              <input type="number" [(ngModel)]="numWinners" min="1" class="form-input" />
+            </div>
+          </div>
+
+          <!-- 4. Coin Flip config -->
+          <div *ngIf="drawType === 4" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Lật một đồng xu ngẫu nhiên trả về mặt Chân dung (Heads) hoặc mặt Số (Tails).
+            </p>
+            <div class="flex justify-center gap-6 py-4">
+              <div class="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950/30 border-2 border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center font-extrabold text-sm text-slate-400">Heads</div>
+              <div class="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950/30 border-2 border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center font-extrabold text-sm text-slate-400">Tails</div>
+            </div>
+          </div>
+
+          <!-- 5. Dice config -->
+          <div *ngIf="drawType === 5" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Tung một quân xúc xắc ngẫu nhiên. Hỗ trợ loại 6 mặt chuẩn hoặc 20 mặt của game nhập vai.
+            </p>
+            <div class="space-y-2">
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Số mặt xúc xắc</label>
+              <div class="flex gap-3">
+                <button 
+                  type="button" 
+                  (click)="diceSides = 6"
+                  [ngClass]="{'bg-purple-100 dark:bg-purple-950/40 text-[var(--color-primary)] font-bold border border-[var(--color-primary)]/10': diceSides === 6}"
+                  class="flex-1 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 text-sm font-semibold cursor-pointer"
+                >
+                  Xúc xắc 6 mặt
+                </button>
+                <button 
+                  type="button" 
+                  (click)="diceSides = 20"
+                  [ngClass]="{'bg-purple-100 dark:bg-purple-950/40 text-[var(--color-primary)] font-bold border border-[var(--color-primary)]/10': diceSides === 20}"
+                  class="flex-1 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 text-sm font-semibold cursor-pointer"
+                >
+                  Xúc xắc 20 mặt
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 6. Even / Odd config -->
+          <div *ngIf="drawType === 6" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Sinh một kết quả ngẫu nhiên là Số Chẵn (Even) hoặc Số Lẻ (Odd).
+            </p>
+            <div class="flex justify-center gap-3 py-2">
+              <span class="px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 text-xs font-bold">Chẵn (Even)</span>
+              <span class="px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 text-xs font-bold">Lẻ (Odd)</span>
+            </div>
+          </div>
+
+          <!-- 7. Random Color config -->
+          <div *ngIf="drawType === 7" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Sinh ngẫu nhiên ra một mã màu HEX (ví dụ: #FF00DD) dựa trên số ngẫu nhiên on-chain.
+            </p>
+          </div>
+
+          <!-- 8. Random Letter config -->
+          <div *ngIf="drawType === 8" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Chọn ngẫu nhiên 1 chữ cái trong bảng chữ cái tiếng Anh từ A đến Z.
+            </p>
+          </div>
+
+          <!-- 9. Random Team config -->
+          <div *ngIf="drawType === 9" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Tự động phân chia ngẫu nhiên danh sách người tham gia vào số lượng đội (team) cấu hình dưới đây.
+            </p>
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Số lượng đội cần chia</label>
+              <input type="number" [(ngModel)]="numTeams" min="2" class="form-input" />
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Mẹo bảo mật & gas ở chân card -->
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800/50 text-[10px] font-bold text-slate-400 dark:text-slate-500 space-y-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Random bảo mật bởi Chainlink VRF
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]"></span>
+            Tối ưu hóa gas: Không lưu danh sách người tham gia
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </section>
+
+  <!-- RECENT DRAW SESSIONS HISTORY -->
+  <section class="app-card p-0 overflow-hidden">
+    <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
+      <h3 class="text-base font-extrabold text-slate-800 dark:text-white">5 Phiên gần đây nhất trên hệ thống</h3>
+      <a routerLink="/history" class="text-xs font-extrabold text-[var(--color-primary)] hover:underline flex items-center gap-0.5">
+        Xem tất cả lịch sử
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+
+    <!-- Bảng danh sách các phiên gần đây -->
+    <div class="overflow-x-auto">
+      <table class="app-table">
+        <thead>
+          <tr>
+            <th>Tên phiên bốc thăm</th>
+            <th>Loại quay</th>
+            <th>Người tạo</th>
+            <th>Trạng thái</th>
+            <th>Kết quả</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of recentDraws()">
+            <td class="font-extrabold text-slate-800 dark:text-white">
+              {{ item.eventName.split(' | ')[0] }}
+            </td>
+            <td>
+              <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-950/40 text-slate-500 border border-slate-200/20">
+                {{ getDrawTypeName(item.drawType) }}
+              </span>
+            </td>
+            <td class="font-mono text-xs text-slate-400">
+              {{ item.creator.substring(0,6) }}...{{ item.creator.substring(item.creator.length-4) }}
+            </td>
+            <td>
+              <span *ngIf="item.fulfilled" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/10">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Thành công
+              </span>
+              <span *ngIf="!item.fulfilled" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-500 border border-amber-500/10">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                Đang đợi VRF...
+              </span>
+            </td>
+            <td class="font-bold text-xs max-w-[150px] truncate text-[var(--color-primary)] dark:text-[var(--color-secondary)]">
+              {{ item.fulfilled ? (item.drawType === 3 ? 'Kích hoạt xem chi tiết' : item.result) : '—' }}
+            </td>
+            <td>
+              <a [routerLink]="['/detail', item.requestId]" class="btn btn-secondary btn-sm select-none">
+                Xem chi tiết
+              </a>
+            </td>
+          </tr>
+          <!-- Trạng thái trống -->
+          <tr *ngIf="recentDraws().length === 0">
+            <td colspan="6" class="text-center py-10 font-bold text-slate-400">
+              <svg class="w-8 h-8 mx-auto mb-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              Chưa có phiên bốc thăm nào được tạo. Hãy tạo phiên đầu tiên ở trên!
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- TRANSACTION PENDING OVERLAY (Màn hình khóa khi ví đang xử lý) -->
+<div *ngIf="isPendingTx()" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-3xl p-8 max-w-md w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] text-center space-y-6">
+    <!-- Spinning Web3 loader -->
+    <div class="w-20 h-20 rounded-full border-4 border-slate-100 border-t-[var(--color-primary)] animate-spin mx-auto flex items-center justify-center shadow-lg shadow-[var(--color-primary)]/10">
+      <svg class="w-8 h-8 text-[var(--color-primary)] animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    </div>
+    
+    <div>
+      <h2 class="text-xl font-black text-slate-800 dark:text-white">Giao dịch đang xử lý...</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+        Vui lòng kiểm tra và phê duyệt yêu cầu trên ví điện tử của bạn. Sau đó giữ nguyên màn hình để blockchain xác thực khối.
+      </p>
+    </div>
+    
+    <div class="p-4 bg-slate-50 dark:bg-slate-950/30 rounded-2xl border border-slate-200/30 dark:border-slate-800/30 text-xs text-slate-400 font-bold">
+      💡 Mẹo: Việc gửi yêu cầu bốc thăm sẽ kích hoạt smart contract gửi request ngẫu nhiên đến Chainlink VRF. Bạn sẽ nhận được kết quả sau 1-2 block.
+    </div>
+  </div>
+</div>

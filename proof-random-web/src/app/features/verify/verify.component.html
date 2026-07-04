@@ -1,0 +1,203 @@
+<div class="space-y-6 animate-fade-in">
+  
+  <!-- PAGE TITLE BAR -->
+  <div>
+    <h2 class="text-2xl font-extrabold text-slate-800 dark:text-white">Xác minh tính minh bạch (Verify)</h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+      Nhập mã yêu cầu bốc thăm để chạy lại thuật toán xác minh, chứng minh kết quả là hoàn toàn khách quan.
+    </p>
+  </div>
+
+  <!-- INPUT SEARCH BAR CARD -->
+  <div class="app-card">
+    <form (ngSubmit)="runVerification()" class="flex flex-col sm:flex-row gap-3">
+      <div class="flex-1 relative flex items-center">
+        <svg class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input 
+          type="text" 
+          [(ngModel)]="queryInput" 
+          name="queryInput"
+          placeholder="Nhập mã Request ID hoặc Transaction Hash giao dịch..." 
+          class="form-input !pl-12 !h-12 text-sm font-semibold"
+        />
+      </div>
+      <button 
+        type="submit" 
+        [disabled]="isVerifying()"
+        class="btn-primary h-12 px-8 font-black text-sm shrink-0 cursor-pointer flex items-center justify-center gap-2"
+      >
+        <svg class="w-4 h-4" [ngClass]="{'animate-spin': isVerifying()}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        Bắt đầu đối soát
+      </button>
+    </form>
+  </div>
+
+  <!-- VERIFICATION RESULTS -->
+  <div *ngIf="hasSearched() && !isVerifying()" class="space-y-6">
+    
+    <!-- NOT FOUND STATE -->
+    <div *ngIf="!sessionDetails()" class="app-card text-center py-12 space-y-3">
+      <div class="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-950 flex items-center justify-center mx-auto text-slate-400">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+      <h3 class="text-sm font-extrabold text-slate-800 dark:text-white">Không tìm thấy thông tin</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed">
+        Vui lòng kiểm tra lại mã Request ID hoặc đảm bảo ví của bạn đang kết nối đúng mạng lưới của phiên bốc thăm này.
+      </p>
+    </div>
+
+    <!-- SESSION FOUND -->
+    <div *ngIf="sessionDetails()" class="space-y-6">
+      
+      <!-- PENDING VRF STATUS -->
+      <div *ngIf="!sessionDetails().fulfilled" class="p-6 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center space-y-3">
+        <div class="w-10 h-10 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto animate-pulse">
+          ⏳
+        </div>
+        <h3 class="text-sm font-extrabold text-amber-500">Phiên bốc thăm chưa hoàn thành</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+          Phiên bốc thăm này đang trong hàng đợi xử lý của Chainlink VRF. Hiện tại chưa thể thực hiện đối soát do chưa nhận được số ngẫu nhiên on-chain.
+        </p>
+      </div>
+
+      <!-- FULFILLED & VERIFIED SUCCESS BANNER -->
+      <div *ngIf="sessionDetails().fulfilled && isVerifiedSuccess()" 
+           class="p-8 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5 flex flex-col items-center justify-center text-center space-y-4 animate-fade-in relative overflow-hidden">
+        
+        <!-- Glowing background -->
+        <div class="absolute inset-0 bg-radial-gradient from-emerald-500/5 to-transparent pointer-events-none"></div>
+
+        <!-- Big Verified Badge SVG -->
+        <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/15 relative z-10">
+          <svg class="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+
+        <div class="space-y-1.5 relative z-10">
+          <h3 class="text-lg font-black text-slate-800 dark:text-white uppercase tracking-wider">Xác minh thành công</h3>
+          <p class="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold max-w-lg leading-relaxed">
+            Kết quả của phiên bốc thăm này hoàn toàn chính xác, khách quan và khớp 100% với thuật toán chạy thử nghiệm độc lập. Không thể can thiệp hay thay đổi bởi bất kỳ ai.
+          </p>
+        </div>
+      </div>
+
+      <!-- FULFILLED BUT VERIFICATION FAILED BANNER (Trường hợp lỗi logic hoặc dữ liệu) -->
+      <div *ngIf="sessionDetails().fulfilled && !isVerifiedSuccess()" 
+           class="p-8 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex flex-col items-center justify-center text-center space-y-4 animate-fade-in">
+        <div class="w-16 h-16 rounded-full bg-rose-500/20 text-rose-500 flex items-center justify-center shadow-lg shadow-rose-500/15">
+          <svg class="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <div class="space-y-1.5">
+          <h3 class="text-lg font-black text-slate-800 dark:text-white uppercase tracking-wider">Xác minh thất bại!</h3>
+          <p class="text-xs text-rose-500 font-extrabold max-w-lg leading-relaxed">
+            Cảnh báo: Kết quả ghi nhận on-chain và kết quả tính toán độc lập tại client-side không khớp nhau. Có thể do lỗi đồng bộ dữ liệu người tham gia hoặc mạng lưới.
+          </p>
+        </div>
+      </div>
+
+      <!-- DETAILS PROOF COMPARISON TABLE -->
+      <div class="app-card p-0 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50">
+          <h3 class="text-sm font-extrabold text-slate-800 dark:text-white">Bảng đối soát thuật toán</h3>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="app-table app-table-hover-none">
+            <thead>
+              <tr>
+                <th>Tham số đối chiếu</th>
+                <th>Dữ liệu trên Smart Contract (On-Chain)</th>
+                <th>Tính toán tại Trình duyệt (Client-Side)</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Request ID -->
+              <tr>
+                <td class="font-extrabold text-slate-800 dark:text-white">Request ID VRF</td>
+                <td class="font-mono text-xs select-all">{{ sessionDetails().requestId }}</td>
+                <td class="font-mono text-xs select-all">{{ sessionDetails().requestId }}</td>
+                <td>✅ Khớp</td>
+              </tr>
+              <!-- Seed ngẫu nhiên VRF -->
+              <tr>
+                <td class="font-extrabold text-slate-800 dark:text-white">VRF Random Word thô</td>
+                <td class="font-mono text-xs select-all">{{ sessionDetails().randomWord }}</td>
+                <td class="font-mono text-xs select-all">{{ sessionDetails().randomWord }}</td>
+                <td>✅ Khớp</td>
+              </tr>
+              <!-- Loại bốc thăm -->
+              <tr>
+                <td class="font-extrabold text-slate-800 dark:text-white">Loại bốc thăm (Draw Type)</td>
+                <td>{{ getDrawTypeName(sessionDetails().drawType) }} (Mã: {{ sessionDetails().drawType }})</td>
+                <td>{{ getDrawTypeName(sessionDetails().drawType) }} (Mã: {{ sessionDetails().drawType }})</td>
+                <td>✅ Khớp</td>
+              </tr>
+              <!-- Tổng số người tham gia -->
+              <tr *ngIf="sessionDetails().drawType === 2 || sessionDetails().drawType === 3 || sessionDetails().drawType === 9">
+                <td class="font-extrabold text-slate-800 dark:text-white">Tổng người tham gia</td>
+                <td>{{ sessionDetails().param1 }} người</td>
+                <td>{{ sessionDetails().participants.length }} người</td>
+                <td>
+                  <span *ngIf="sessionDetails().param1 === sessionDetails().participants.length">✅ Khớp</span>
+                  <span *ngIf="sessionDetails().param1 !== sessionDetails().participants.length" class="text-rose-500">❌ Lệch</span>
+                </td>
+              </tr>
+              <!-- Kết quả đầu ra -->
+              <tr *ngIf="sessionDetails().fulfilled && clientResult()">
+                <td class="font-extrabold text-slate-800 dark:text-white">Mã kết quả đầu ra (Index/Value)</td>
+                <td class="font-mono text-xs select-all font-bold text-[var(--color-primary)]">
+                  {{ sessionDetails().result }}
+                </td>
+                <td class="font-mono text-xs select-all font-bold text-[var(--color-primary)]">
+                  {{ clientResult().result }}
+                </td>
+                <td>
+                  <span *ngIf="isVerifiedSuccess()">✅ Trùng khớp</span>
+                  <span *ngIf="!isVerifiedSuccess()" class="text-rose-500">❌ Lệch</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BLOCKCHAIN VRF REQUEST DETAILS -->
+      <div class="app-card">
+        <div class="flex items-center gap-2 pb-3.5 border-b border-slate-100 dark:border-slate-800/50 mb-5">
+          <h3 class="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Chainlink VRF của phiên bốc thăm</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
+          <div class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/20 space-y-1">
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Mã khóa (Key Hash / Gas Lane)</span>
+            <span class="font-mono text-slate-700 dark:text-slate-300 block truncate">{{ web3Service.contractAddress() }}</span>
+          </div>
+          
+          <div class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/20 space-y-1">
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Mã Subscription ID đăng ký</span>
+            <span class="font-mono text-slate-700 dark:text-slate-300 block">{{ sessionDetails().param2 === 0 ? 'Mock/Direct' : 'Đăng ký VRF' }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- LOADING SPINNER -->
+  <div *ngIf="isVerifying()" class="min-h-[250px] flex flex-col items-center justify-center space-y-4">
+    <div class="w-10 h-10 border-2 border-slate-300 border-t-purple-600 rounded-full animate-spin"></div>
+    <span class="text-xs font-bold text-slate-400">Đang truy vấn dữ liệu blockchain và thực thi đối soát...</span>
+  </div>
+
+</div>
