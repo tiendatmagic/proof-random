@@ -174,9 +174,9 @@
       <!-- ================= CUSTOM GAME SKINS ================= -->
 
       <!-- 1. Lucky Wheel Skin -->
-      <div *ngIf="skinType === 'LuckyWheel' && clientResult()" class="space-y-6 flex flex-col items-center animate-fade-in">
+      <div *ngIf="skinType === 'LuckyWheel' && clientResult()" class="space-y-6 mx-auto flex flex-col items-center animate-fade-in">
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Vòng quay may mắn</p>
-        <div class="relative w-[300px] h-[300px] flex items-center justify-center">
+        <div class="relative w-[300px] h-[300px] flex items-center justify-center mx-auto">
           <canvas id="wheelCanvas" width="300" height="300" class="max-w-full"></canvas>
           <!-- Center arrow pointer -->
           <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-[var(--color-primary)] filter drop-shadow-md"></div>
@@ -186,6 +186,16 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
             </svg>
             <span *ngIf="!wheelSpinDone">{{ isWheelSpinning ? '...' : 'QUAY' }}</span>
+          </button>
+        </div>
+        
+        <!-- Skip Action for Lucky Wheel -->
+        <div class="flex justify-center w-full" *ngIf="!wheelSpinDone">
+          <button (click)="skipWheel()" class="btn btn-secondary btn-sm cursor-pointer font-bold flex items-center gap-1.5">
+            <span>Bỏ qua quay</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
           </button>
         </div>
         
@@ -199,21 +209,21 @@
       </div>
 
       <!-- 2. Racing Skin -->
-      <div *ngIf="skinType === 'Racing' && clientResult()" class="space-y-6 w-full max-w-2xl px-4 flex flex-col items-center animate-fade-in">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Đua xe ngẫu nhiên</p>
+      <div *ngIf="skinType === 'Racing' && clientResult()" class="space-y-6 w-full max-w-2xl mx-auto px-4 flex flex-col items-center animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Đua xe ngẫu nhiên</p>
         
-        <div class="w-full space-y-4 bg-slate-950/20 p-4 rounded-2xl border border-slate-200/20 dark:border-slate-800/20">
-          <div *ngFor="let progress of racerProgresses; let idx = index" class="relative h-10 w-full bg-slate-900/60 rounded-xl overflow-hidden border border-slate-800/40 flex items-center px-4">
+        <div class="w-full space-y-4 bg-slate-100/50 dark:bg-slate-950/20 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/20">
+          <div *ngFor="let progress of racerProgresses(); let idx = index" class="relative h-10 w-full bg-slate-200/60 dark:bg-slate-900/60 rounded-xl overflow-hidden border border-slate-300/50 dark:border-slate-800/40 flex items-center px-4">
             <!-- Track line -->
-            <div class="absolute inset-x-0 h-0.5 bg-slate-800/40 border-dashed border-t border-slate-700/20"></div>
+            <div class="absolute inset-x-0 h-0.5 bg-slate-300 dark:bg-slate-800/40 border-dashed border-t border-slate-400/20 dark:border-slate-700/20"></div>
             <!-- Racer Name tag -->
-            <span class="absolute left-4 z-10 text-[10px] font-bold text-slate-400 select-none bg-slate-950/80 px-2 py-0.5 rounded-md border border-slate-800/50">
+            <span class="absolute left-4 z-10 text-[10px] font-bold text-slate-700 dark:text-slate-300 select-none bg-white/90 dark:bg-slate-950/80 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800/50">
               {{ sessionDetails().participants[idx] }}
             </span>
             <!-- Vehicle moving -->
             <div class="absolute transition-all duration-75 flex items-center gap-1.5" [style.left.%]="progress" style="transform: translateX(-50%); margin-left: 20px;">
               <!-- Speed SVG Icon replacing Emoji car -->
-              <svg class="w-5 h-5 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg class="w-5 h-5 text-[var(--color-primary)] animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
               <!-- Star SVG Icon replacing Emoji crown -->
@@ -226,15 +236,23 @@
           </div>
         </div>
         
-        <button (click)="startRace()" *ngIf="!raceDone" [disabled]="isRacing" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
-          <span>{{ isRacing ? 'ĐANG ĐUA...' : 'BẮT ĐẦU CUỘC ĐUA' }}</span>
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
-          </svg>
-        </button>
+        <div class="flex gap-3 justify-center w-full" *ngIf="!raceDone">
+          <button (click)="startRace()" [disabled]="isRacing" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
+            <span>{{ isRacing ? 'ĐANG ĐUA...' : 'BẮT ĐẦU CUỘC ĐUA' }}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+            </svg>
+          </button>
+          <button (click)="skipRace()" class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5">
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
         
         <div *ngIf="raceDone" class="animate-fade-in text-center space-y-2">
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Đạt giải nhất</div>
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Đạt giải nhất</div>
           <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
             {{ clientResult().winners[0] }}
           </h3>
@@ -242,10 +260,10 @@
       </div>
 
       <!-- 3. Mystery Box Skin -->
-      <div *ngIf="skinType === 'MysteryBox' && clientResult()" class="space-y-6 flex flex-col items-center animate-fade-in">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Hộp quà bí ẩn</p>
+      <div *ngIf="skinType === 'MysteryBox' && clientResult()" class="space-y-6 mx-auto flex flex-col items-center animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hộp quà bí ẩn</p>
         
-        <div class="relative w-44 h-44 flex items-center justify-center">
+        <div class="relative w-44 h-44 flex items-center justify-center mx-auto">
           <div [ngClass]="{
             'animate-[bounce_0.6s_infinite]': isBoxOpening,
             'scale-105': boxOpened
@@ -260,12 +278,20 @@
           </div>
         </div>
         
-        <button (click)="openBox()" *ngIf="!boxOpened" [disabled]="isBoxOpening" class="btn btn-primary cursor-pointer font-black text-sm">
-          {{ isBoxOpening ? 'ĐANG MỞ...' : 'MỞ HỘP QUÀ' }}
-        </button>
+        <div class="flex gap-3 justify-center w-full" *ngIf="!boxOpened">
+          <button (click)="openBox()" [disabled]="isBoxOpening" class="btn btn-primary cursor-pointer font-black text-sm">
+            {{ isBoxOpening ? 'ĐANG MỞ...' : 'MỞ HỘP QUÀ' }}
+          </button>
+          <button (click)="skipBox()" class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5">
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
         
         <div *ngIf="boxOpened" class="animate-fade-in text-center space-y-2">
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phần thưởng trúng giải</div>
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Phần thưởng trúng giải</div>
           <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
             {{ clientResult().winners[0] }}
           </h3>
@@ -273,41 +299,49 @@
       </div>
 
       <!-- 4. Bau Cua Skin -->
-      <div *ngIf="skinType === 'BauCua' && clientResult()" class="space-y-6 w-full max-w-2xl px-4 flex flex-col items-center animate-fade-in">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Lắc Bầu Cua Tôm Cá</p>
+      <div *ngIf="skinType === 'BauCua' && clientResult()" class="space-y-6 w-full max-w-2xl mx-auto px-4 flex flex-col items-center animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Lắc Bầu Cua Tôm Cá</p>
         
-        <div class="relative w-48 h-48 flex items-center justify-center">
+        <div class="relative w-48 h-48 flex items-center justify-center mx-auto">
           <div [ngClass]="{
             'animate-[bounce_0.4s_infinite]': isBauCuaShaking,
             'translate-y-[-20px] opacity-0 pointer-events-none': bauCuaOpened
-          }" class="absolute z-10 w-36 h-36 rounded-full bg-slate-800/90 border border-slate-700/50 backdrop-blur-md shadow-2xl flex items-center justify-center transition-all duration-700 select-none">
+          }" class="absolute z-10 w-36 h-36 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-2xl flex items-center justify-center transition-all duration-700 select-none mx-auto">
             <!-- Sleek container lid replacing soup bowl emoji -->
-            <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-slate-800 to-slate-900 border-4 border-slate-700/50 shadow-inner flex items-center justify-center font-black text-slate-400 text-xs tracking-wider">
+            <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/50 shadow-inner flex items-center justify-center font-black text-slate-500 dark:text-slate-400 text-xs tracking-wider">
               BÁT ÚP
             </div>
           </div>
-          <div class="w-40 h-40 rounded-full bg-slate-900 border-4 border-slate-800/40 shadow-inner flex items-center justify-center gap-3">
+          <div class="w-40 h-40 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-200/80 dark:border-slate-800/40 shadow-inner flex items-center justify-center gap-3 mx-auto">
             <ng-container *ngIf="bauCuaOpened">
-              <div *ngFor="let die of bauCuaResultDice" class="w-12 h-12 rounded-xl bg-slate-950 border border-[var(--color-primary)]/40 flex items-center justify-center text-xs font-extrabold text-[var(--color-primary)] shadow-md select-none">
+              <div *ngFor="let die of bauCuaResultDice" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-[var(--color-primary)]/40 flex items-center justify-center text-xs font-extrabold text-[var(--color-primary)] shadow-md select-none">
                 {{ bauCuaItems[die].name }}
               </div>
             </ng-container>
-            <span *ngIf="!bauCuaOpened && !isBauCuaShaking" class="text-xs font-bold text-slate-500">Đang úp bát</span>
+            <span *ngIf="!bauCuaOpened && !isBauCuaShaking" class="text-xs font-bold text-slate-400 dark:text-slate-500">Đang úp bát</span>
           </div>
         </div>
         
-        <button (click)="shakeBauCua()" *ngIf="!bauCuaOpened" [disabled]="isBauCuaShaking" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
-          <span>{{ isBauCuaShaking ? 'ĐANG LẮC...' : 'LẮC BẦU CUA' }}</span>
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2" />
-            <circle cx="8" cy="8" r="1" fill="currentColor"/>
-            <circle cx="16" cy="16" r="1" fill="currentColor"/>
-            <circle cx="12" cy="12" r="1" fill="currentColor"/>
-          </svg>
-        </button>
+        <div class="flex gap-3 justify-center w-full" *ngIf="!bauCuaOpened">
+          <button (click)="shakeBauCua()" [disabled]="isBauCuaShaking" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
+            <span>{{ isBauCuaShaking ? 'ĐANG LẮC...' : 'LẮC BẦU CUA' }}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2" />
+              <circle cx="8" cy="8" r="1" fill="currentColor"/>
+              <circle cx="16" cy="16" r="1" fill="currentColor"/>
+              <circle cx="12" cy="12" r="1" fill="currentColor"/>
+            </svg>
+          </button>
+          <button (click)="skipBauCua()" class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5">
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
         
         <div *ngIf="bauCuaOpened" class="animate-fade-in text-center space-y-3">
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kết quả xúc xắc linh vật</div>
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kết quả xúc xắc linh vật</div>
           <div class="flex gap-2.5 justify-center">
             <div *ngFor="let die of bauCuaResultDice" class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/15 text-xs font-extrabold text-[var(--color-primary)] select-none">
               {{ bauCuaItems[die].name }}
@@ -317,19 +351,19 @@
       </div>
 
       <!-- 5. Scratch Card Skin -->
-      <div *ngIf="skinType === 'ScratchCard' && clientResult()" class="space-y-6 flex flex-col items-center animate-fade-in">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Vé số cào may mắn</p>
+      <div *ngIf="skinType === 'ScratchCard' && clientResult()" class="space-y-6 flex flex-col items-center mx-auto animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Vé số cào may mắn</p>
         
-        <div class="relative w-[240px] h-[120px] rounded-xl overflow-hidden border border-slate-200/20 dark:border-slate-800/20 bg-slate-950/60 shadow-lg flex flex-col items-center justify-center">
+        <div class="relative w-[240px] h-[120px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800/20 bg-slate-50 dark:bg-slate-950/60 shadow-lg flex flex-col items-center justify-center mx-auto">
           <div class="absolute inset-0 flex flex-col items-center justify-center select-all space-y-1">
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Con số cào được</span>
+            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Con số cào được</span>
             <span class="text-4xl font-black text-[var(--color-primary)] font-mono">{{ clientResult().result }}</span>
           </div>
           
-          <canvas id="scratchCanvas" width="240" height="120" class="absolute z-10 transition-opacity duration-300"></canvas>
+          <canvas id="scratchCanvas" width="240" height="120" class="absolute z-10 transition-opacity duration-300 mx-auto"></canvas>
         </div>
         
-        <div class="flex gap-2">
+        <div class="flex gap-2 justify-center w-full">
           <button (click)="autoScratch()" *ngIf="!scratchDone" class="btn btn-secondary btn-sm cursor-pointer font-bold">
             Cào tự động
           </button>

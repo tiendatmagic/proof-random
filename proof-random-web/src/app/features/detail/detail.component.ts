@@ -29,6 +29,12 @@ export class DetailComponent implements OnDestroy {
   // Lưu trữ interval để dọn dẹp (polling)
   private pollingInterval: any = null;
 
+  // Lưu trữ animation frame ID và timeout ID để dọn dẹp khi bỏ qua (skip)
+  private raceAnimationFrameId: any = null;
+  private wheelAnimationFrameId: any = null;
+  private boxTimeoutId: any = null;
+  private bauCuaTimeoutId: any = null;
+
   constructor() {
     const id = this.route.snapshot.paramMap.get('id') || '';
     this.requestId.set(id);
@@ -85,6 +91,8 @@ export class DetailComponent implements OnDestroy {
       this.initWheelCanvas();
     } else if (data && data.skin === 'ScratchCard') {
       this.initScratchCard();
+    } else if (data && data.skin === 'Racing') {
+      this.initRacingProgress();
     }
   }
 
@@ -148,6 +156,10 @@ export class DetailComponent implements OnDestroy {
 
   ngOnDestroy() {
     this.stopPolling();
+    if (this.raceAnimationFrameId) cancelAnimationFrame(this.raceAnimationFrameId);
+    if (this.wheelAnimationFrameId) cancelAnimationFrame(this.wheelAnimationFrameId);
+    if (this.boxTimeoutId) clearTimeout(this.boxTimeoutId);
+    if (this.bauCuaTimeoutId) clearTimeout(this.bauCuaTimeoutId);
   }
 
   /**
@@ -474,7 +486,8 @@ export class DetailComponent implements OnDestroy {
         ctx.translate(150, 150);
         ctx.rotate(i * anglePerSeg + anglePerSeg / 2);
         ctx.textAlign = 'right';
-        ctx.fillStyle = '#cbd5e1';
+        const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+        ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
         ctx.font = 'bold 11px Quicksand, sans-serif';
         const displayName = participants[i].length > 12 ? participants[i].substring(0, 10) + '..' : participants[i];
         ctx.fillText(displayName, 130, 4);
@@ -536,7 +549,8 @@ export class DetailComponent implements OnDestroy {
         ctx.translate(150, 150);
         ctx.rotate(i * anglePerSeg + anglePerSeg / 2);
         ctx.textAlign = 'right';
-        ctx.fillStyle = '#cbd5e1';
+        const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+        ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
         ctx.font = 'bold 11px Quicksand, sans-serif';
         const displayName = participants[i].length > 12 ? participants[i].substring(0, 10) + '..' : participants[i];
         ctx.fillText(displayName, 130, 4);
@@ -545,7 +559,7 @@ export class DetailComponent implements OnDestroy {
       ctx.restore();
       
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        this.wheelAnimationFrameId = requestAnimationFrame(animate);
       } else {
         this.isWheelSpinning = false;
         this.wheelSpinDone = true;
@@ -553,13 +567,20 @@ export class DetailComponent implements OnDestroy {
       }
     };
     
-    requestAnimationFrame(animate);
+    this.wheelAnimationFrameId = requestAnimationFrame(animate);
   }
 
   // 2. Đua xe ngẫu nhiên (Random Racing)
   public isRacing = false;
   public raceDone = false;
-  public racerProgresses: number[] = [];
+  public readonly racerProgresses = signal<number[]>([]);
+
+  private initRacingProgress() {
+    const details = this.sessionDetails();
+    if (details && details.participants && this.skinType === 'Racing') {
+      this.racerProgresses.set(new Array(details.participants.length).fill(0));
+    }
+  }
   
   public startRace() {
     if (this.isRacing || this.raceDone) return;
@@ -569,7 +590,7 @@ export class DetailComponent implements OnDestroy {
     if (!details || !details.participants) return;
     
     const count = details.participants.length;
-    this.racerProgresses = new Array(count).fill(0);
+    this.racerProgresses.set(new Array(count).fill(0));
     const winnerIdx = Number(details.result);
     
     const duration = 5000;
@@ -580,25 +601,27 @@ export class DetailComponent implements OnDestroy {
       const elapsed = timestamp - startTimestamp;
       const progress = Math.min(elapsed / duration, 1);
       
+      const current = new Array(count);
       for (let i = 0; i < count; i++) {
         if (i === winnerIdx) {
-          this.racerProgresses[i] = progress * 100;
+          current[i] = progress * 100;
         } else {
           // Các xe khác chạy loạng choạng và kẹt ở tối đa 88%
           const wave = Math.sin(progress * Math.PI * 2 + i) * 6;
-          this.racerProgresses[i] = Math.min(progress * 80 + wave, 88);
+          current[i] = Math.min(progress * 80 + wave, 88);
         }
       }
+      this.racerProgresses.set(current);
       
       if (progress < 1) {
-        requestAnimationFrame(animate);
+        this.raceAnimationFrameId = requestAnimationFrame(animate);
       } else {
         this.isRacing = false;
         this.raceDone = true;
         this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã về đích đầu tiên!`, 'success');
       }
     };
-    requestAnimationFrame(animate);
+    this.raceAnimationFrameId = requestAnimationFrame(animate);
   }
 
   // 3. Hộp quà bí ẩn (Mystery Box)
@@ -609,7 +632,7 @@ export class DetailComponent implements OnDestroy {
     if (this.isBoxOpening || this.boxOpened) return;
     this.isBoxOpening = true;
     
-    setTimeout(() => {
+    this.boxTimeoutId = setTimeout(() => {
       this.isBoxOpening = false;
       this.boxOpened = true;
       this.toastService.showToast(`Hộp quà đã mở! Chúc mừng: ${this.clientResult().winners[0]}`, 'success');
@@ -645,12 +668,122 @@ export class DetailComponent implements OnDestroy {
     
     this.bauCuaResultDice = [d1, d2, d3];
     
-    setTimeout(() => {
+    this.bauCuaTimeoutId = setTimeout(() => {
       this.isBauCuaShaking = false;
       this.bauCuaOpened = true;
       const winnersText = this.bauCuaResultDice.map(i => this.bauCuaItems[i].name).join(' - ');
       this.toastService.showToast(`Kết quả Bầu Cua: ${winnersText}`, 'success');
     }, 2000);
+  }
+
+  public skipRace() {
+    if (this.raceAnimationFrameId) {
+      cancelAnimationFrame(this.raceAnimationFrameId);
+      this.raceAnimationFrameId = null;
+    }
+    
+    const details = this.sessionDetails();
+    if (!details || !details.participants) return;
+    
+    const count = details.participants.length;
+    const winnerIdx = Number(details.result);
+    
+    const current = new Array(count).fill(50);
+    current[winnerIdx] = 100;
+    this.racerProgresses.set(current);
+    
+    this.isRacing = false;
+    this.raceDone = true;
+    this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã về đích đầu tiên!`, 'success');
+  }
+
+  public skipWheel() {
+    if (this.wheelAnimationFrameId) {
+      cancelAnimationFrame(this.wheelAnimationFrameId);
+      this.wheelAnimationFrameId = null;
+    }
+    
+    const details = this.sessionDetails();
+    if (!details || !details.result) return;
+    
+    const winnerIdx = Number(details.result);
+    const numSegments = details.participants.length;
+    const anglePerSeg = (2 * Math.PI) / numSegments;
+    const targetAngle = (2 * Math.PI) - (winnerIdx * anglePerSeg + anglePerSeg / 2) - (Math.PI / 2);
+    
+    const canvas = document.getElementById('wheelCanvas') as HTMLCanvasElement;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.save();
+        ctx.clearRect(0, 0, 300, 300);
+        ctx.translate(150, 150);
+        ctx.rotate(targetAngle);
+        ctx.translate(-150, -150);
+        
+        const participants = details.participants;
+        const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+        for (let i = 0; i < numSegments; i++) {
+          ctx.beginPath();
+          ctx.moveTo(150, 150);
+          ctx.arc(150, 150, 140, i * anglePerSeg, (i + 1) * anglePerSeg);
+          ctx.closePath();
+          ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 0, 221, 0.15)' : 'rgba(128, 0, 255, 0.15)';
+          ctx.strokeStyle = 'rgba(255, 0, 221, 0.3)';
+          ctx.lineWidth = 1.5;
+          ctx.fill();
+          ctx.stroke();
+          
+          ctx.save();
+          ctx.translate(150, 150);
+          ctx.rotate(i * anglePerSeg + anglePerSeg / 2);
+          ctx.textAlign = 'right';
+          ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
+          ctx.font = 'bold 11px Quicksand, sans-serif';
+          const displayName = participants[i].length > 12 ? participants[i].substring(0, 10) + '..' : participants[i];
+          ctx.fillText(displayName, 130, 4);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+    }
+    
+    this.isWheelSpinning = false;
+    this.wheelSpinDone = true;
+    this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã chiến thắng!`, 'success');
+  }
+
+  public skipBox() {
+    if (this.boxTimeoutId) {
+      clearTimeout(this.boxTimeoutId);
+      this.boxTimeoutId = null;
+    }
+    this.isBoxOpening = false;
+    this.boxOpened = true;
+    this.toastService.showToast(`Hộp quà đã mở! Chúc mừng: ${this.clientResult().winners[0]}`, 'success');
+  }
+
+  public skipBauCua() {
+    if (this.bauCuaTimeoutId) {
+      clearTimeout(this.bauCuaTimeoutId);
+      this.bauCuaTimeoutId = null;
+    }
+    
+    const details = this.sessionDetails();
+    if (!details || !details.randomWord) return;
+    
+    const seed = BigInt(details.randomWord);
+    const d1 = Number(seed % 6n);
+    const hash2 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '1']);
+    const d2 = Number(BigInt(hash2) % 6n);
+    const hash3 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '2']);
+    const d3 = Number(BigInt(hash3) % 6n);
+    
+    this.bauCuaResultDice = [d1, d2, d3];
+    this.isBauCuaShaking = false;
+    this.bauCuaOpened = true;
+    const winnersText = this.bauCuaResultDice.map(i => this.bauCuaItems[i].name).join(' - ');
+    this.toastService.showToast(`Kết quả Bầu Cua: ${winnersText}`, 'success');
   }
 
   // 5. Vé số cào (Scratch Card)
