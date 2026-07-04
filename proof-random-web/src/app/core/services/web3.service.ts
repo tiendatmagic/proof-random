@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { BrowserProvider, Contract, JsonRpcProvider, formatEther, Interface } from 'ethers';
+import { BrowserProvider, Contract, JsonRpcProvider, formatEther, Interface, solidityPackedKeccak256 } from 'ethers';
 import { Subject } from 'rxjs';
 import { WEB3_CONFIG } from '../config/web3.config';
 import { PROOF_RANDOM_ABI } from './proof-random-abi';
@@ -664,12 +664,7 @@ export class Web3Service {
     }
   }
 
-  /**
-   * Giả lập hàm băm solidityKeccak256 bằng ethers v6 để tính toán deterministic giống contract Solidity
-   */
-  private solidityKeccak256(types: string[], values: string[]): string {
-    // Ethers v6 cung cấp hàm solidityPackedKeccak256 để tương thích với abi.encodePacked
-    const { solidityPackedKeccak256 } = require('ethers');
+  private solidityKeccak256(types: string[], values: any[]): string {
     return solidityPackedKeccak256(types, values);
   }
 }

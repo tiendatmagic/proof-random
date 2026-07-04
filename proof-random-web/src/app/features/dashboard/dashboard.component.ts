@@ -51,10 +51,30 @@ export class DashboardComponent {
   public pendingTxHash = signal<string>('');
 
   constructor() {
+    this.initDefaultEventName();
+    
     // Tự động tải thống kê khi cấu hình mạng thay đổi hoặc khi ví kết nối
     effect(() => {
       this.loadBlockchainStats();
     });
+  }
+
+  /**
+   * Tạo tên phiên bốc thăm mặc định dựa trên ngày giờ hiện tại
+   */
+  public initDefaultEventName() {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    const timeStr = now.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+    this.eventName = `Phiên bốc thăm ngày ${dateStr} ${timeStr}`;
   }
 
   /**

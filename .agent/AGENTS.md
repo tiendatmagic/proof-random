@@ -52,5 +52,9 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Bổ sung card thứ 4 "Số dư Oracle (LINK)" trên Dashboard: đọc `s_subscriptionId` từ contract, truy vấn Chainlink VRF Coordinator (`getSubscription`) để lấy balance LINK (juels → LINK), hiển thị kèm Sub ID. Grid stats chuyển từ 3 cột thành 4 cột (`sm:grid-cols-2 lg:grid-cols-4`). Skeleton loader cũng cập nhật tương ứng.
 - [x] Gỡ bỏ toàn bộ các họa tiết trang trí (decorative elements): vòng tròn blur hồng góc trên phải của Event Title Card, gradient radial nền sau vùng hiển thị kết quả (detail.html), gradient radial xanh lá nền sau banner Verify thành công (verify.html). Đồng thời dọn sạch các class `relative overflow-hidden`, `relative z-10` thừa.
 - [x] Tích hợp tính năng tự động nhận diện mạng lưới (Arbitrum Sepolia / Arbitrum One Mainnet) dựa trên Request ID hoặc Tx Hash khi truy cập thẳng bằng liên kết chia sẻ hoặc trên trang Xác minh (Verify), tự động cập nhật cấu hình RPC và Contract Address tương ứng của dApp mà không cần người dùng chọn thủ công.
+- [x] Điền sẵn tên phiên bốc thăm mặc định định dạng ngày/tháng/năm và giờ/phút/giây trong ô nhập liệu (Event Name Input) ở trang Dashboard nhằm tối ưu hóa UX, giảm thiểu thao tác nhập liệu cho người dùng.
+- [x] Khắc phục lỗi crash dApp trên trình duyệt (ReferenceError: require is not defined) ở các chế độ bốc thăm sử dụng thuật toán hash (Random Color, Multi Winners, Random Team) bằng cách import trực tiếp `solidityPackedKeccak256` từ `ethers` thay vì gọi dynamic `require('ethers')`.
+
+
 
 
