@@ -467,9 +467,20 @@ export class DetailComponent implements OnDestroy {
       const numSegments = participants.length;
       const anglePerSeg = (2 * Math.PI) / numSegments;
       
-      ctx.clearRect(0, 0, 300, 300);
+      // Nếu đã quay xong, xoay vòng quay đến người chiến thắng
+      let startAngle = 0;
+      if (this.wheelSpinDone && details.result !== undefined && details.result !== null && details.result !== '') {
+        const winnerIdx = Number(details.result);
+        startAngle = (2 * Math.PI) - (winnerIdx * anglePerSeg + anglePerSeg / 2) - (Math.PI / 2);
+      }
       
-      // Vẽ các phân vùng
+      ctx.save();
+      ctx.clearRect(0, 0, 300, 300);
+      ctx.translate(150, 150);
+      ctx.rotate(startAngle);
+      ctx.translate(-150, -150);
+      
+      const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
       for (let i = 0; i < numSegments; i++) {
         ctx.beginPath();
         ctx.moveTo(150, 150);
@@ -486,13 +497,13 @@ export class DetailComponent implements OnDestroy {
         ctx.translate(150, 150);
         ctx.rotate(i * anglePerSeg + anglePerSeg / 2);
         ctx.textAlign = 'right';
-        const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
         ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
         ctx.font = 'bold 11px Quicksand, sans-serif';
         const displayName = participants[i].length > 12 ? participants[i].substring(0, 10) + '..' : participants[i];
         ctx.fillText(displayName, 130, 4);
         ctx.restore();
       }
+      ctx.restore();
     }, 100);
   }
   
@@ -574,6 +585,23 @@ export class DetailComponent implements OnDestroy {
   public isRacing = false;
   public raceDone = false;
   public readonly racerProgresses = signal<number[]>([]);
+
+  private markAnimationsAsDone() {
+    this.wheelSpinDone = true;
+    this.raceDone = true;
+    this.boxOpened = true;
+    this.bauCuaOpened = true;
+    this.scratchDone = true;
+    
+    const details = this.sessionDetails();
+    if (details && details.participants && details.result !== undefined && details.result !== null && details.result !== '') {
+      const count = details.participants.length;
+      const winnerIdx = Number(details.result);
+      const current = new Array(count).fill(50);
+      current[winnerIdx] = 100;
+      this.racerProgresses.set(current);
+    }
+  }
 
   private initRacingProgress() {
     const details = this.sessionDetails();

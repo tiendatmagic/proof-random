@@ -63,6 +63,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Thay đổi cấu hình định tuyến từ Hash Routing (sử dụng "#/") sang Path Routing mặc định (đường dẫn "/history", "/detail") trong file app.config.ts.
 - [x] Thiết kế lại giao diện của các mini-game (Racing, Bau Cua, Scratch Card) để hỗ trợ hoàn hảo chế độ Light/Dark mode.
 - [x] Khắc phục triệt để lỗi trò chơi Đua xe (Racing) không hiển thị người đua lúc ban đầu và bị đứng im khi chạy bằng cách chuyển đổi racerProgresses sang Signal và tự động khởi tạo mảng tiến độ.
+- [x] Thiết lập chế độ mặc định khi truy cập phiên bốc thăm: luôn hiển thị nút bắt đầu hiệu ứng game (QUAY, ĐUA XE,...) kèm nút BỎ QUA để người dùng tự chọn xem hiệu ứng kịch tính hoặc xem nhanh kết quả luôn.
+
 
 
 
