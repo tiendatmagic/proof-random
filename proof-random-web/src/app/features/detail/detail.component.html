@@ -1,18 +1,27 @@
 <!-- MAIN WORKSPACE -->
 <div class="space-y-6 animate-fade-in" *ngIf="!isLoading(); else pageLoader">
-  
   <!-- BACK TO HOME LINK -->
   <div class="flex items-center justify-between">
-    <a routerLink="/" class="text-xs font-bold text-slate-400 hover:text-[var(--color-primary)] flex items-center gap-1">
+    <a
+      routerLink="/"
+      class="text-xs font-bold text-slate-400 hover:text-[var(--color-primary)] flex items-center gap-1"
+    >
       <!-- Left arrow icon -->
       <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2.5"
+          d="M15 19l-7-7 7-7"
+        />
       </svg>
       Quay lại Trang chủ
     </a>
 
     <!-- Badge Trạng thái mạng -->
-    <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-900 border border-slate-200/30 dark:border-slate-800/30">
+    <span
+      class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-slate-100 dark:bg-slate-900 border border-slate-200/30 dark:border-slate-800/30"
+    >
       {{ web3Service.networkName() }}
     </span>
   </div>
@@ -20,14 +29,27 @@
   <!-- PENDING CHAINLINK VRF SCREEN -->
   <app-card *ngIf="sessionDetails() && !sessionDetails().fulfilled">
     <div class="flex flex-col items-center justify-center text-center py-12 px-4 space-y-8">
-
       <!-- Spinner -->
       <div class="relative flex items-center justify-center">
-        <div class="w-24 h-24 rounded-full border-4 border-slate-100 dark:border-slate-800 border-t-[var(--color-primary)] animate-spin"></div>
+        <div
+          class="w-24 h-24 rounded-full border-4 border-slate-100 dark:border-slate-800 border-t-[var(--color-primary)] animate-spin"
+        ></div>
         <div class="absolute inset-0 flex items-center justify-center">
-          <div class="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
-            <svg class="w-6 h-6 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          <div
+            class="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center"
+          >
+            <svg
+              class="w-6 h-6 text-[var(--color-primary)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M13 10V3L4 14h7v7l9-11h-7z"
+              />
             </svg>
           </div>
         </div>
@@ -37,23 +59,34 @@
       <div class="space-y-3 max-w-sm">
         <h3 class="text-xl font-black text-slate-800 dark:text-white">Đang đợi Chainlink VRF...</h3>
         <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-          Yêu cầu bốc thăm đã ghi nhận trên blockchain. Chainlink VRF đang xử lý và sẽ gửi callback kết quả ngẫu nhiên về.
+          Yêu cầu bốc thăm đã ghi nhận trên blockchain. Chainlink VRF đang xử lý và sẽ gửi callback
+          kết quả ngẫu nhiên về.
         </p>
       </div>
 
       <!-- Progress bar -->
       <div class="w-full max-w-xs space-y-2">
         <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div class="h-full rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] animate-[shimmer_2s_ease-in-out_infinite]" style="width: 70%"></div>
+          <div
+            class="h-full rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] animate-[shimmer_2s_ease-in-out_infinite]"
+            style="width: 70%"
+          ></div>
         </div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Thường mất 10–30 giây</p>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          Thường mất 10–30 giây
+        </p>
       </div>
 
       <!-- Step indicators -->
       <div class="flex items-center gap-3 text-xs font-semibold">
         <div class="flex items-center gap-1.5 text-emerald-500">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M5 13l4 4L19 7"
+            />
           </svg>
           <span>Ghi nhận on-chain</span>
         </div>
@@ -68,49 +101,69 @@
           <span>Nhận kết quả</span>
         </div>
       </div>
-
     </div>
   </app-card>
 
-
   <!-- FULFILLED RESULT PRESENTATION -->
   <div *ngIf="sessionDetails() && sessionDetails().fulfilled" class="space-y-8">
-    
     <!-- EVENT TITLE CARD -->
     <app-card class="relative overflow-hidden">
       <!-- Glow background -->
-      <div class="absolute -right-16 -top-16 w-48 h-48 bg-[var(--color-primary)]/10 rounded-full blur-2xl"></div>
-      
+      <div
+        class="absolute -right-16 -top-16 w-48 h-48 bg-[var(--color-primary)]/10 rounded-full blur-2xl"
+      ></div>
+
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
         <div class="space-y-2">
           <div class="flex items-center gap-2">
-            <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/15">
+            <span
+              class="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/15"
+            >
               {{ getDrawTypeName(sessionDetails().drawType) }}
             </span>
             <span class="text-xs font-bold text-slate-400">
-              ID: #{{ sessionDetails().requestId.substring(0,8) }}
+              ID: #{{ sessionDetails().requestId.substring(0, 8) }}
             </span>
           </div>
           <h2 class="text-2xl font-black text-slate-800 dark:text-white">
             {{ sessionDetails().eventName.split(' | ')[0] }}
           </h2>
-          <p class="text-sm text-slate-500 dark:text-slate-400 font-semibold" *ngIf="sessionDetails().eventName.split(' | ')[1]">
+          <p
+            class="text-sm text-slate-500 dark:text-slate-400 font-semibold"
+            *ngIf="sessionDetails().eventName.split(' | ')[1]"
+          >
             {{ sessionDetails().eventName.split(' | ')[1] }}
           </p>
         </div>
 
         <!-- Group Actions -->
         <div class="flex flex-wrap gap-2 shrink-0">
-          <button (click)="copyShareLink()" class="btn btn-secondary btn-sm flex items-center gap-1 cursor-pointer">
+          <button
+            (click)="copyShareLink()"
+            class="btn btn-secondary btn-sm flex items-center gap-1 cursor-pointer"
+          >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.684 10.742l-2.072 1.137m0 0a3 3 0 100 4.138m0-4.138a3 3 0 110-4.138m2.072 1.137l2.072-1.137m0 0a3 3 0 100 4.138m0-4.138a3 3 0 110-4.138" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M8.684 10.742l-2.072 1.137m0 0a3 3 0 100 4.138m0-4.138a3 3 0 110-4.138m2.072 1.137l2.072-1.137m0 0a3 3 0 100 4.138m0-4.138a3 3 0 110-4.138"
+              />
             </svg>
             Chia sẻ Link
           </button>
-          
-          <button (click)="toggleQrModal(true)" class="btn btn-secondary btn-sm flex items-center gap-1 cursor-pointer">
+
+          <button
+            (click)="toggleQrModal(true)"
+            class="btn btn-secondary btn-sm flex items-center gap-1 cursor-pointer"
+          >
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v1m-6.938 4h13.856M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 4v1m-6.938 4h13.856M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
             </svg>
             QR Code
           </button>
@@ -119,15 +172,25 @@
     </app-card>
 
     <!-- RESULT DISPLAY ACCORDING TO CHOSEN DRAW TYPE -->
-    <app-card class="min-h-[250px] flex flex-col justify-center items-center text-center py-10 relative">
-      
+    <app-card
+      class="min-h-[250px] flex flex-col justify-center items-center text-center py-10 relative"
+    >
       <!-- BACKGROUND DECORATIVE SHAPE -->
-      <div class="absolute inset-0 bg-radial-gradient from-[var(--color-primary)]/5 to-transparent pointer-events-none"></div>
+      <div
+        class="absolute inset-0 bg-radial-gradient from-[var(--color-primary)]/5 to-transparent pointer-events-none"
+      ></div>
 
       <!-- 1. Random Number Display -->
-      <div *ngIf="sessionDetails().drawType === 1 && clientResult()" class="space-y-4 animate-fade-in relative z-10">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Con số may mắn trúng giải</p>
-        <div class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] drop-shadow-[0_10px_25px_rgba(255,0,221,0.25)] select-all font-mono">
+      <div
+        *ngIf="sessionDetails().drawType === 1 && clientResult()"
+        class="space-y-4 animate-fade-in relative z-10"
+      >
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Con số may mắn trúng giải
+        </p>
+        <div
+          class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] drop-shadow-[0_10px_25px_rgba(255,0,221,0.25)] select-all font-mono"
+        >
           {{ clientResult().result }}
         </div>
         <div class="text-xs font-bold text-slate-400">
@@ -136,17 +199,31 @@
       </div>
 
       <!-- 2. Random Name Display -->
-      <div *ngIf="sessionDetails().drawType === 2 && clientResult()" class="space-y-6 animate-fade-in relative z-10">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Người chiến thắng duy nhất</p>
-        
+      <div
+        *ngIf="sessionDetails().drawType === 2 && clientResult()"
+        class="space-y-6 animate-fade-in relative z-10"
+      >
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Người chiến thắng duy nhất
+        </p>
+
         <div class="space-y-3">
           <!-- Gold Crown icon SVG -->
-          <div class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/15 animate-bounce">
+          <div
+            class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto"
+          >
             <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"
+              />
             </svg>
           </div>
-          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+          <h3
+            class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
+          >
             {{ clientResult().winners[0] }}
           </h3>
           <p class="text-xs font-bold text-slate-400">
@@ -156,63 +233,103 @@
       </div>
 
       <!-- 3. Multiple Winners Display -->
-      <div *ngIf="sessionDetails().drawType === 3 && clientResult()" class="space-y-6 w-full max-w-4xl px-4 animate-fade-in relative z-10">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Danh sách những người chiến thắng</p>
-        
+      <div
+        *ngIf="sessionDetails().drawType === 3 && clientResult()"
+        class="space-y-6 w-full max-w-4xl px-4 animate-fade-in relative z-10"
+      >
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+          Danh sách những người chiến thắng
+        </p>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div 
+          <div
             *ngFor="let name of clientResult().winners; let i = index"
             class="p-4.5 rounded-xl border border-[var(--color-primary)]/15 bg-gradient-to-tr from-purple-50/50 to-white dark:from-purple-950/10 dark:to-slate-900 shadow-sm flex items-center gap-3"
           >
             <!-- Badge số thứ tự -->
-            <div class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center font-extrabold text-sm">
+            <div
+              class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center font-extrabold text-sm"
+            >
               {{ i + 1 }}
             </div>
             <div class="text-left">
-              <span class="font-extrabold text-sm text-slate-800 dark:text-white block select-all">{{ name }}</span>
-              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">Index: {{ clientResult().result.split(',')[i] }}</span>
+              <span
+                class="font-extrabold text-sm text-slate-800 dark:text-white block select-all"
+                >{{ name }}</span
+              >
+              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block"
+                >Index: {{ clientResult().result.split(',')[i] }}</span
+              >
             </div>
           </div>
         </div>
       </div>
 
       <!-- 4. Coin Flip Display -->
-      <div *ngIf="sessionDetails().drawType === 4 && clientResult()" class="space-y-4 animate-fade-in relative z-10">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kết quả lật đồng xu</p>
-        
+      <div
+        *ngIf="sessionDetails().drawType === 4 && clientResult()"
+        class="space-y-4 animate-fade-in relative z-10"
+      >
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Kết quả lật đồng xu
+        </p>
+
         <!-- Big Round coin visual -->
-        <div class="w-28 h-28 rounded-full border-4 border-[var(--color-primary)]/30 bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] text-white shadow-xl shadow-[var(--color-primary)]/20 flex items-center justify-center mx-auto transform transition-transform hover:rotate-180 duration-500 select-none">
-          <span class="text-xl font-black tracking-wider uppercase">{{ clientResult().result }}</span>
+        <div
+          class="w-28 h-28 rounded-full border-4 border-[var(--color-primary)]/30 bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] text-white shadow-xl shadow-[var(--color-primary)]/20 flex items-center justify-center mx-auto transform transition-transform hover:rotate-180 duration-500 select-none"
+        >
+          <span class="text-xl font-black tracking-wider uppercase">{{
+            clientResult().result
+          }}</span>
         </div>
       </div>
 
       <!-- 5. Dice Display -->
-      <div *ngIf="sessionDetails().drawType === 5 && clientResult()" class="space-y-4 animate-fade-in relative z-10">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Quân xúc xắc lật được</p>
-        
+      <div
+        *ngIf="sessionDetails().drawType === 5 && clientResult()"
+        class="space-y-4 animate-fade-in relative z-10"
+      >
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Quân xúc xắc lật được
+        </p>
+
         <!-- Big Hexagonal/Square dice representation -->
-        <div class="w-24 h-24 rounded-2xl bg-slate-100 dark:bg-slate-950 border-2 border-[var(--color-primary)]/40 text-[var(--color-primary)] flex items-center justify-center text-4xl font-black shadow-lg shadow-[var(--color-primary)]/10 mx-auto select-all font-mono">
+        <div
+          class="w-24 h-24 rounded-2xl bg-slate-100 dark:bg-slate-950 border-2 border-[var(--color-primary)]/40 text-[var(--color-primary)] flex items-center justify-center text-4xl font-black shadow-lg shadow-[var(--color-primary)]/10 mx-auto select-all font-mono"
+        >
           {{ clientResult().result }}
         </div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Loại quân: {{ sessionDetails().param1 }} mặt</p>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+          Loại quân: {{ sessionDetails().param1 }} mặt
+        </p>
       </div>
 
       <!-- 6. Even / Odd Display -->
-      <div *ngIf="sessionDetails().drawType === 6 && clientResult()" class="space-y-4 animate-fade-in relative z-10">
+      <div
+        *ngIf="sessionDetails().drawType === 6 && clientResult()"
+        class="space-y-4 animate-fade-in relative z-10"
+      >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kết quả bốc được</p>
-        
-        <div class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/15 text-2xl font-black uppercase tracking-wider select-all shadow-sm">
+
+        <div
+          class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/15 text-2xl font-black uppercase tracking-wider select-all shadow-sm"
+        >
           {{ clientResult().result === 'Even' ? 'Số Chẵn (Even)' : 'Số Lẻ (Odd)' }}
         </div>
       </div>
 
       <!-- 7. Random Color Display -->
-      <div *ngIf="sessionDetails().drawType === 7 && clientResult()" class="space-y-4 animate-fade-in relative z-10">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Mã màu ngẫu nhiên sinh ra</p>
-        
+      <div
+        *ngIf="sessionDetails().drawType === 7 && clientResult()"
+        class="space-y-4 animate-fade-in relative z-10"
+      >
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Mã màu ngẫu nhiên sinh ra
+        </p>
+
         <div class="space-y-3">
           <!-- Color Preview box -->
-          <div 
+          <div
             [style.backgroundColor]="clientResult().result"
             class="w-24 h-24 rounded-2xl border-4 border-white dark:border-slate-900 shadow-xl shadow-slate-300/40 dark:shadow-slate-900/50 mx-auto"
           ></div>
@@ -223,33 +340,51 @@
       </div>
 
       <!-- 8. Random Letter Display -->
-      <div *ngIf="sessionDetails().drawType === 8 && clientResult()" class="space-y-4 animate-fade-in relative z-10">
+      <div
+        *ngIf="sessionDetails().drawType === 8 && clientResult()"
+        class="space-y-4 animate-fade-in relative z-10"
+      >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Chữ cái bốc được</p>
-        
-        <div class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] font-mono select-all">
+
+        <div
+          class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] font-mono select-all"
+        >
           {{ clientResult().result }}
         </div>
       </div>
 
       <!-- 9. Random Team Display -->
-      <div *ngIf="sessionDetails().drawType === 9 && clientResult()" class="space-y-6 w-full max-w-5xl px-4 animate-fade-in relative z-10">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Kết quả phân chia các đội</p>
-        
+      <div
+        *ngIf="sessionDetails().drawType === 9 && clientResult()"
+        class="space-y-6 w-full max-w-5xl px-4 animate-fade-in relative z-10"
+      >
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+          Kết quả phân chia các đội
+        </p>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div 
+          <div
             *ngFor="let team of clientResult().teams"
             class="rounded-xl border border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/20 backdrop-blur-md overflow-hidden shadow-sm"
           >
             <!-- Tên đội -->
-            <div class="bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-950/30 dark:to-pink-950/30 px-4.5 py-3 border-b border-slate-200/30 dark:border-slate-800/30 text-left flex items-center justify-between">
-              <span class="font-extrabold text-sm text-[var(--color-primary)]">{{ team.name }}</span>
-              <span class="text-[10px] font-bold text-slate-400">{{ team.members.length }} thành viên</span>
+            <div
+              class="bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-950/30 dark:to-pink-950/30 px-4.5 py-3 border-b border-slate-200/30 dark:border-slate-800/30 text-left flex items-center justify-between"
+            >
+              <span class="font-extrabold text-sm text-[var(--color-primary)]">{{
+                team.name
+              }}</span>
+              <span class="text-[10px] font-bold text-slate-400"
+                >{{ team.members.length }} thành viên</span
+              >
             </div>
-            
+
             <!-- Thành viên trong đội -->
-            <ul class="p-3.5 space-y-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300">
-              <li 
-                *ngFor="let member of team.members; let idx = index" 
+            <ul
+              class="p-3.5 space-y-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300"
+            >
+              <li
+                *ngFor="let member of team.members; let idx = index"
                 class="flex items-center gap-2 py-1 select-all hover:text-[var(--color-primary)]"
               >
                 <span class="w-1 h-1 rounded-full bg-slate-400"></span>
@@ -259,24 +394,30 @@
           </div>
         </div>
       </div>
-
     </app-card>
 
     <!-- SHARE & EXPORT ACTION BUTTONS -->
     <app-card>
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        
         <!-- Social Sharing -->
         <div class="space-y-2">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Chia sẻ lên mạng xã hội</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+            >Chia sẻ lên mạng xã hội</span
+          >
           <div class="flex flex-wrap gap-2">
-            <button (click)="copyShareResult()" class="btn btn-cancel btn-sm cursor-pointer font-bold">
+            <button
+              (click)="copyShareResult()"
+              class="btn btn-cancel btn-sm cursor-pointer font-bold"
+            >
               📋 Sao chép kết quả
             </button>
             <button (click)="shareOnX()" class="btn btn-cancel btn-sm cursor-pointer font-bold">
               𝕏 Tweet kết quả
             </button>
-            <button (click)="shareOnFacebook()" class="btn btn-cancel btn-sm cursor-pointer font-bold">
+            <button
+              (click)="shareOnFacebook()"
+              class="btn btn-cancel btn-sm cursor-pointer font-bold"
+            >
               📘 Facebook
             </button>
           </div>
@@ -284,79 +425,122 @@
 
         <!-- Export files system -->
         <div class="space-y-2">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest md:text-right block">Xuất báo cáo kết quả</span>
+          <span
+            class="text-[10px] font-bold text-slate-400 uppercase tracking-widest md:text-right block"
+            >Xuất báo cáo kết quả</span
+          >
           <div class="flex flex-wrap gap-2">
-            <button (click)="exportAsPDF()" class="btn btn-success btn-sm cursor-pointer font-extrabold">
+            <button
+              (click)="exportAsPDF()"
+              class="btn btn-success btn-sm cursor-pointer font-extrabold"
+            >
               📄 Xuất file PDF
             </button>
-            <button (click)="exportAsCSV()" class="btn btn-info btn-sm cursor-pointer font-extrabold">
+            <button
+              (click)="exportAsCSV()"
+              class="btn btn-info btn-sm cursor-pointer font-extrabold"
+            >
               📊 Xuất file CSV
             </button>
-            <button (click)="exportAsJSON()" class="btn btn-cancel btn-sm cursor-pointer font-extrabold">
+            <button
+              (click)="exportAsJSON()"
+              class="btn btn-cancel btn-sm cursor-pointer font-extrabold"
+            >
               ⚙️ Xuất file JSON
             </button>
           </div>
         </div>
-
       </div>
     </app-card>
 
     <!-- TECHNICAL BLOCKCHAIN SPECS & PROOF -->
     <app-card>
-      <div class="flex items-center gap-2 pb-3.5 border-b border-slate-100 dark:border-slate-800/50 mb-5">
+      <div
+        class="flex items-center gap-2 pb-3.5 border-b border-slate-100 dark:border-slate-800/50 mb-5"
+      >
         <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+          />
         </svg>
-        <h3 class="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">Thông số kỹ thuật chứng thực Blockchain</h3>
+        <h3 class="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">
+          Thông số kỹ thuật chứng thực Blockchain
+        </h3>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 text-xs">
         <div class="space-y-1">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Địa chỉ ví tạo phiên (Creator)</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block"
+            >Địa chỉ ví tạo phiên (Creator)</span
+          >
           <span class="font-mono text-slate-700 dark:text-slate-300 block select-all truncate">
             {{ sessionDetails().creator }}
           </span>
         </div>
         <div class="space-y-1">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Mã giao dịch tạo phiên (Transaction Hash)</span>
-          <a [href]="web3Service.explorerUrl() + '/tx/' + sessionDetails().txHash" target="_blank" 
-             class="font-mono text-[var(--color-primary)] hover:underline block truncate select-all">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block"
+            >Mã giao dịch tạo phiên (Transaction Hash)</span
+          >
+          <a
+            [href]="web3Service.explorerUrl() + '/tx/' + sessionDetails().txHash"
+            target="_blank"
+            class="font-mono text-[var(--color-primary)] hover:underline block truncate select-all"
+          >
             {{ sessionDetails().txHash }}
           </a>
         </div>
         <div class="space-y-1">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Chainlink VRF Request ID</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block"
+            >Chainlink VRF Request ID</span
+          >
           <span class="font-mono text-slate-700 dark:text-slate-300 block select-all truncate">
             {{ sessionDetails().requestId }}
           </span>
         </div>
         <div class="space-y-1">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Khối ghi nhận (Block Number)</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block"
+            >Khối ghi nhận (Block Number)</span
+          >
           <span class="font-bold text-slate-700 dark:text-slate-300 block select-all">
             {{ sessionDetails().blockNumber }}
           </span>
         </div>
         <div class="space-y-1">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Thời gian xác thực trên Blockchain</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block"
+            >Thời gian xác thực trên Blockchain</span
+          >
           <span class="font-bold text-slate-700 dark:text-slate-300 block select-all">
             {{ formatTimestamp(sessionDetails().timestamp) }}
           </span>
         </div>
         <div class="space-y-1">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Số ngẫu nhiên (VRF Random Word thô)</span>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block"
+            >Số ngẫu nhiên (VRF Random Word thô)</span
+          >
           <span class="font-mono text-slate-700 dark:text-slate-300 block select-all truncate">
             {{ sessionDetails().randomWord }}
           </span>
         </div>
       </div>
-      
+
       <!-- Hướng dẫn Verify ở cuối -->
-      <div class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div class="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-relaxed max-w-xl">
-          💡 Bạn muốn tự kiểm thử xem kết quả có đúng thuật toán? Hãy copy mã Request ID và mở trang Xác minh để so khớp số ngẫu nhiên on-chain với kết quả đã công bố.
+      <div
+        class="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
+        <div
+          class="text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-relaxed max-w-xl"
+        >
+          💡 Bạn muốn tự kiểm thử xem kết quả có đúng thuật toán? Hãy copy mã Request ID và mở trang
+          Xác minh để so khớp số ngẫu nhiên on-chain với kết quả đã công bố.
         </div>
-        <a [routerLink]="['/verify']" [queryParams]="{q: sessionDetails().requestId}" 
-           class="btn btn-secondary btn-sm select-none font-extrabold text-xs shrink-0 self-start sm:self-auto">
+        <a
+          [routerLink]="['/verify']"
+          [queryParams]="{ q: sessionDetails().requestId }"
+          class="btn btn-secondary btn-sm select-none font-extrabold text-xs shrink-0 self-start sm:self-auto"
+        >
           Mở trang Xác minh (Verify)
         </a>
       </div>
@@ -364,27 +548,31 @@
 
     <!-- LIST OF PARTICIPANTS (Danh sách người tham gia đầy đủ) -->
     <app-card padding="p-0" class="overflow-hidden">
-      <div class="px-6 py-4.5 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
+      <div
+        class="px-6 py-4.5 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between"
+      >
         <h3 class="text-base font-extrabold text-slate-800 dark:text-white">
           Danh sách người tham gia (Quét từ Event Logs)
         </h3>
-        <span class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-950/40 text-slate-500">
+        <span
+          class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-950/40 text-slate-500"
+        >
           {{ sessionDetails().participants.length }} người
         </span>
       </div>
 
       <div class="p-6 max-h-[300px] overflow-y-auto">
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          <div 
+          <div
             *ngFor="let name of sessionDetails().participants; let idx = index"
             class="px-3.5 py-2.5 rounded-lg border text-xs font-semibold select-all text-slate-600 dark:text-slate-300 flex items-center gap-2"
             [ngClass]="{
-              'border-[var(--color-primary)]/20 bg-[var(--color-primary)]/5 !text-[var(--color-primary)] font-bold': 
-                (sessionDetails().drawType === 2 && isWinnerIndex(idx)) || 
+              'border-[var(--color-primary)]/20 bg-[var(--color-primary)]/5 !text-[var(--color-primary)] font-bold':
+                (sessionDetails().drawType === 2 && isWinnerIndex(idx)) ||
                 (sessionDetails().drawType === 3 && isWinnerIndexInMulti(idx)),
-              'border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-950/20': 
-                !(sessionDetails().drawType === 2 && isWinnerIndex(idx)) && 
-                !(sessionDetails().drawType === 3 && isWinnerIndexInMulti(idx))
+              'border-slate-200/50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-950/20':
+                !(sessionDetails().drawType === 2 && isWinnerIndex(idx)) &&
+                !(sessionDetails().drawType === 3 && isWinnerIndexInMulti(idx)),
             }"
           >
             <span class="w-1.5 h-1.5 rounded-full bg-current shrink-0"></span>
@@ -393,9 +581,7 @@
         </div>
       </div>
     </app-card>
-
   </div>
-
 </div>
 
 <!-- QR CODE DISPLAY MODAL POPUP -->
@@ -406,22 +592,32 @@
       <h3 class="app-modal-title">QR Code quét nhanh</h3>
       <button (click)="toggleQrModal(false)" class="app-modal-close">
         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M6 18L18 6M6 6l12 12"
+          />
         </svg>
       </button>
     </div>
-    
+
     <div class="app-modal-body flex flex-col items-center justify-center p-6 space-y-4">
-      <p class="text-xs text-slate-500 dark:text-slate-400 text-center leading-relaxed font-semibold">
-        Quét mã QR dưới đây bằng điện thoại di động để mở trang xem chi tiết và verify kết quả này tức thì.
+      <p
+        class="text-xs text-slate-500 dark:text-slate-400 text-center leading-relaxed font-semibold"
+      >
+        Quét mã QR dưới đây bằng điện thoại di động để mở trang xem chi tiết và verify kết quả này
+        tức thì.
       </p>
-      
+
       <!-- QR code image loader -->
-      <div class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-inner">
+      <div
+        class="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-inner"
+      >
         <img [src]="getQrImageUrl()" alt="Verify QR Code" class="w-48 h-48 block" />
       </div>
     </div>
-    
+
     <div class="app-modal-footer">
       <button (click)="toggleQrModal(false)" class="btn btn-cancel w-full cursor-pointer">
         Đóng lại
