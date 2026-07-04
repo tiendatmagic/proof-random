@@ -60,6 +60,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục triệt để lỗi biên dịch TypeScript của Angular đối với hàm `Number()` trong template Detail.
 - [x] Tích hợp khối Showcase hiển thị người chiến thắng / chia đội trực quan trên trang Xác minh (Verify) khi đối soát thành công.
 - [x] Đồng bộ hóa toàn bộ giao diện: loại bỏ 100% emoji khỏi các nút chế độ, bảng đối soát, các mini-game, thay thế hoàn toàn bằng các biểu tượng SVG và màu chữ hệ thống đồng bộ.
+- [x] Thay đổi cấu hình định tuyến từ Hash Routing (sử dụng "#/") sang Path Routing mặc định (đường dẫn "/history", "/detail") trong file app.config.ts.
+
 
 
 
