@@ -36,4 +36,11 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Loại bỏ badge "ULTRA- 355d" khỏi widget ví để làm giao diện tinh gọn, tự nhiên hơn.
 - [x] Tinh giản các stats card trên Dashboard thành màu trắng đơn giản và loại bỏ hoàn toàn các họa tiết màu sắc phát sáng nền.
 - [x] Sửa lại giao diện dropdown chọn mạng chỉ hiển thị 2 chain (Arbitrum One Mainnet, Arbitrum Sepolia), loại bỏ border-b tiêu đề và giảm bớt padding dọc của item xuống py-1 cho nhỏ gọn tinh tế.
+- [x] Khắc phục triệt để lỗi các icon bị dẹt ngang (ở cả 3 stats card và 9 chế độ quay) bằng việc sử dụng 100% các class Tailwind v4 chính thống (`shrink-0 min-w-X`).
+- [x] Giải quyết triệt để lỗi icon đè lên chữ ở stats card bằng cách chuyển bố cục sang dạng dọc (`flex-col items-start gap-3`).
+- [x] Đồng bộ hóa chiều cao (`h-[44px]`) và độ bo góc (`rounded-2xl`) của nút "Kết nối ví" và "Nút chọn mạng" (quả địa cầu) trên header với widget ví khi đã kết nối để đảm bảo tính nhất quán của giao diện.
+- [x] Sửa lỗi đứt nét/méo mó của icon SVG xoay vòng (Refresh) bằng việc cập nhật sang path Heroicons v2 chuẩn.
+- [x] Tối ưu responsive cho phần Tiêu đề và nút Tải lên CSV của danh sách người tham gia bằng bố cục `flex-col` trên mobile.
+- [x] Tối ưu responsive cho phần Tiêu đề, nút Làm mới dữ liệu và Grid bộ lọc của trang Lịch sử (History) để hiển thị tốt trên tablet và mobile.
+
 
