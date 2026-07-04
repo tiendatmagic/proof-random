@@ -59,7 +59,7 @@ import { CommonModule } from '@angular/common';
     </label>
   `,
   styles: [`
-    :host { display: inline-block; }
+    :host { display: block; }
   `],
   changeDetection: ChangeDetectionStrategy.Eager
 })
