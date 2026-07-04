@@ -185,10 +185,10 @@
             <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
               <button
                 type="button"
-                (click)="drawType = 1"
+                (click)="selectMode(1, '')"
                 [ngClass]="{
                   'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
-                    drawType === 1,
+                    drawType === 1 && !selectedSkin,
                 }"
                 class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
               >
@@ -205,10 +205,10 @@
 
               <button
                 type="button"
-                (click)="drawType = 2"
+                (click)="selectMode(2, '')"
                 [ngClass]="{
                   'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
-                    drawType === 2,
+                    drawType === 2 && !selectedSkin,
                 }"
                 class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
               >
@@ -232,10 +232,10 @@
 
               <button
                 type="button"
-                (click)="drawType = 3"
+                (click)="selectMode(3, '')"
                 [ngClass]="{
                   'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
-                    drawType === 3,
+                    drawType === 3 && !selectedSkin,
                 }"
                 class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
               >
@@ -259,10 +259,10 @@
 
               <button
                 type="button"
-                (click)="drawType = 4"
+                (click)="selectMode(4, '')"
                 [ngClass]="{
                   'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
-                    drawType === 4,
+                    drawType === 4 && !selectedSkin,
                 }"
                 class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
               >
@@ -286,10 +286,10 @@
 
               <button
                 type="button"
-                (click)="drawType = 5"
+                (click)="selectMode(5, '')"
                 [ngClass]="{
                   'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
-                    drawType === 5,
+                    drawType === 5 && !selectedSkin,
                 }"
                 class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
               >
@@ -306,10 +306,10 @@
 
               <button
                 type="button"
-                (click)="drawType = 6"
+                (click)="selectMode(6, '')"
                 [ngClass]="{
                   'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
-                    drawType === 6,
+                    drawType === 6 && !selectedSkin,
                 }"
                 class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
               >
@@ -326,19 +326,20 @@
 
               <button
                 type="button"
-                (click)="drawType = 7"
+                (click)="selectMode(7, '')"
                 [ngClass]="{
                   'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
-                    drawType === 7,
+                    drawType === 7 && !selectedSkin,
                 }"
                 class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
               >
                 <div
                   class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
                 >
-                  <div
-                    class="w-4 h-4 rounded-full bg-gradient-to-r from-red-500 via-green-500 to-blue-500"
-                  ></div>
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.53 16.122l9.172-9.172a2 2 0 112.828 2.828l-9.172 9.172a4 4 0 01-2.828 1.172H7v-2.828a4 4 0 011.172-2.828z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.879 12.879l1.414-1.414" />
+                  </svg>
                 </div>
                 <div>
                   <div class="font-extrabold text-xs">Màu ngẫu nhiên</div>
@@ -348,10 +349,10 @@
 
               <button
                 type="button"
-                (click)="drawType = 8"
+                (click)="selectMode(8, '')"
                 [ngClass]="{
                   'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
-                    drawType === 8,
+                    drawType === 8 && !selectedSkin,
                 }"
                 class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
               >
@@ -368,10 +369,10 @@
 
               <button
                 type="button"
-                (click)="drawType = 9"
+                (click)="selectMode(9, '')"
                 [ngClass]="{
                   'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
-                    drawType === 9,
+                    drawType === 9 && !selectedSkin,
                 }"
                 class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
               >
@@ -390,6 +391,120 @@
                 <div>
                   <div class="font-extrabold text-xs">Chia đội</div>
                   <div class="text-[10px] text-slate-400">Random Team</div>
+                </div>
+              </button>
+
+              <!-- 5 GAME CHẾ ĐỘ MỚI (SKIN THAY THẾ) -->
+              <button
+                type="button"
+                (click)="selectMode(2, 'LuckyWheel')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'LuckyWheel',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4 animate-spin-slow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Vòng quay</div>
+                  <div class="text-[10px] text-slate-400">Lucky Wheel</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="selectMode(2, 'Racing')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'Racing',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Đua xe ngẫu nhiên</div>
+                  <div class="text-[10px] text-slate-400">Random Racing</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="selectMode(2, 'MysteryBox')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'MysteryBox',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Hộp quà bí ẩn</div>
+                  <div class="text-[10px] text-slate-400">Mystery Box</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="selectMode(5, 'BauCua')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'BauCua',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2.5" />
+                    <circle cx="8" cy="8" r="1.25" fill="currentColor"/>
+                    <circle cx="16" cy="16" r="1.25" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="1.25" fill="currentColor"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Bầu Cua Tôm Cá</div>
+                  <div class="text-[10px] text-slate-400">Gourd-Crab-Fish</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="selectMode(1, 'ScratchCard')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'ScratchCard',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Vé số cào</div>
+                  <div class="text-[10px] text-slate-400">Scratch Card</div>
                 </div>
               </button>
             </div>
@@ -514,160 +629,15 @@
             </h3>
           </div>
 
-          <!-- 1. Random Number config -->
-          <div *ngIf="drawType === 1" class="space-y-4 animate-fade-in">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Quay ra một số ngẫu nhiên nằm trong khoảng số Min và Max của bạn.
-            </p>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-1.5">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-                  >Số tối thiểu (Min)</label
-                >
-                <input type="number" [(ngModel)]="numMin" class="form-input" />
-              </div>
-              <div class="space-y-1.5">
-                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-                  >Số tối đa (Max)</label
-                >
-                <input type="number" [(ngModel)]="numMax" class="form-input" />
-              </div>
-            </div>
-          </div>
-
-          <!-- 2. Random Name config -->
-          <div *ngIf="drawType === 2" class="space-y-4 animate-fade-in">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Chọn ngẫu nhiên 1 người may mắn duy nhất từ danh sách người tham gia ở cột bên trái.
-            </p>
-            <div
-              class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30"
-            >
-              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-                Số lượng người thắng
-              </div>
-              <div
-                class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
-              >
-                <span class="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]"></span>
-                1 Người chiến thắng (Winner)
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. Multiple Winners config -->
-          <div *ngIf="drawType === 3" class="space-y-4 animate-fade-in">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Chọn ra danh sách K người chiến thắng không trùng nhau từ danh sách người tham gia.
-            </p>
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-                >Số lượng người thắng (K)</label
-              >
-              <input type="number" [(ngModel)]="numWinners" min="1" class="form-input" />
-            </div>
-          </div>
-
-          <!-- 4. Coin Flip config -->
-          <div *ngIf="drawType === 4" class="space-y-4 animate-fade-in">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Lật một đồng xu ngẫu nhiên trả về mặt Chân dung (Heads) hoặc mặt Số (Tails).
-            </p>
-            <div class="flex justify-center gap-6 py-4">
-              <div
-                class="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950/30 border-2 border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center font-extrabold text-sm text-slate-400"
-              >
-                Heads
-              </div>
-              <div
-                class="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950/30 border-2 border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center font-extrabold text-sm text-slate-400"
-              >
-                Tails
-              </div>
-            </div>
-          </div>
-
-          <!-- 5. Dice config -->
-          <div *ngIf="drawType === 5" class="space-y-4 animate-fade-in">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Tung một quân xúc xắc ngẫu nhiên. Hỗ trợ loại 6 mặt chuẩn hoặc 20 mặt của game nhập
-              vai.
-            </p>
-            <div class="space-y-2">
-              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-                >Số mặt xúc xắc</label
-              >
-              <div class="flex gap-3">
-                <button
-                  type="button"
-                  (click)="diceSides = 6"
-                  [ngClass]="{
-                    'bg-purple-100 dark:bg-purple-950/40 text-[var(--color-primary)] font-bold border border-[var(--color-primary)]/10':
-                      diceSides === 6,
-                  }"
-                  class="flex-1 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 text-sm font-semibold cursor-pointer"
-                >
-                  Xúc xắc 6 mặt
-                </button>
-                <button
-                  type="button"
-                  (click)="diceSides = 20"
-                  [ngClass]="{
-                    'bg-purple-100 dark:bg-purple-950/40 text-[var(--color-primary)] font-bold border border-[var(--color-primary)]/10':
-                      diceSides === 20,
-                  }"
-                  class="flex-1 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 text-sm font-semibold cursor-pointer"
-                >
-                  Xúc xắc 20 mặt
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 6. Even / Odd config -->
-          <div *ngIf="drawType === 6" class="space-y-4 animate-fade-in">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Sinh một kết quả ngẫu nhiên là Số Chẵn (Even) hoặc Số Lẻ (Odd).
-            </p>
-            <div class="flex justify-center gap-3 py-2">
-              <span
-                class="px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 text-xs font-bold"
-                >Chẵn (Even)</span
-              >
-              <span
-                class="px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 text-xs font-bold"
-                >Lẻ (Odd)</span
-              >
-            </div>
-          </div>
-
-          <!-- 7. Random Color config -->
-          <div *ngIf="drawType === 7" class="space-y-4 animate-fade-in">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Sinh ngẫu nhiên ra một mã màu HEX (ví dụ: #FF00DD) dựa trên số ngẫu nhiên on-chain.
-            </p>
-          </div>
-
-          <!-- 8. Random Letter config -->
-          <div *ngIf="drawType === 8" class="space-y-4 animate-fade-in">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Chọn ngẫu nhiên 1 chữ cái trong bảng chữ cái tiếng Anh từ A đến Z.
-            </p>
-          </div>
-
-          <!-- 9. Random Team config -->
-          <div *ngIf="drawType === 9" class="space-y-4 animate-fade-in">
-            <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-              Tự động phân chia ngẫu nhiên danh sách người tham gia vào số lượng đội (team) cấu hình
-              dưới đây.
-            </p>
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-                >Số lượng đội cần chia</label
-              >
-              <input type="number" [(ngModel)]="numTeams" min="2" class="form-input" />
-            </div>
-          </div>
+          <app-draw-config-panel
+            [drawType]="drawType"
+            [selectedSkin]="selectedSkin"
+            [(numMin)]="numMin"
+            [(numMax)]="numMax"
+            [(numWinners)]="numWinners"
+            [(diceSides)]="diceSides"
+            [(numTeams)]="numTeams"
+          ></app-draw-config-panel>
         </div>
 
         <!-- Mẹo bảo mật & gas ở chân card -->

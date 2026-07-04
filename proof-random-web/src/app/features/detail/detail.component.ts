@@ -62,6 +62,7 @@ export class DetailComponent implements OnDestroy {
           );
           this.clientResult.set(res);
           this.stopPolling(); // Dừng polling nếu đã nhận được kết quả
+          this.checkAndInitSkins(data);
         } else {
           // Bắt đầu cơ chế polling nếu chưa nhận được kết quả (đang chờ VRF callback)
           this.startPolling();
@@ -73,6 +74,17 @@ export class DetailComponent implements OnDestroy {
       console.error('[Detail] Tải chi tiết lỗi:', err);
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  /**
+   * Khởi tạo canvas cho các trò chơi ngẫu nhiên
+   */
+  private checkAndInitSkins(data: any) {
+    if (data && data.skin === 'LuckyWheel') {
+      this.initWheelCanvas();
+    } else if (data && data.skin === 'ScratchCard') {
+      this.initScratchCard();
     }
   }
 
@@ -100,6 +112,7 @@ export class DetailComponent implements OnDestroy {
         this.clientResult.set(res);
         this.toastService.showToast('Bốc thăm hoàn tất! Số ngẫu nhiên đã được trả về.', 'success');
         this.stopPolling();
+        this.checkAndInitSkins(data);
       }
     }, 5000); // Polling mỗi 5 giây
   }
@@ -109,6 +122,11 @@ export class DetailComponent implements OnDestroy {
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
     }
+  }
+
+  public get skinType(): string {
+    const details = this.sessionDetails();
+    return details && details.skin ? details.skin : '';
   }
 
   public formatTimestamp(timestamp: number): string {
@@ -416,5 +434,289 @@ export class DetailComponent implements OnDestroy {
       9: "Chia đội ngẫu nhiên"
     };
     return names[type] || "Chưa xác định";
+  }
+
+  // --- TRÒ CHƠI NGẪU NHIÊN: BIẾN TRẠNG THÁI & PHƯƠNG THỨC ---
+  
+  // 1. Vòng quay may mắn (Lucky Wheel)
+  public isWheelSpinning = false;
+  public wheelSpinDone = false;
+  
+  public initWheelCanvas() {
+    setTimeout(() => {
+      const canvas = document.getElementById('wheelCanvas') as HTMLCanvasElement;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const details = this.sessionDetails();
+      if (!details || !details.participants) return;
+      
+      const participants = details.participants;
+      const numSegments = participants.length;
+      const anglePerSeg = (2 * Math.PI) / numSegments;
+      
+      ctx.clearRect(0, 0, 300, 300);
+      
+      // Vẽ các phân vùng
+      for (let i = 0; i < numSegments; i++) {
+        ctx.beginPath();
+        ctx.moveTo(150, 150);
+        ctx.arc(150, 150, 140, i * anglePerSeg, (i + 1) * anglePerSeg);
+        ctx.closePath();
+        
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 0, 221, 0.15)' : 'rgba(128, 0, 255, 0.15)';
+        ctx.strokeStyle = 'rgba(255, 0, 221, 0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.translate(150, 150);
+        ctx.rotate(i * anglePerSeg + anglePerSeg / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = 'bold 11px Quicksand, sans-serif';
+        const displayName = participants[i].length > 12 ? participants[i].substring(0, 10) + '..' : participants[i];
+        ctx.fillText(displayName, 130, 4);
+        ctx.restore();
+      }
+    }, 100);
+  }
+  
+  public spinWheel() {
+    if (this.isWheelSpinning || this.wheelSpinDone) return;
+    this.isWheelSpinning = true;
+    
+    const details = this.sessionDetails();
+    if (!details || !details.result) return;
+    const winnerIdx = Number(details.result);
+    const numSegments = details.participants.length;
+    
+    const canvas = document.getElementById('wheelCanvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const anglePerSeg = (2 * Math.PI) / numSegments;
+    const targetAngle = (2 * Math.PI) - (winnerIdx * anglePerSeg + anglePerSeg / 2) - (Math.PI / 2);
+    
+    // Thêm 8 vòng xoay đầy để tăng độ kịch tính
+    const totalRotation = targetAngle + 16 * Math.PI;
+    
+    let startTimestamp: number | null = null;
+    const duration = 5000; // 5s
+    
+    const animate = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const elapsed = timestamp - startTimestamp;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      const easeProgress = 1 - Math.pow(1 - progress, 3); // cubic ease out
+      const currentAngle = easeProgress * totalRotation;
+      
+      ctx.save();
+      ctx.clearRect(0, 0, 300, 300);
+      ctx.translate(150, 150);
+      ctx.rotate(currentAngle);
+      ctx.translate(-150, -150);
+      
+      const participants = details.participants;
+      for (let i = 0; i < numSegments; i++) {
+        ctx.beginPath();
+        ctx.moveTo(150, 150);
+        ctx.arc(150, 150, 140, i * anglePerSeg, (i + 1) * anglePerSeg);
+        ctx.closePath();
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 0, 221, 0.15)' : 'rgba(128, 0, 255, 0.15)';
+        ctx.strokeStyle = 'rgba(255, 0, 221, 0.3)';
+        ctx.lineWidth = 1.5;
+        ctx.fill();
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.translate(150, 150);
+        ctx.rotate(i * anglePerSeg + anglePerSeg / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = 'bold 11px Quicksand, sans-serif';
+        const displayName = participants[i].length > 12 ? participants[i].substring(0, 10) + '..' : participants[i];
+        ctx.fillText(displayName, 130, 4);
+        ctx.restore();
+      }
+      ctx.restore();
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        this.isWheelSpinning = false;
+        this.wheelSpinDone = true;
+        this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã chiến thắng!`, 'success');
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }
+
+  // 2. Đua xe ngẫu nhiên (Random Racing)
+  public isRacing = false;
+  public raceDone = false;
+  public racerProgresses: number[] = [];
+  
+  public startRace() {
+    if (this.isRacing || this.raceDone) return;
+    this.isRacing = true;
+    
+    const details = this.sessionDetails();
+    if (!details || !details.participants) return;
+    
+    const count = details.participants.length;
+    this.racerProgresses = new Array(count).fill(0);
+    const winnerIdx = Number(details.result);
+    
+    const duration = 5000;
+    let startTimestamp: number | null = null;
+    
+    const animate = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const elapsed = timestamp - startTimestamp;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      for (let i = 0; i < count; i++) {
+        if (i === winnerIdx) {
+          this.racerProgresses[i] = progress * 100;
+        } else {
+          // Các xe khác chạy loạng choạng và kẹt ở tối đa 88%
+          const wave = Math.sin(progress * Math.PI * 2 + i) * 6;
+          this.racerProgresses[i] = Math.min(progress * 80 + wave, 88);
+        }
+      }
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        this.isRacing = false;
+        this.raceDone = true;
+        this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã về đích đầu tiên!`, 'success');
+      }
+    };
+    requestAnimationFrame(animate);
+  }
+
+  // 3. Hộp quà bí ẩn (Mystery Box)
+  public isBoxOpening = false;
+  public boxOpened = false;
+  
+  public openBox() {
+    if (this.isBoxOpening || this.boxOpened) return;
+    this.isBoxOpening = true;
+    
+    setTimeout(() => {
+      this.isBoxOpening = false;
+      this.boxOpened = true;
+      this.toastService.showToast(`Hộp quà đã mở! Chúc mừng: ${this.clientResult().winners[0]}`, 'success');
+    }, 2000);
+  }
+
+  // 4. Bầu Cua Tôm Cá (Bau Cua)
+  public isBauCuaShaking = false;
+  public bauCuaOpened = false;
+  public bauCuaResultDice: number[] = [0, 0, 0];
+  public readonly bauCuaItems = [
+    { icon: '', name: 'Bầu' },
+    { icon: '', name: 'Cua' },
+    { icon: '', name: 'Tôm' },
+    { icon: '', name: 'Cá' },
+    { icon: '', name: 'Gà' },
+    { icon: '', name: 'Nai' }
+  ];
+
+  public shakeBauCua() {
+    if (this.isBauCuaShaking || this.bauCuaOpened) return;
+    this.isBauCuaShaking = true;
+    
+    const details = this.sessionDetails();
+    if (!details || !details.randomWord) return;
+    
+    const seed = BigInt(details.randomWord);
+    const d1 = Number(seed % 6n);
+    const hash2 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '1']);
+    const d2 = Number(BigInt(hash2) % 6n);
+    const hash3 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '2']);
+    const d3 = Number(BigInt(hash3) % 6n);
+    
+    this.bauCuaResultDice = [d1, d2, d3];
+    
+    setTimeout(() => {
+      this.isBauCuaShaking = false;
+      this.bauCuaOpened = true;
+      const winnersText = this.bauCuaResultDice.map(i => this.bauCuaItems[i].name).join(' - ');
+      this.toastService.showToast(`Kết quả Bầu Cua: ${winnersText}`, 'success');
+    }, 2000);
+  }
+
+  // 5. Vé số cào (Scratch Card)
+  public isScratched = false;
+  public scratchDone = false;
+  
+  public initScratchCard() {
+    setTimeout(() => {
+      const canvas = document.getElementById('scratchCanvas') as HTMLCanvasElement;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(0, 0, 240, 120);
+      
+      ctx.font = 'bold 12px Quicksand, sans-serif';
+      ctx.fillStyle = '#1e293b';
+      ctx.textAlign = 'center';
+      ctx.fillText('DI CHUỘT CÀO LỚP BẠC', 120, 65);
+      
+      let isDrawing = false;
+      const scratch = (x: number, y: number) => {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, 16, 0, Math.PI * 2);
+        ctx.fill();
+      };
+      
+      const getPos = (e: MouseEvent | TouchEvent) => {
+        const rect = canvas.getBoundingClientRect();
+        if (e instanceof MouseEvent) {
+          return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        } else {
+          return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+        }
+      };
+      
+      canvas.onmousedown = () => isDrawing = true;
+      canvas.onmouseup = () => isDrawing = false;
+      canvas.onmousemove = (e) => {
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        scratch(pos.x, pos.y);
+        this.isScratched = true;
+      };
+      
+      canvas.ontouchstart = () => isDrawing = true;
+      canvas.ontouchend = () => isDrawing = false;
+      canvas.ontouchmove = (e) => {
+        e.preventDefault();
+        if (!isDrawing) return;
+        const pos = getPos(e);
+        scratch(pos.x, pos.y);
+        this.isScratched = true;
+      };
+    }, 100);
+  }
+  
+  public autoScratch() {
+    this.isScratched = true;
+    this.scratchDone = true;
+    const canvas = document.getElementById('scratchCanvas') as HTMLCanvasElement;
+    if (canvas) {
+      canvas.style.opacity = '0';
+      setTimeout(() => canvas.style.display = 'none', 300);
+    }
   }
 }

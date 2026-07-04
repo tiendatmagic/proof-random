@@ -171,217 +171,379 @@
       class="min-h-[250px] flex flex-col justify-center items-center text-center py-10"
     >
 
-      <!-- 1. Random Number Display -->
-      <div
-        *ngIf="sessionDetails().drawType === 1 && clientResult()"
-        class="space-y-4 animate-fade-in"
-      >
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Con số may mắn trúng giải
-        </p>
-        <div
-          class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] drop-shadow-[0_10px_25px_rgba(255,0,221,0.25)] select-all font-mono"
-        >
-          {{ clientResult().result }}
-        </div>
-        <div class="text-xs font-bold text-slate-400">
-          Thuộc khoảng: [{{ sessionDetails().param1 }} - {{ sessionDetails().param2 }}]
-        </div>
-      </div>
+      <!-- ================= CUSTOM GAME SKINS ================= -->
 
-      <!-- 2. Random Name Display -->
-      <div
-        *ngIf="sessionDetails().drawType === 2 && clientResult()"
-        class="space-y-6 animate-fade-in"
-      >
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Người chiến thắng duy nhất
-        </p>
-
-        <div class="space-y-3">
-          <!-- Gold Crown icon SVG -->
-          <div
-            class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto"
-          >
-            <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"
-              />
+      <!-- 1. Lucky Wheel Skin -->
+      <div *ngIf="skinType === 'LuckyWheel' && clientResult()" class="space-y-6 flex flex-col items-center animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Vòng quay may mắn</p>
+        <div class="relative w-[300px] h-[300px] flex items-center justify-center">
+          <canvas id="wheelCanvas" width="300" height="300" class="max-w-full"></canvas>
+          <!-- Center arrow pointer -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-[var(--color-primary)] filter drop-shadow-md"></div>
+          <!-- Inner circle spin button -->
+          <button (click)="spinWheel()" [disabled]="isWheelSpinning" class="absolute w-14 h-14 rounded-full bg-slate-900 border border-[var(--color-primary)]/40 flex items-center justify-center text-xs font-black uppercase text-white shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition-all select-none">
+            <svg *ngIf="wheelSpinDone" class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
             </svg>
-          </div>
-          <h3
-            class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
-          >
+            <span *ngIf="!wheelSpinDone">{{ isWheelSpinning ? '...' : 'QUAY' }}</span>
+          </button>
+        </div>
+        
+        <!-- Show winner when done -->
+        <div *ngIf="wheelSpinDone" class="animate-fade-in text-center space-y-2">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Người chiến thắng</div>
+          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
             {{ clientResult().winners[0] }}
           </h3>
-          <p class="text-xs font-bold text-slate-400">
-            Chỉ số danh sách: {{ clientResult().result }}
-          </p>
         </div>
       </div>
 
-      <!-- 3. Multiple Winners Display -->
-      <div
-        *ngIf="sessionDetails().drawType === 3 && clientResult()"
-        class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
-      >
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-          Danh sách những người chiến thắng
-        </p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <div
-            *ngFor="let name of clientResult().winners; let i = index"
-            class="p-4.5 rounded-xl border border-[var(--color-primary)]/15 bg-gradient-to-tr from-purple-50/50 to-white dark:from-purple-950/10 dark:to-slate-900 shadow-sm flex items-center gap-3"
-          >
-            <!-- Badge số thứ tự -->
-            <div
-              class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center font-extrabold text-sm"
-            >
-              {{ i + 1 }}
+      <!-- 2. Racing Skin -->
+      <div *ngIf="skinType === 'Racing' && clientResult()" class="space-y-6 w-full max-w-2xl px-4 flex flex-col items-center animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Đua xe ngẫu nhiên</p>
+        
+        <div class="w-full space-y-4 bg-slate-950/20 p-4 rounded-2xl border border-slate-200/20 dark:border-slate-800/20">
+          <div *ngFor="let progress of racerProgresses; let idx = index" class="relative h-10 w-full bg-slate-900/60 rounded-xl overflow-hidden border border-slate-800/40 flex items-center px-4">
+            <!-- Track line -->
+            <div class="absolute inset-x-0 h-0.5 bg-slate-800/40 border-dashed border-t border-slate-700/20"></div>
+            <!-- Racer Name tag -->
+            <span class="absolute left-4 z-10 text-[10px] font-bold text-slate-400 select-none bg-slate-950/80 px-2 py-0.5 rounded-md border border-slate-800/50">
+              {{ sessionDetails().participants[idx] }}
+            </span>
+            <!-- Vehicle moving -->
+            <div class="absolute transition-all duration-75 flex items-center gap-1.5" [style.left.%]="progress" style="transform: translateX(-50%); margin-left: 20px;">
+              <!-- Speed SVG Icon replacing Emoji car -->
+              <svg class="w-5 h-5 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <!-- Star SVG Icon replacing Emoji crown -->
+              <svg *ngIf="raceDone && isWinnerIndex(idx)" class="w-3.5 h-3.5 text-amber-500 fill-amber-500" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
             </div>
-            <div class="text-left">
-              <span
-                class="font-extrabold text-sm text-slate-800 dark:text-white block select-all"
-                >{{ name }}</span
-              >
-              <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block"
-                >Index: {{ clientResult().result.split(',')[i] }}</span
-              >
+            <!-- Finish Line -->
+            <div class="absolute right-4 top-0 bottom-0 w-2 bg-gradient-to-b from-red-500 via-white to-red-500 opacity-60"></div>
+          </div>
+        </div>
+        
+        <button (click)="startRace()" *ngIf="!raceDone" [disabled]="isRacing" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
+          <span>{{ isRacing ? 'ĐANG ĐUA...' : 'BẮT ĐẦU CUỘC ĐUA' }}</span>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+          </svg>
+        </button>
+        
+        <div *ngIf="raceDone" class="animate-fade-in text-center space-y-2">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Đạt giải nhất</div>
+          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+            {{ clientResult().winners[0] }}
+          </h3>
+        </div>
+      </div>
+
+      <!-- 3. Mystery Box Skin -->
+      <div *ngIf="skinType === 'MysteryBox' && clientResult()" class="space-y-6 flex flex-col items-center animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Hộp quà bí ẩn</p>
+        
+        <div class="relative w-44 h-44 flex items-center justify-center">
+          <div [ngClass]="{
+            'animate-[bounce_0.6s_infinite]': isBoxOpening,
+            'scale-105': boxOpened
+          }" class="transition-transform duration-500 flex items-center justify-center filter drop-shadow-[0_15px_20px_rgba(255,0,221,0.15)]">
+            <!-- Box SVG replacing Emoji -->
+            <svg *ngIf="!boxOpened" class="w-24 h-24 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            <svg *ngIf="boxOpened" class="w-24 h-24 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+            </svg>
+          </div>
+        </div>
+        
+        <button (click)="openBox()" *ngIf="!boxOpened" [disabled]="isBoxOpening" class="btn btn-primary cursor-pointer font-black text-sm">
+          {{ isBoxOpening ? 'ĐANG MỞ...' : 'MỞ HỘP QUÀ' }}
+        </button>
+        
+        <div *ngIf="boxOpened" class="animate-fade-in text-center space-y-2">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phần thưởng trúng giải</div>
+          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+            {{ clientResult().winners[0] }}
+          </h3>
+        </div>
+      </div>
+
+      <!-- 4. Bau Cua Skin -->
+      <div *ngIf="skinType === 'BauCua' && clientResult()" class="space-y-6 w-full max-w-2xl px-4 flex flex-col items-center animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Lắc Bầu Cua Tôm Cá</p>
+        
+        <div class="relative w-48 h-48 flex items-center justify-center">
+          <div [ngClass]="{
+            'animate-[bounce_0.4s_infinite]': isBauCuaShaking,
+            'translate-y-[-20px] opacity-0 pointer-events-none': bauCuaOpened
+          }" class="absolute z-10 w-36 h-36 rounded-full bg-slate-800/90 border border-slate-700/50 backdrop-blur-md shadow-2xl flex items-center justify-center transition-all duration-700 select-none">
+            <!-- Sleek container lid replacing soup bowl emoji -->
+            <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-slate-800 to-slate-900 border-4 border-slate-700/50 shadow-inner flex items-center justify-center font-black text-slate-400 text-xs tracking-wider">
+              BÁT ÚP
+            </div>
+          </div>
+          <div class="w-40 h-40 rounded-full bg-slate-900 border-4 border-slate-800/40 shadow-inner flex items-center justify-center gap-3">
+            <ng-container *ngIf="bauCuaOpened">
+              <div *ngFor="let die of bauCuaResultDice" class="w-12 h-12 rounded-xl bg-slate-950 border border-[var(--color-primary)]/40 flex items-center justify-center text-xs font-extrabold text-[var(--color-primary)] shadow-md select-none">
+                {{ bauCuaItems[die].name }}
+              </div>
+            </ng-container>
+            <span *ngIf="!bauCuaOpened && !isBauCuaShaking" class="text-xs font-bold text-slate-500">Đang úp bát</span>
+          </div>
+        </div>
+        
+        <button (click)="shakeBauCua()" *ngIf="!bauCuaOpened" [disabled]="isBauCuaShaking" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
+          <span>{{ isBauCuaShaking ? 'ĐANG LẮC...' : 'LẮC BẦU CUA' }}</span>
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2" />
+            <circle cx="8" cy="8" r="1" fill="currentColor"/>
+            <circle cx="16" cy="16" r="1" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1" fill="currentColor"/>
+          </svg>
+        </button>
+        
+        <div *ngIf="bauCuaOpened" class="animate-fade-in text-center space-y-3">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kết quả xúc xắc linh vật</div>
+          <div class="flex gap-2.5 justify-center">
+            <div *ngFor="let die of bauCuaResultDice" class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/15 text-xs font-extrabold text-[var(--color-primary)] select-none">
+              {{ bauCuaItems[die].name }}
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 4. Coin Flip Display -->
-      <div
-        *ngIf="sessionDetails().drawType === 4 && clientResult()"
-        class="space-y-4 animate-fade-in"
-      >
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Kết quả lật đồng xu
-        </p>
-
-        <!-- Big Round coin visual -->
-        <div
-          class="w-28 h-28 rounded-full border-4 border-[var(--color-primary)]/30 bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] text-white shadow-xl shadow-[var(--color-primary)]/20 flex items-center justify-center mx-auto transform transition-transform hover:rotate-180 duration-500 select-none"
-        >
-          <span class="text-xl font-black tracking-wider uppercase">{{
-            clientResult().result
-          }}</span>
+      <!-- 5. Scratch Card Skin -->
+      <div *ngIf="skinType === 'ScratchCard' && clientResult()" class="space-y-6 flex flex-col items-center animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Vé số cào may mắn</p>
+        
+        <div class="relative w-[240px] h-[120px] rounded-xl overflow-hidden border border-slate-200/20 dark:border-slate-800/20 bg-slate-950/60 shadow-lg flex flex-col items-center justify-center">
+          <div class="absolute inset-0 flex flex-col items-center justify-center select-all space-y-1">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Con số cào được</span>
+            <span class="text-4xl font-black text-[var(--color-primary)] font-mono">{{ clientResult().result }}</span>
+          </div>
+          
+          <canvas id="scratchCanvas" width="240" height="120" class="absolute z-10 transition-opacity duration-300"></canvas>
+        </div>
+        
+        <div class="flex gap-2">
+          <button (click)="autoScratch()" *ngIf="!scratchDone" class="btn btn-secondary btn-sm cursor-pointer font-bold">
+            Cào tự động
+          </button>
         </div>
       </div>
 
-      <!-- 5. Dice Display -->
-      <div
-        *ngIf="sessionDetails().drawType === 5 && clientResult()"
-        class="space-y-4 animate-fade-in"
-      >
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Quân xúc xắc lật được
-        </p>
-
-        <!-- Big Hexagonal/Square dice representation -->
+      <!-- ================= STANDARD DRAW TYPES (IF NO SKIN) ================= -->
+      <div *ngIf="!skinType" class="w-full flex flex-col items-center justify-center text-center">
+        <!-- 1. Random Number Display -->
         <div
-          class="w-24 h-24 rounded-2xl bg-slate-100 dark:bg-slate-950 border-2 border-[var(--color-primary)]/40 text-[var(--color-primary)] flex items-center justify-center text-4xl font-black shadow-lg shadow-[var(--color-primary)]/10 mx-auto select-all font-mono"
+          *ngIf="sessionDetails().drawType === 1 && clientResult()"
+          class="space-y-4 animate-fade-in"
         >
-          {{ clientResult().result }}
-        </div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          Loại quân: {{ sessionDetails().param1 }} mặt
-        </p>
-      </div>
-
-      <!-- 6. Even / Odd Display -->
-      <div
-        *ngIf="sessionDetails().drawType === 6 && clientResult()"
-        class="space-y-4 animate-fade-in"
-      >
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kết quả bốc được</p>
-
-        <div
-          class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/15 text-2xl font-black uppercase tracking-wider select-all shadow-sm"
-        >
-          {{ clientResult().result === 'Even' ? 'Số Chẵn (Even)' : 'Số Lẻ (Odd)' }}
-        </div>
-      </div>
-
-      <!-- 7. Random Color Display -->
-      <div
-        *ngIf="sessionDetails().drawType === 7 && clientResult()"
-        class="space-y-4 animate-fade-in"
-      >
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-          Mã màu ngẫu nhiên sinh ra
-        </p>
-
-        <div class="space-y-3">
-          <!-- Color Preview box -->
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            Con số may mắn trúng giải
+          </p>
           <div
-            [style.backgroundColor]="clientResult().result"
-            class="w-24 h-24 rounded-2xl border-4 border-white dark:border-slate-900 shadow-xl shadow-slate-300/40 dark:shadow-slate-900/50 mx-auto"
-          ></div>
-          <div class="text-xl font-black font-mono select-all text-slate-800 dark:text-white">
+            class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] drop-shadow-[0_10px_25px_rgba(255,0,221,0.25)] select-all font-mono"
+          >
+            {{ clientResult().result }}
+          </div>
+          <div class="text-xs font-bold text-slate-400">
+            Thuộc khoảng: [{{ sessionDetails().param1 }} - {{ sessionDetails().param2 }}]
+          </div>
+        </div>
+
+        <!-- 2. Random Name Display -->
+        <div
+          *ngIf="sessionDetails().drawType === 2 && clientResult()"
+          class="space-y-6 animate-fade-in"
+        >
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            Người chiến thắng duy nhất
+          </p>
+
+          <div class="space-y-3">
+            <div
+              class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto"
+            >
+              <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"
+                />
+              </svg>
+            </div>
+            <h3
+              class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
+            >
+              {{ clientResult().winners[0] }}
+            </h3>
+            <p class="text-xs font-bold text-slate-400">
+              Chỉ số danh sách: {{ clientResult().result }}
+            </p>
+          </div>
+        </div>
+
+        <!-- 3. Multiple Winners Display -->
+        <div
+          *ngIf="sessionDetails().drawType === 3 && clientResult()"
+          class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
+        >
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+            Danh sách những người chiến thắng
+          </p>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div
+              *ngFor="let name of clientResult().winners; let i = index"
+              class="p-4.5 rounded-xl border border-[var(--color-primary)]/15 bg-gradient-to-tr from-purple-50/50 to-white dark:from-purple-950/10 dark:to-slate-900 shadow-sm flex items-center gap-3"
+            >
+              <!-- Badge số thứ tự -->
+              <div
+                class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center font-extrabold text-sm"
+              >
+                {{ i + 1 }}
+              </div>
+              <div class="text-left">
+                <span
+                  class="font-extrabold text-sm text-slate-800 dark:text-white block select-all"
+                  >{{ name }}</span
+                >
+                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block"
+                  >Index: {{ clientResult().result.split(',')[i] }}</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Coin Flip Display -->
+        <div
+          *ngIf="sessionDetails().drawType === 4 && clientResult()"
+          class="space-y-4 animate-fade-in"
+        >
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            Kết quả lật đồng xu
+          </p>
+
+          <div
+            class="w-28 h-28 rounded-full border-4 border-[var(--color-primary)]/30 bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] text-white shadow-xl shadow-[var(--color-primary)]/20 flex items-center justify-center mx-auto transform transition-transform hover:rotate-180 duration-500 select-none"
+          >
+            <span class="text-xl font-black tracking-wider uppercase">{{
+              clientResult().result
+            }}</span>
+          </div>
+        </div>
+
+        <!-- 5. Dice Display -->
+        <div
+          *ngIf="sessionDetails().drawType === 5 && clientResult()"
+          class="space-y-4 animate-fade-in"
+        >
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            Quân xúc xắc lật được
+          </p>
+
+          <div
+            class="w-24 h-24 rounded-2xl bg-slate-100 dark:bg-slate-950 border-2 border-[var(--color-primary)]/40 text-[var(--color-primary)] flex items-center justify-center text-4xl font-black shadow-lg shadow-[var(--color-primary)]/10 mx-auto select-all font-mono"
+          >
+            {{ clientResult().result }}
+          </div>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Loại quân: {{ sessionDetails().param1 }} mặt
+          </p>
+        </div>
+
+        <!-- 6. Even / Odd Display -->
+        <div
+          *ngIf="sessionDetails().drawType === 6 && clientResult()"
+          class="space-y-4 animate-fade-in"
+        >
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kết quả bốc được</p>
+
+          <div
+            class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/15 text-2xl font-black uppercase tracking-wider select-all shadow-sm"
+          >
+            {{ clientResult().result === 'Even' ? 'Số Chẵn (Even)' : 'Số Lẻ (Odd)' }}
+          </div>
+        </div>
+
+        <!-- 7. Random Color Display -->
+        <div
+          *ngIf="sessionDetails().drawType === 7 && clientResult()"
+          class="space-y-4 animate-fade-in"
+        >
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+            Mã màu ngẫu nhiên sinh ra
+          </p>
+
+          <div class="space-y-3">
+            <div
+              [style.backgroundColor]="clientResult().result"
+              class="w-24 h-24 rounded-2xl border-4 border-white dark:border-slate-900 shadow-xl shadow-slate-300/40 dark:shadow-slate-900/50 mx-auto"
+            ></div>
+            <div class="text-xl font-black font-mono select-all text-slate-800 dark:text-white">
+              {{ clientResult().result }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Random Letter Display -->
+        <div
+          *ngIf="sessionDetails().drawType === 8 && clientResult()"
+          class="space-y-4 animate-fade-in"
+        >
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Chữ cái bốc được</p>
+
+          <div
+            class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] font-mono select-all"
+          >
             {{ clientResult().result }}
           </div>
         </div>
-      </div>
 
-      <!-- 8. Random Letter Display -->
-      <div
-        *ngIf="sessionDetails().drawType === 8 && clientResult()"
-        class="space-y-4 animate-fade-in"
-      >
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Chữ cái bốc được</p>
-
+        <!-- 9. Random Team Display -->
         <div
-          class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] font-mono select-all"
+          *ngIf="sessionDetails().drawType === 9 && clientResult()"
+          class="space-y-6 w-full max-w-5xl px-4 animate-fade-in"
         >
-          {{ clientResult().result }}
-        </div>
-      </div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+            Kết quả phân chia các đội
+          </p>
 
-      <!-- 9. Random Team Display -->
-      <div
-        *ngIf="sessionDetails().drawType === 9 && clientResult()"
-        class="space-y-6 w-full max-w-5xl px-4 animate-fade-in"
-      >
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-          Kết quả phân chia các đội
-        </p>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div
-            *ngFor="let team of clientResult().teams"
-            class="rounded-xl border border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/20 backdrop-blur-md overflow-hidden shadow-sm"
-          >
-            <!-- Tên đội -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div
-              class="bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-950/30 dark:to-pink-950/30 px-4.5 py-3 border-b border-slate-200/30 dark:border-slate-800/30 text-left flex items-center justify-between"
+              *ngFor="let team of clientResult().teams"
+              class="rounded-xl border border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/20 backdrop-blur-md overflow-hidden shadow-sm"
             >
-              <span class="font-extrabold text-sm text-[var(--color-primary)]">{{
-                team.name
-              }}</span>
-              <span class="text-[10px] font-bold text-slate-400"
-                >{{ team.members.length }} thành viên</span
+              <div
+                class="bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-950/30 dark:to-pink-950/30 px-4.5 py-3 border-b border-slate-200/30 dark:border-slate-800/30 text-left flex items-center justify-between"
               >
-            </div>
+                <span class="font-extrabold text-sm text-[var(--color-primary)]">{{
+                  team.name
+                }}</span>
+                <span class="text-[10px] font-bold text-slate-400"
+                  >{{ team.members.length }} thành viên</span
+                >
+              </div>
 
-            <!-- Thành viên trong đội -->
-            <ul
-              class="p-3.5 space-y-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300"
-            >
-              <li
-                *ngFor="let member of team.members; let idx = index"
-                class="flex items-center gap-2 py-1 select-all hover:text-[var(--color-primary)]"
+              <ul
+                class="p-3.5 space-y-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300"
               >
-                <span class="w-1 h-1 rounded-full bg-slate-400"></span>
-                {{ member }}
-              </li>
-            </ul>
+                <li
+                  *ngFor="let member of team.members; let idx = index"
+                  class="flex items-center gap-2 py-1 select-all hover:text-[var(--color-primary)]"
+                >
+                  <span class="w-1 h-1 rounded-full bg-slate-400"></span>
+                  {{ member }}
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>

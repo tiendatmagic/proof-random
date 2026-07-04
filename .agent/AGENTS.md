@@ -54,6 +54,14 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Tích hợp tính năng tự động nhận diện mạng lưới (Arbitrum Sepolia / Arbitrum One Mainnet) dựa trên Request ID hoặc Tx Hash khi truy cập thẳng bằng liên kết chia sẻ hoặc trên trang Xác minh (Verify), tự động cập nhật cấu hình RPC và Contract Address tương ứng của dApp mà không cần người dùng chọn thủ công.
 - [x] Điền sẵn tên phiên bốc thăm mặc định định dạng ngày/tháng/năm và giờ/phút/giây trong ô nhập liệu (Event Name Input) ở trang Dashboard nhằm tối ưu hóa UX, giảm thiểu thao tác nhập liệu cho người dùng.
 - [x] Khắc phục lỗi crash dApp trên trình duyệt (ReferenceError: require is not defined) ở các chế độ bốc thăm sử dụng thuật toán hash (Random Color, Multi Winners, Random Team) bằng cách import trực tiếp `solidityPackedKeccak256` từ `ethers` thay vì gọi dynamic `require('ethers')`.
+- [x] Tách bảng cấu hình bốc thăm của Dashboard ra component con độc lập `DrawConfigPanelComponent` (`<app-draw-config-panel>`).
+- [x] Triển khai thành công 5 game ngẫu nhiên trực quan (Lucky Wheel, Racing, Mystery Box, Bầu Cua, Scratch Card) trên giao diện.
+- [x] Thiết lập mã hóa và giải mã tự động loại Skin (`[Skin:xxx]`) trong `eventName` của Smart Contract.
+- [x] Khắc phục triệt để lỗi biên dịch TypeScript của Angular đối với hàm `Number()` trong template Detail.
+- [x] Tích hợp khối Showcase hiển thị người chiến thắng / chia đội trực quan trên trang Xác minh (Verify) khi đối soát thành công.
+- [x] Đồng bộ hóa toàn bộ giao diện: loại bỏ 100% emoji khỏi các nút chế độ, bảng đối soát, các mini-game, thay thế hoàn toàn bằng các biểu tượng SVG và màu chữ hệ thống đồng bộ.
+
+
 
 
 

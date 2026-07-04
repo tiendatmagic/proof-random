@@ -389,6 +389,7 @@ export class Web3Service {
       if (session.creator === '0x0000000000000000000000000000000000000000') {
         return null;
       }
+      const parsed = this.parseEventNameAndSkin(session.eventName);
       return {
         requestId: session.requestId.toString(),
         creator: session.creator,
@@ -397,7 +398,8 @@ export class Web3Service {
         param2: Number(session.param2),
         randomWord: session.randomWord.toString(),
         timestamp: Number(session.timestamp),
-        eventName: session.eventName,
+        eventName: parsed.eventName,
+        skin: parsed.skin,
         result: session.result,
         fulfilled: session.fulfilled
       };
@@ -420,10 +422,12 @@ export class Web3Service {
       const draws: any[] = [];
       for (const event of events) {
         const args = (event as any).args;
+        const parsed = this.parseEventNameAndSkin(args.eventName);
         draws.push({
           requestId: args.requestId.toString(),
           creator: args.creator,
-          eventName: args.eventName,
+          eventName: parsed.eventName,
+          skin: parsed.skin,
           drawType: Number(args.drawType),
           participants: args.participants,
           param1: Number(args.param1),
@@ -664,7 +668,25 @@ export class Web3Service {
     }
   }
 
-  private solidityKeccak256(types: string[], values: any[]): string {
+  /**
+   * Giải mã eventName và bóc tách tiền tố [Skin:xxx] nếu có
+   */
+  public parseEventNameAndSkin(rawEventName: string): { eventName: string; skin: string } {
+    if (!rawEventName) return { eventName: '', skin: '' };
+    const match = rawEventName.match(/^\[Skin:([^\]]+)\]\s*(.*)/);
+    if (match) {
+      return {
+        skin: match[1],
+        eventName: match[2]
+      };
+    }
+    return {
+      skin: '',
+      eventName: rawEventName
+    };
+  }
+
+  public solidityKeccak256(types: string[], values: any[]): string {
     return solidityPackedKeccak256(types, values);
   }
 }

@@ -7,11 +7,20 @@ import { ToastService } from '../../core/services/toast.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { SkeletonLoaderComponent } from '../../shared/components/skeleton-loader/skeleton-loader.component';
 import { CheckboxComponent } from '../../shared/components/checkbox/checkbox.component';
+import { DrawConfigPanelComponent } from './components/draw-config-panel/draw-config-panel.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CardComponent, SkeletonLoaderComponent, CheckboxComponent],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterLink, 
+    CardComponent, 
+    SkeletonLoaderComponent, 
+    CheckboxComponent,
+    DrawConfigPanelComponent
+  ],
   templateUrl: './dashboard.component.html'
 })
 export class DashboardComponent {
@@ -33,6 +42,7 @@ export class DashboardComponent {
   public description = '';
   public participantsText = '';
   public drawType = 2; // Mặc định: Random Name
+  public selectedSkin = ''; // '', 'LuckyWheel', 'Racing', 'MysteryBox', 'BauCua', 'ScratchCard'
   
   // Tùy chọn tiền xử lý danh sách
   public optRemoveDuplicates = true;
@@ -57,6 +67,21 @@ export class DashboardComponent {
     effect(() => {
       this.loadBlockchainStats();
     });
+  }
+
+  /**
+   * Chọn chế độ quay và loại giao diện tương ứng
+   */
+  public selectMode(type: number, skin: string = '') {
+    this.drawType = type;
+    this.selectedSkin = skin;
+    
+    if (skin === 'BauCua') {
+      this.diceSides = 6;
+    } else if (skin === 'ScratchCard') {
+      this.numMin = 1;
+      this.numMax = 100;
+    }
   }
 
   /**
@@ -270,9 +295,13 @@ export class DashboardComponent {
     }
 
     // Gộp mô tả vào eventName ngăn cách bởi dấu | để tối ưu gas
+    let eventNameToSend = this.eventName.trim();
+    if (this.selectedSkin) {
+      eventNameToSend = `[Skin:${this.selectedSkin}] ${eventNameToSend}`;
+    }
     const fullEventName = this.description.trim() 
-      ? `${this.eventName.trim()} | ${this.description.trim()}`
-      : this.eventName.trim();
+      ? `${eventNameToSend} | ${this.description.trim()}`
+      : eventNameToSend;
 
     // 5. Thực hiện gửi Transaction Web3
     this.isPendingTx.set(true);

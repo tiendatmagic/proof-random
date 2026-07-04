@@ -125,6 +125,11 @@ export class VerifyComponent implements OnInit {
     }
   }
 
+  public get skinType(): string {
+    const details = this.sessionDetails();
+    return details && details.skin ? details.skin : '';
+  }
+
   /**
    * Helper hiển thị tên loại quay
    */
