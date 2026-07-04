@@ -22,7 +22,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <!-- Lọc theo Tên phiên -->
       <div class="space-y-1.5">
-        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Tìm kiếm theo tên phiên</label>
+        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest min-h-[28px] flex items-end pb-0.5">Tìm kiếm theo tên phiên</label>
         <div class="relative flex items-center">
           <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -38,7 +38,7 @@
 
       <!-- Lọc theo Người tạo -->
       <div class="space-y-1.5">
-        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Lọc theo ví người tạo (Creator)</label>
+        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest min-h-[28px] flex items-end pb-0.5">Lọc theo ví người tạo (Creator)</label>
         <div class="relative flex items-center">
           <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -54,7 +54,7 @@
 
       <!-- Lọc theo Loại bốc thăm -->
       <div class="space-y-1.5">
-        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Loại bốc thăm</label>
+        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest min-h-[28px] flex items-end pb-0.5">Loại bốc thăm</label>
         <app-select [(value)]="filterType" [options]="filterOptions" class="w-full"></app-select>
       </div>
     </div>
