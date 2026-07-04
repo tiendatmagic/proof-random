@@ -825,11 +825,25 @@ export class DetailComponent implements OnDestroy {
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
       
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillRect(0, 0, 240, 120);
-      
-      ctx.font = 'bold 12px Quicksand, sans-serif';
-      ctx.fillStyle = '#1e293b';
+      const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+      const grad = ctx.createLinearGradient(0, 0, 240, 120);
+      if (isDark) {
+        grad.addColorStop(0, '#1e293b');
+        grad.addColorStop(1, '#334155');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 240, 120);
+        
+        ctx.font = 'bold 11px Quicksand, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+      } else {
+        grad.addColorStop(0, '#f1f5f9');
+        grad.addColorStop(1, '#cbd5e1');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 240, 120);
+        
+        ctx.font = 'bold 11px Quicksand, sans-serif';
+        ctx.fillStyle = '#475569';
+      }
       ctx.textAlign = 'center';
       ctx.fillText('DI CHUỘT CÀO LỚP BẠC', 120, 65);
       
