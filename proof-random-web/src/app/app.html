@@ -83,7 +83,7 @@
     <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
       <a
         routerLink="/"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/20 text-[var(--color-primary)] dark:text-[var(--color-secondary)] font-bold shadow-sm shadow-[var(--color-primary)]/5"
+        routerLinkActive="bg-purple-50 dark:bg-purple-950/20 text-[var(--color-primary)] dark:text-[var(--color-secondary)] font-bold "
         [routerLinkActiveOptions]="{ exact: true }"
         (click)="closeMobileMenu()"
         class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-all group"
@@ -107,7 +107,7 @@
 
       <a
         routerLink="/history"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/20 text-[var(--color-primary)] dark:text-[var(--color-secondary)] font-bold shadow-sm shadow-[var(--color-primary)]/5"
+        routerLinkActive="bg-purple-50 dark:bg-purple-950/20 text-[var(--color-primary)] dark:text-[var(--color-secondary)] font-bold "
         (click)="closeMobileMenu()"
         class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-all group"
       >
@@ -130,7 +130,7 @@
 
       <a
         routerLink="/verify"
-        routerLinkActive="bg-purple-50 dark:bg-purple-950/20 text-[var(--color-primary)] dark:text-[var(--color-secondary)] font-bold shadow-sm shadow-[var(--color-primary)]/5"
+        routerLinkActive="bg-purple-50 dark:bg-purple-950/20 text-[var(--color-primary)] dark:text-[var(--color-secondary)] font-bold "
         (click)="closeMobileMenu()"
         class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-all group"
       >
@@ -243,14 +243,21 @@
           class="hidden lg:inline text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
           >Mạng lưới hoạt động:</span
         >
-        <div class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold"
-             [ngClass]="{
-               'bg-purple-100 dark:bg-purple-950/40 text-[var(--color-primary)] border border-[var(--color-primary)]/10': web3Service.configuredChainId() === '42161',
-               'bg-sky-100 dark:bg-sky-950/40 text-sky-500 border border-sky-500/10': web3Service.configuredChainId() === '8453',
-               'bg-amber-100 dark:bg-amber-950/40 text-amber-500 border border-amber-500/10': web3Service.configuredChainId() === '56' || web3Service.configuredChainId() === '97',
-               'bg-pink-100 dark:bg-pink-950/40 text-pink-500 border border-pink-500/10': web3Service.configuredChainId() === '421614',
-               'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-500 border border-emerald-500/10': web3Service.configuredChainId() === '31337'
-             }">
+        <div
+          class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold"
+          [ngClass]="{
+            'bg-purple-100 dark:bg-purple-950/40 text-[var(--color-primary)] border border-[var(--color-primary)]/10':
+              web3Service.configuredChainId() === '42161',
+            'bg-sky-100 dark:bg-sky-950/40 text-sky-500 border border-sky-500/10':
+              web3Service.configuredChainId() === '8453',
+            'bg-amber-100 dark:bg-amber-950/40 text-amber-500 border border-amber-500/10':
+              web3Service.configuredChainId() === '56' || web3Service.configuredChainId() === '97',
+            'bg-pink-100 dark:bg-pink-950/40 text-pink-500 border border-pink-500/10':
+              web3Service.configuredChainId() === '421614',
+            'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-500 border border-emerald-500/10':
+              web3Service.configuredChainId() === '31337',
+          }"
+        >
           <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
           {{ web3Service.networkName() }}
         </div>
@@ -293,7 +300,7 @@
             >
               -- Chọn nhanh mạng phổ biến nhất --
             </button>
-            
+
             <div class="space-y-1">
               <!-- Arbitrum One Mainnet -->
               <button
@@ -308,7 +315,9 @@
                   <span class="w-2.5 h-2.5 rounded-full bg-sky-500 shrink-0"></span>
                   <span class="font-medium">Arbitrum One Mainnet</span>
                 </div>
-                <span class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0">
+                <span
+                  class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
+                >
                   ID: 42161
                 </span>
               </button>
@@ -326,7 +335,9 @@
                   <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
                   <span class="font-medium">Arbitrum Sepolia</span>
                 </div>
-                <span class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0">
+                <span
+                  class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
+                >
                   ID: 421614
                 </span>
               </button>
@@ -356,7 +367,7 @@
         <div *ngIf="web3Service.walletConnected()" id="wallet-dropdown-container" class="relative">
           <div
             (click)="isWalletDropdownOpen.set(!isWalletDropdownOpen())"
-            class="relative flex items-center gap-3 pl-3.5 pr-4 h-[44px] rounded-2xl border border-[var(--color-primary)]/20 dark:border-[var(--color-primary)]/25 bg-[color-mix(in_srgb,var(--color-primary)_4%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_6%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] transition-all duration-200 select-none cursor-pointer shadow-sm shadow-[var(--color-primary)]/5"
+            class="relative flex items-center gap-3 pl-3.5 pr-4 h-[44px] rounded-2xl border border-[var(--color-primary)]/20 dark:border-[var(--color-primary)]/25 bg-[color-mix(in_srgb,var(--color-primary)_4%,transparent)] dark:bg-[color-mix(in_srgb,var(--color-primary)_6%,transparent)] hover:bg-[color-mix(in_srgb,var(--color-primary)_8%,transparent)] dark:hover:bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] transition-all duration-200 select-none cursor-pointer"
           >
             <!-- Green active dot -->
             <span
