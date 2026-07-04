@@ -2,7 +2,7 @@
   
   <!-- OVERVIEW STATISTICS GRID -->
   <ng-container *ngIf="!isStatsLoading(); else statsSkeleton">
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-6">
       <!-- Card 1: Tổng số phiên bốc thăm -->
       <app-card>
         <div class="flex items-center gap-4">
@@ -100,7 +100,7 @@
           <!-- Chế độ quay bốc thăm -->
           <div class="space-y-2">
             <label class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Chế độ quay số/bốc thăm</label>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <button 
                 type="button" 
                 (click)="drawType = 1"
@@ -475,7 +475,7 @@
     </div>
 
     <!-- Bảng danh sách các phiên gần đây -->
-    <div class="overflow-x-auto">
+    <div *ngIf="recentDraws().length > 0" class="overflow-x-auto">
       <table class="app-table">
         <thead>
           <tr>
@@ -519,17 +519,19 @@
               </a>
             </td>
           </tr>
-          <!-- Trạng thái trống -->
-          <tr *ngIf="recentDraws().length === 0">
-            <td colspan="6" class="text-center py-10 font-bold text-slate-400">
-              <svg class="w-8 h-8 mx-auto mb-2 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-              </svg>
-              Chưa có phiên bốc thăm nào được tạo. Hãy tạo phiên đầu tiên ở trên!
-            </td>
-          </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Trạng thái trống (Ngoài table) -->
+    <div *ngIf="recentDraws().length === 0" class="text-center py-12 px-4 space-y-3">
+      <svg class="w-10 h-10 mx-auto text-slate-300 dark:text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+      </svg>
+      <h3 class="text-sm font-extrabold text-slate-800 dark:text-white">Chưa có phiên bốc thăm nào</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
+        Chưa có phiên bốc thăm nào được tạo trên hệ thống. Hãy tạo phiên đầu tiên ở trên!
+      </p>
     </div>
   </app-card>
 

@@ -30,3 +30,10 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục triệt để lỗi lệch chiều cao input/button ở verify và lỗi icon đè chữ placeholder ở history/verify.
 - [x] Thiết kế Context Menu ví tích hợp các action: sao chép địa chỉ ví, chi tiết ví và ngắt kết nối ví, đi kèm HostListener click outside tự đóng.
 - [x] Thiết kế lại Toast Notification Glassmorphism mượt mà giống hệt mẫu (hỗ trợ Light/Dark mode, progress bar chạy ở đáy và logic clear() trong ToastService).
+- [x] Thiết kế lại giao diện Wallet Widget hiển thị khi đã kết nối ví: bổ sung badge (ULTRA- 355d) bo góc viền xanh ngọc, chấm xanh trạng thái, phân tách địa chỉ rút gọn dòng trên và số dư dòng dưới màu hồng neon, chevron pink cùng viền hồng kính mờ, hỗ trợ đổi ký hiệu tiền tệ động.
+- [x] Xây dựng các component dùng chung độc lập: `CardComponent` (`<app-card>`), `SpinnerComponent` (`<app-spinner>`), và `SkeletonLoaderComponent` (`<app-skeleton-loader>`).
+- [x] Kế thừa và thay thế các khối card, spinner và trang loading tĩnh bằng các component mới trên cả 4 trang giao diện (Dashboard, History, Detail, Verify).
+- [x] Loại bỏ badge "ULTRA- 355d" khỏi widget ví để làm giao diện tinh gọn, tự nhiên hơn.
+- [x] Tinh giản các stats card trên Dashboard thành màu trắng đơn giản và loại bỏ hoàn toàn các họa tiết màu sắc phát sáng nền.
+- [x] Sửa lại giao diện dropdown chọn mạng chỉ hiển thị 2 chain (Arbitrum One Mainnet, Arbitrum Sepolia), loại bỏ border-b tiêu đề và giảm bớt padding dọc của item xuống py-1 cho nhỏ gọn tinh tế.
+
