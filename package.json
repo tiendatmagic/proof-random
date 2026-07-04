@@ -1,7 +1,7 @@
 {
   "name": "proof-random-contracts",
   "version": "1.0.0",
-  "description": "Smart contracts for FairDraw using Chainlink VRF",
+  "description": "Smart contracts for ProofRandom using Chainlink VRF",
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",

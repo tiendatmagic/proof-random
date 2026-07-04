@@ -67,6 +67,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục triệt để lỗi không tự động cập nhật giao diện sau khi kết thúc hiệu ứng game (hoặc khi nhấn Bỏ qua) bằng cách chuyển đổi toàn bộ 10 biến trạng thái hiển thị game sang Signal.
 - [x] Thiết kế lại giao diện hộp quà (Mystery Box) bằng đồ họa vector SVG 3D chi tiết với nơ ruy băng vàng óng, bóng neon phát sáng và hiệu ứng mở nắp bay ra pháo hoa lấp lánh (confetti).
 - [x] Triển khai thành công trò chơi mô phỏng Xổ số Vietlott hỗ trợ đầy đủ 3 chế độ (Power 6/55, Mega 6/45, Keno) từ kết quả ngẫu nhiên Chainlink VRF, tích hợp hiệu ứng quay chốt bóng kịch tính và bảng highlight số Keno.
+- [x] Đồng bộ hóa tài liệu README.md và cấu hình package.json: Cập nhật tên dự án sang ProofRandom, bổ sung hướng dẫn chạy nhanh npm start, hướng dẫn cấu hình Chainlink VRF v2.5, mô tả chi tiết 5 mini-game trực quan, game xổ số Vietlott, tính năng tự động nhận dạng mạng lưới và thống kê số dư Oracle LINK.
 
 
 
