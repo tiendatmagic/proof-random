@@ -4,11 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Web3Service } from '../../core/services/web3.service';
 import { ToastService } from '../../core/services/toast.service';
+import { CardComponent } from '../../shared/components/card/card.component';
+import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
+import { SkeletonLoaderComponent } from '../../shared/components/skeleton-loader/skeleton-loader.component';
 
 @Component({
   selector: 'app-verify',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CardComponent, SpinnerComponent, SkeletonLoaderComponent],
   templateUrl: './verify.component.html'
 })
 export class VerifyComponent implements OnInit {

@@ -18,7 +18,7 @@
   </div>
 
   <!-- FILTERS CONTROL PANEL -->
-  <div class="app-card">
+  <app-card>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <!-- Lọc theo Tên phiên -->
       <div class="space-y-1.5">
@@ -69,18 +69,17 @@
         </select>
       </div>
     </div>
-  </div>
+  </app-card>
 
   <!-- DATA TABLE & PAGINATION -->
-  <div class="app-card p-0 overflow-hidden relative min-h-[350px]">
+  <app-card padding="p-0" class="overflow-hidden relative min-h-[350px]">
     
-    <!-- Spinner loading -->
-    <div *ngIf="isLoading()" class="absolute inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-[1px] flex items-center justify-center z-20">
-      <div class="w-10 h-10 border-2 border-slate-300 border-t-purple-600 rounded-full animate-spin"></div>
-    </div>
+    <!-- Skeleton Loading -->
+    <app-skeleton-loader *ngIf="isLoading()" type="table"></app-skeleton-loader>
 
-    <!-- Bảng chứa dữ liệu lịch sử -->
-    <div class="overflow-x-auto">
+    <div *ngIf="!isLoading()">
+      <!-- Bảng chứa dữ liệu lịch sử -->
+      <div class="overflow-x-auto">
       <table class="app-table">
         <thead>
           <tr>
@@ -181,7 +180,8 @@
         </button>
       </div>
     </div>
-
   </div>
+
+  </app-card>
 
 </div>

@@ -18,8 +18,8 @@
   </div>
 
   <!-- PENDING CHAINLINK VRF SCREEN -->
-  <div *ngIf="sessionDetails() && !sessionDetails().fulfilled" 
-       class="app-card min-h-[350px] flex flex-col items-center justify-center text-center space-y-6">
+  <app-card *ngIf="sessionDetails() && !sessionDetails().fulfilled" 
+       class="min-h-[350px] flex flex-col items-center justify-center text-center space-y-6">
     <div class="w-16 h-16 rounded-full border-4 border-slate-100 border-t-[var(--color-primary)] animate-spin flex items-center justify-center shadow-lg shadow-[var(--color-primary)]/10">
       <svg class="w-6 h-6 text-[var(--color-primary)] animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -35,13 +35,13 @@
     <div class="w-64 h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden border border-slate-200/20">
       <div class="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] animate-[pulse_1.5s_infinite] w-3/4 rounded-full"></div>
     </div>
-  </div>
+  </app-card>
 
   <!-- FULFILLED RESULT PRESENTATION -->
   <div *ngIf="sessionDetails() && sessionDetails().fulfilled" class="space-y-8">
     
     <!-- EVENT TITLE CARD -->
-    <div class="app-card relative overflow-hidden">
+    <app-card class="relative overflow-hidden">
       <!-- Glow background -->
       <div class="absolute -right-16 -top-16 w-48 h-48 bg-[var(--color-primary)]/10 rounded-full blur-2xl"></div>
       
@@ -80,10 +80,10 @@
           </button>
         </div>
       </div>
-    </div>
+    </app-card>
 
     <!-- RESULT DISPLAY ACCORDING TO CHOSEN DRAW TYPE -->
-    <div class="app-card min-h-[250px] flex flex-col justify-center items-center text-center py-10 relative">
+    <app-card class="min-h-[250px] flex flex-col justify-center items-center text-center py-10 relative">
       
       <!-- BACKGROUND DECORATIVE SHAPE -->
       <div class="absolute inset-0 bg-radial-gradient from-[var(--color-primary)]/5 to-transparent pointer-events-none"></div>
@@ -224,10 +224,10 @@
         </div>
       </div>
 
-    </div>
+    </app-card>
 
     <!-- SHARE & EXPORT ACTION BUTTONS -->
-    <div class="app-card">
+    <app-card>
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         
         <!-- Social Sharing -->
@@ -263,10 +263,10 @@
         </div>
 
       </div>
-    </div>
+    </app-card>
 
     <!-- TECHNICAL BLOCKCHAIN SPECS & PROOF -->
-    <div class="app-card">
+    <app-card>
       <div class="flex items-center gap-2 pb-3.5 border-b border-slate-100 dark:border-slate-800/50 mb-5">
         <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -324,10 +324,10 @@
           Mở trang Xác minh (Verify)
         </a>
       </div>
-    </div>
+    </app-card>
 
     <!-- LIST OF PARTICIPANTS (Danh sách người tham gia đầy đủ) -->
-    <div class="app-card p-0 overflow-hidden">
+    <app-card padding="p-0" class="overflow-hidden">
       <div class="px-6 py-4.5 border-b border-slate-100 dark:border-slate-800/50 flex items-center justify-between">
         <h3 class="text-base font-extrabold text-slate-800 dark:text-white">
           Danh sách người tham gia (Quét từ Event Logs)
@@ -356,7 +356,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </app-card>
 
   </div>
 
@@ -396,7 +396,5 @@
 
 <!-- PAGE LOADING STATE -->
 <ng-template #pageLoader>
-  <div class="min-h-[400px] flex items-center justify-center">
-    <div class="w-12 h-12 border-4 border-slate-200 border-t-purple-600 rounded-full animate-spin"></div>
-  </div>
+  <app-skeleton-loader type="detail"></app-skeleton-loader>
 </ng-template>

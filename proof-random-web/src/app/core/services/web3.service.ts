@@ -67,6 +67,15 @@ export class Web3Service {
     return `Mạng EVM khác (ID: ${id})`;
   });
 
+  // Ký hiệu token của mạng đang sử dụng (ETH, BNB, POL, v.v.)
+  public readonly networkSymbol = computed(() => {
+    const id = this.walletConnected() ? this.chainId() : this.configuredChainId();
+    const idStr = id.toString();
+    if (idStr === '56' || idStr === '97') return 'BNB';
+    if (idStr === '137' || idStr === '80001' || idStr === '80002') return 'POL';
+    return 'ETH';
+  });
+
   private provider: BrowserProvider | null = null;
   private modal: any = null;
 
