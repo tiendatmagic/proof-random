@@ -18,24 +18,60 @@
   </div>
 
   <!-- PENDING CHAINLINK VRF SCREEN -->
-  <app-card *ngIf="sessionDetails() && !sessionDetails().fulfilled" 
-       class="min-h-[350px] flex flex-col items-center justify-center text-center space-y-6">
-    <div class="w-16 h-16 rounded-full border-4 border-slate-100 border-t-[var(--color-primary)] animate-spin flex items-center justify-center shadow-lg shadow-[var(--color-primary)]/10">
-      <svg class="w-6 h-6 text-[var(--color-primary)] animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    </div>
-    <div class="space-y-2">
-      <h3 class="text-lg font-black text-slate-800 dark:text-white">Đang đợi số ngẫu nhiên từ Chainlink VRF...</h3>
-      <p class="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-        Yêu cầu bốc thăm đã được ghi nhận trên blockchain Arbitrum. Hệ thống đang tự động theo dõi trạng thái. Kết quả sẽ hiển thị ngay khi Chainlink VRF gửi callback (thường mất 10-30 giây).
-      </p>
-    </div>
-    <!-- Progress bar thô giả lập -->
-    <div class="w-64 h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden border border-slate-200/20">
-      <div class="h-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] animate-[pulse_1.5s_infinite] w-3/4 rounded-full"></div>
+  <app-card *ngIf="sessionDetails() && !sessionDetails().fulfilled">
+    <div class="flex flex-col items-center justify-center text-center py-12 px-4 space-y-8">
+
+      <!-- Spinner -->
+      <div class="relative flex items-center justify-center">
+        <div class="w-24 h-24 rounded-full border-4 border-slate-100 dark:border-slate-800 border-t-[var(--color-primary)] animate-spin"></div>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <div class="w-12 h-12 rounded-full bg-[var(--color-primary)]/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Text -->
+      <div class="space-y-3 max-w-sm">
+        <h3 class="text-xl font-black text-slate-800 dark:text-white">Đang đợi Chainlink VRF...</h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+          Yêu cầu bốc thăm đã ghi nhận trên blockchain. Chainlink VRF đang xử lý và sẽ gửi callback kết quả ngẫu nhiên về.
+        </p>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="w-full max-w-xs space-y-2">
+        <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div class="h-full rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] animate-[shimmer_2s_ease-in-out_infinite]" style="width: 70%"></div>
+        </div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Thường mất 10–30 giây</p>
+      </div>
+
+      <!-- Step indicators -->
+      <div class="flex items-center gap-3 text-xs font-semibold">
+        <div class="flex items-center gap-1.5 text-emerald-500">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+          </svg>
+          <span>Ghi nhận on-chain</span>
+        </div>
+        <div class="w-6 h-px bg-slate-200 dark:bg-slate-700"></div>
+        <div class="flex items-center gap-1.5 text-[var(--color-primary)]">
+          <span class="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse"></span>
+          <span>VRF xử lý</span>
+        </div>
+        <div class="w-6 h-px bg-slate-200 dark:bg-slate-700"></div>
+        <div class="flex items-center gap-1.5 text-slate-300 dark:text-slate-600">
+          <span class="w-2 h-2 rounded-full bg-current"></span>
+          <span>Nhận kết quả</span>
+        </div>
+      </div>
+
     </div>
   </app-card>
+
 
   <!-- FULFILLED RESULT PRESENTATION -->
   <div *ngIf="sessionDetails() && sessionDetails().fulfilled" class="space-y-8">
