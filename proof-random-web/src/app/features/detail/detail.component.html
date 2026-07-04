@@ -107,13 +107,8 @@
   <!-- FULFILLED RESULT PRESENTATION -->
   <div *ngIf="sessionDetails() && sessionDetails().fulfilled" class="space-y-8">
     <!-- EVENT TITLE CARD -->
-    <app-card class="relative overflow-hidden">
-      <!-- Glow background -->
-      <div
-        class="absolute -right-16 -top-16 w-48 h-48 bg-[var(--color-primary)]/10 rounded-full blur-2xl"
-      ></div>
-
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+    <app-card>
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="space-y-2">
           <div class="flex items-center gap-2">
             <span
@@ -173,17 +168,13 @@
 
     <!-- RESULT DISPLAY ACCORDING TO CHOSEN DRAW TYPE -->
     <app-card
-      class="min-h-[250px] flex flex-col justify-center items-center text-center py-10 relative"
+      class="min-h-[250px] flex flex-col justify-center items-center text-center py-10"
     >
-      <!-- BACKGROUND DECORATIVE SHAPE -->
-      <div
-        class="absolute inset-0 bg-radial-gradient from-[var(--color-primary)]/5 to-transparent pointer-events-none"
-      ></div>
 
       <!-- 1. Random Number Display -->
       <div
         *ngIf="sessionDetails().drawType === 1 && clientResult()"
-        class="space-y-4 animate-fade-in relative z-10"
+        class="space-y-4 animate-fade-in"
       >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
           Con số may mắn trúng giải
@@ -201,7 +192,7 @@
       <!-- 2. Random Name Display -->
       <div
         *ngIf="sessionDetails().drawType === 2 && clientResult()"
-        class="space-y-6 animate-fade-in relative z-10"
+        class="space-y-6 animate-fade-in"
       >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
           Người chiến thắng duy nhất
@@ -235,7 +226,7 @@
       <!-- 3. Multiple Winners Display -->
       <div
         *ngIf="sessionDetails().drawType === 3 && clientResult()"
-        class="space-y-6 w-full max-w-4xl px-4 animate-fade-in relative z-10"
+        class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
       >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
           Danh sách những người chiến thắng
@@ -268,7 +259,7 @@
       <!-- 4. Coin Flip Display -->
       <div
         *ngIf="sessionDetails().drawType === 4 && clientResult()"
-        class="space-y-4 animate-fade-in relative z-10"
+        class="space-y-4 animate-fade-in"
       >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
           Kết quả lật đồng xu
@@ -287,7 +278,7 @@
       <!-- 5. Dice Display -->
       <div
         *ngIf="sessionDetails().drawType === 5 && clientResult()"
-        class="space-y-4 animate-fade-in relative z-10"
+        class="space-y-4 animate-fade-in"
       >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
           Quân xúc xắc lật được
@@ -307,7 +298,7 @@
       <!-- 6. Even / Odd Display -->
       <div
         *ngIf="sessionDetails().drawType === 6 && clientResult()"
-        class="space-y-4 animate-fade-in relative z-10"
+        class="space-y-4 animate-fade-in"
       >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kết quả bốc được</p>
 
@@ -321,7 +312,7 @@
       <!-- 7. Random Color Display -->
       <div
         *ngIf="sessionDetails().drawType === 7 && clientResult()"
-        class="space-y-4 animate-fade-in relative z-10"
+        class="space-y-4 animate-fade-in"
       >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
           Mã màu ngẫu nhiên sinh ra
@@ -342,7 +333,7 @@
       <!-- 8. Random Letter Display -->
       <div
         *ngIf="sessionDetails().drawType === 8 && clientResult()"
-        class="space-y-4 animate-fade-in relative z-10"
+        class="space-y-4 animate-fade-in"
       >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Chữ cái bốc được</p>
 
@@ -356,7 +347,7 @@
       <!-- 9. Random Team Display -->
       <div
         *ngIf="sessionDetails().drawType === 9 && clientResult()"
-        class="space-y-6 w-full max-w-5xl px-4 animate-fade-in relative z-10"
+        class="space-y-6 w-full max-w-5xl px-4 animate-fade-in"
       >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
           Kết quả phân chia các đội

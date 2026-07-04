@@ -50,6 +50,5 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Sửa lỗi checkbox custom không tích được bằng cách loại bỏ input native ẩn và tự động toggle trực tiếp bằng model signal hai chiều.
 - [x] Dọn dẹp toàn bộ các import và imports component không sử dụng (SpinnerComponent, SkeletonLoaderComponent) ở Dashboard, Detail, History và Verify để xóa các cảnh báo NG8113.
 - [x] Bổ sung card thứ 4 "Số dư Oracle (LINK)" trên Dashboard: đọc `s_subscriptionId` từ contract, truy vấn Chainlink VRF Coordinator (`getSubscription`) để lấy balance LINK (juels → LINK), hiển thị kèm Sub ID. Grid stats chuyển từ 3 cột thành 4 cột (`sm:grid-cols-2 lg:grid-cols-4`). Skeleton loader cũng cập nhật tương ứng.
-
-
+- [x] Gỡ bỏ toàn bộ các họa tiết trang trí (decorative elements): vòng tròn blur hồng góc trên phải của Event Title Card, gradient radial nền sau vùng hiển thị kết quả (detail.html), gradient radial xanh lá nền sau banner Verify thành công (verify.html). Đồng thời dọn sạch các class `relative overflow-hidden`, `relative z-10` thừa.
 
