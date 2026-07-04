@@ -451,8 +451,8 @@ export class DetailComponent implements OnDestroy {
   // --- TRÒ CHƠI NGẪU NHIÊN: BIẾN TRẠNG THÁI & PHƯƠNG THỨC ---
   
   // 1. Vòng quay may mắn (Lucky Wheel)
-  public isWheelSpinning = false;
-  public wheelSpinDone = false;
+  public readonly isWheelSpinning = signal<boolean>(false);
+  public readonly wheelSpinDone = signal<boolean>(false);
   
   public initWheelCanvas() {
     setTimeout(() => {
@@ -469,7 +469,7 @@ export class DetailComponent implements OnDestroy {
       
       // Nếu đã quay xong, xoay vòng quay đến người chiến thắng
       let startAngle = 0;
-      if (this.wheelSpinDone && details.result !== undefined && details.result !== null && details.result !== '') {
+      if (this.wheelSpinDone() && details.result !== undefined && details.result !== null && details.result !== '') {
         const winnerIdx = Number(details.result);
         startAngle = (2 * Math.PI) - (winnerIdx * anglePerSeg + anglePerSeg / 2) - (Math.PI / 2);
       }
@@ -508,8 +508,8 @@ export class DetailComponent implements OnDestroy {
   }
   
   public spinWheel() {
-    if (this.isWheelSpinning || this.wheelSpinDone) return;
-    this.isWheelSpinning = true;
+    if (this.isWheelSpinning() || this.wheelSpinDone()) return;
+    this.isWheelSpinning.set(true);
     
     const details = this.sessionDetails();
     if (!details || !details.result) return;
@@ -572,8 +572,8 @@ export class DetailComponent implements OnDestroy {
       if (progress < 1) {
         this.wheelAnimationFrameId = requestAnimationFrame(animate);
       } else {
-        this.isWheelSpinning = false;
-        this.wheelSpinDone = true;
+        this.isWheelSpinning.set(false);
+        this.wheelSpinDone.set(true);
         this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã chiến thắng!`, 'success');
       }
     };
@@ -582,16 +582,16 @@ export class DetailComponent implements OnDestroy {
   }
 
   // 2. Đua xe ngẫu nhiên (Random Racing)
-  public isRacing = false;
-  public raceDone = false;
+  public readonly isRacing = signal<boolean>(false);
+  public readonly raceDone = signal<boolean>(false);
   public readonly racerProgresses = signal<number[]>([]);
 
   private markAnimationsAsDone() {
-    this.wheelSpinDone = true;
-    this.raceDone = true;
-    this.boxOpened = true;
-    this.bauCuaOpened = true;
-    this.scratchDone = true;
+    this.wheelSpinDone.set(true);
+    this.raceDone.set(true);
+    this.boxOpened.set(true);
+    this.bauCuaOpened.set(true);
+    this.scratchDone.set(true);
     
     const details = this.sessionDetails();
     if (details && details.participants && details.result !== undefined && details.result !== null && details.result !== '') {
@@ -611,8 +611,8 @@ export class DetailComponent implements OnDestroy {
   }
   
   public startRace() {
-    if (this.isRacing || this.raceDone) return;
-    this.isRacing = true;
+    if (this.isRacing() || this.raceDone()) return;
+    this.isRacing.set(true);
     
     const details = this.sessionDetails();
     if (!details || !details.participants) return;
@@ -644,8 +644,8 @@ export class DetailComponent implements OnDestroy {
       if (progress < 1) {
         this.raceAnimationFrameId = requestAnimationFrame(animate);
       } else {
-        this.isRacing = false;
-        this.raceDone = true;
+        this.isRacing.set(false);
+        this.raceDone.set(true);
         this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã về đích đầu tiên!`, 'success');
       }
     };
@@ -653,23 +653,23 @@ export class DetailComponent implements OnDestroy {
   }
 
   // 3. Hộp quà bí ẩn (Mystery Box)
-  public isBoxOpening = false;
-  public boxOpened = false;
+  public readonly isBoxOpening = signal<boolean>(false);
+  public readonly boxOpened = signal<boolean>(false);
   
   public openBox() {
-    if (this.isBoxOpening || this.boxOpened) return;
-    this.isBoxOpening = true;
+    if (this.isBoxOpening() || this.boxOpened()) return;
+    this.isBoxOpening.set(true);
     
     this.boxTimeoutId = setTimeout(() => {
-      this.isBoxOpening = false;
-      this.boxOpened = true;
+      this.isBoxOpening.set(false);
+      this.boxOpened.set(true);
       this.toastService.showToast(`Hộp quà đã mở! Chúc mừng: ${this.clientResult().winners[0]}`, 'success');
     }, 2000);
   }
 
   // 4. Bầu Cua Tôm Cá (Bau Cua)
-  public isBauCuaShaking = false;
-  public bauCuaOpened = false;
+  public readonly isBauCuaShaking = signal<boolean>(false);
+  public readonly bauCuaOpened = signal<boolean>(false);
   public bauCuaResultDice: number[] = [0, 0, 0];
   public readonly bauCuaItems = [
     { icon: '', name: 'Bầu' },
@@ -681,8 +681,8 @@ export class DetailComponent implements OnDestroy {
   ];
 
   public shakeBauCua() {
-    if (this.isBauCuaShaking || this.bauCuaOpened) return;
-    this.isBauCuaShaking = true;
+    if (this.isBauCuaShaking() || this.bauCuaOpened()) return;
+    this.isBauCuaShaking.set(true);
     
     const details = this.sessionDetails();
     if (!details || !details.randomWord) return;
@@ -697,8 +697,8 @@ export class DetailComponent implements OnDestroy {
     this.bauCuaResultDice = [d1, d2, d3];
     
     this.bauCuaTimeoutId = setTimeout(() => {
-      this.isBauCuaShaking = false;
-      this.bauCuaOpened = true;
+      this.isBauCuaShaking.set(false);
+      this.bauCuaOpened.set(true);
       const winnersText = this.bauCuaResultDice.map(i => this.bauCuaItems[i].name).join(' - ');
       this.toastService.showToast(`Kết quả Bầu Cua: ${winnersText}`, 'success');
     }, 2000);
@@ -720,8 +720,8 @@ export class DetailComponent implements OnDestroy {
     current[winnerIdx] = 100;
     this.racerProgresses.set(current);
     
-    this.isRacing = false;
-    this.raceDone = true;
+    this.isRacing.set(false);
+    this.raceDone.set(true);
     this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã về đích đầu tiên!`, 'success');
   }
 
@@ -776,8 +776,8 @@ export class DetailComponent implements OnDestroy {
       }
     }
     
-    this.isWheelSpinning = false;
-    this.wheelSpinDone = true;
+    this.isWheelSpinning.set(false);
+    this.wheelSpinDone.set(true);
     this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã chiến thắng!`, 'success');
   }
 
@@ -786,8 +786,8 @@ export class DetailComponent implements OnDestroy {
       clearTimeout(this.boxTimeoutId);
       this.boxTimeoutId = null;
     }
-    this.isBoxOpening = false;
-    this.boxOpened = true;
+    this.isBoxOpening.set(false);
+    this.boxOpened.set(true);
     this.toastService.showToast(`Hộp quà đã mở! Chúc mừng: ${this.clientResult().winners[0]}`, 'success');
   }
 
@@ -808,15 +808,15 @@ export class DetailComponent implements OnDestroy {
     const d3 = Number(BigInt(hash3) % 6n);
     
     this.bauCuaResultDice = [d1, d2, d3];
-    this.isBauCuaShaking = false;
-    this.bauCuaOpened = true;
+    this.isBauCuaShaking.set(false);
+    this.bauCuaOpened.set(true);
     const winnersText = this.bauCuaResultDice.map(i => this.bauCuaItems[i].name).join(' - ');
     this.toastService.showToast(`Kết quả Bầu Cua: ${winnersText}`, 'success');
   }
 
   // 5. Vé số cào (Scratch Card)
-  public isScratched = false;
-  public scratchDone = false;
+  public readonly isScratched = signal<boolean>(false);
+  public readonly scratchDone = signal<boolean>(false);
   
   public initScratchCard() {
     setTimeout(() => {
@@ -856,7 +856,7 @@ export class DetailComponent implements OnDestroy {
         if (!isDrawing) return;
         const pos = getPos(e);
         scratch(pos.x, pos.y);
-        this.isScratched = true;
+        this.isScratched.set(true);
       };
       
       canvas.ontouchstart = () => isDrawing = true;
@@ -866,14 +866,14 @@ export class DetailComponent implements OnDestroy {
         if (!isDrawing) return;
         const pos = getPos(e);
         scratch(pos.x, pos.y);
-        this.isScratched = true;
+        this.isScratched.set(true);
       };
     }, 100);
   }
   
   public autoScratch() {
-    this.isScratched = true;
-    this.scratchDone = true;
+    this.isScratched.set(true);
+    this.scratchDone.set(true);
     const canvas = document.getElementById('scratchCanvas') as HTMLCanvasElement;
     if (canvas) {
       canvas.style.opacity = '0';
