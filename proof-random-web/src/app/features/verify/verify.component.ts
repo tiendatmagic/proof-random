@@ -56,6 +56,9 @@ export class VerifyComponent implements OnInit {
     this.isVerifiedSuccess.set(false);
 
     try {
+      // Tự động dò tìm mạng (Sepolia hay Mainnet) cho Tx Hash hoặc Request ID
+      await this.web3Service.detectAndSwitchChain(query);
+
       // 1. Tải chi tiết phiên bốc thăm
       let requestId = query;
 

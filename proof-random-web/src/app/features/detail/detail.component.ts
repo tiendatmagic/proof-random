@@ -44,6 +44,9 @@ export class DetailComponent implements OnDestroy {
     if (!id) return;
 
     try {
+      // Tự động dò tìm mạng chứa RequestID này (Sepolia hay Mainnet)
+      await this.web3Service.detectAndSwitchChain(id);
+
       const data = await this.web3Service.getDrawSessionDetails(id);
       if (data) {
         this.sessionDetails.set(data);
@@ -182,7 +185,8 @@ export class DetailComponent implements OnDestroy {
    */
   public getQrImageUrl(): string {
     if (typeof window === 'undefined') return '';
-    return `https://chart.googleapis.com/chart?chs=220x220&cht=qr&chl=${encodeURIComponent(window.location.href)}&choe=UTF-8`;
+    const url = encodeURIComponent(window.location.href);
+    return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${url}&format=png&margin=10`;
   }
 
   /**

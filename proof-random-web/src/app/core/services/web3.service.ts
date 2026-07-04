@@ -311,6 +311,75 @@ export class Web3Service {
   }
 
   /**
+   * Tạo instance contract cho một chainId cụ thể (read-only)
+   */
+  public getContractForChain(chainId: string): Contract | null {
+    const address = chainId === '42161' 
+      ? WEB3_CONFIG.contracts.arbitrum 
+      : WEB3_CONFIG.contracts.arbitrumSepolia;
+      
+    if (!address || address === '0x0000000000000000000000000000000000000000') {
+      return null;
+    }
+    
+    const rpcUrl = chainId === '42161'
+      ? WEB3_CONFIG.rpcs.arbitrum
+      : WEB3_CONFIG.rpcs.arbitrumSepolia;
+      
+    const jsonRpcProvider = new JsonRpcProvider(rpcUrl);
+    return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
+  }
+
+  /**
+   * Tự động dò tìm xem query (RequestID hoặc Tx Hash) thuộc về mạng lưới nào (Sepolia hay Mainnet)
+   * và cập nhật cấu hình dApp (configuredChainId) sang mạng đó.
+   */
+  public async detectAndSwitchChain(query: string): Promise<string | null> {
+    if (!query) return null;
+    const cleanQuery = query.trim();
+
+    // 1. Nếu là Tx Hash (bắt đầu bằng 0x và dài 66 ký tự)
+    if (cleanQuery.startsWith('0x') && cleanQuery.length === 66) {
+      const chains = ['421614', '42161'];
+      for (const cid of chains) {
+        try {
+          const rpcUrl = cid === '42161'
+            ? WEB3_CONFIG.rpcs.arbitrum
+            : WEB3_CONFIG.rpcs.arbitrumSepolia;
+          const provider = new JsonRpcProvider(rpcUrl);
+          const tx = await provider.getTransaction(cleanQuery);
+          if (tx) {
+            console.log(`[Web3] Phát hiện Tx Hash trên mạng ${cid}. Tự động chuyển cấu hình.`);
+            this.configuredChainId.set(cid);
+            return cid;
+          }
+        } catch (e) {
+          // Thử tiếp
+        }
+      }
+    } else {
+      // 2. Nếu là Request ID
+      const chains = ['421614', '42161'];
+      for (const cid of chains) {
+        try {
+          const contract = this.getContractForChain(cid);
+          if (!contract) continue;
+          
+          const session = await contract['sessions'](cleanQuery);
+          if (session && session.creator !== '0x0000000000000000000000000000000000000000') {
+            console.log(`[Web3] Phát hiện RequestID trên mạng ${cid}. Tự động chuyển cấu hình.`);
+            this.configuredChainId.set(cid);
+            return cid;
+          }
+        } catch (e) {
+          // Thử tiếp
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Đọc dữ liệu thô của 1 phiên bốc thăm từ mapping sessions
    */
   public async getDrawSession(requestId: string): Promise<any> {
