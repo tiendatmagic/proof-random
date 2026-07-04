@@ -1,6 +1,6 @@
 <div class="space-y-4">
   <!-- 1. Random Number config -->
-  <div *ngIf="drawType === 1 && selectedSkin !== 'ScratchCard'" class="space-y-4 animate-fade-in">
+  <div *ngIf="drawType === 1 && selectedSkin !== 'ScratchCard' && selectedSkin !== 'Vietlott'" class="space-y-4 animate-fade-in">
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
       Quay ra một số ngẫu nhiên nằm trong khoảng số Min và Max của bạn.
     </p>
@@ -27,6 +27,16 @@
     </p>
     <div class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-[var(--color-primary)]">
       Khoảng số cào mặc định: 1 - 100
+    </div>
+  </div>
+
+  <!-- 1c. Vietlott Config -->
+  <div *ngIf="selectedSkin === 'Vietlott'" class="space-y-4 animate-fade-in">
+    <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+      Mô phỏng xổ số Vietlott chuyên nghiệp. Bạn có thể chọn quay thưởng Power 6/55, Mega 6/45, hoặc Keno từ kết quả ngẫu nhiên của Chainlink VRF.
+    </p>
+    <div class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-[var(--color-primary)]">
+      Tự động băm kết quả VRF để sinh bộ số xổ số minh bạch
     </div>
   </div>
 

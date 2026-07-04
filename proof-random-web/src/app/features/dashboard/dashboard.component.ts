@@ -81,6 +81,9 @@ export class DashboardComponent {
     } else if (skin === 'ScratchCard') {
       this.numMin = 1;
       this.numMax = 100;
+    } else if (skin === 'Vietlott') {
+      this.numMin = 1;
+      this.numMax = 80;
     }
   }
 

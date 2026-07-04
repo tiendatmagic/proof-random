@@ -66,6 +66,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Thiết lập chế độ mặc định khi truy cập phiên bốc thăm: luôn hiển thị nút bắt đầu hiệu ứng game (QUAY, ĐUA XE,...) kèm nút BỎ QUA để người dùng tự chọn xem hiệu ứng kịch tính hoặc xem nhanh kết quả luôn.
 - [x] Khắc phục triệt để lỗi không tự động cập nhật giao diện sau khi kết thúc hiệu ứng game (hoặc khi nhấn Bỏ qua) bằng cách chuyển đổi toàn bộ 10 biến trạng thái hiển thị game sang Signal.
 - [x] Thiết kế lại giao diện hộp quà (Mystery Box) bằng đồ họa vector SVG 3D chi tiết với nơ ruy băng vàng óng, bóng neon phát sáng và hiệu ứng mở nắp bay ra pháo hoa lấp lánh (confetti).
+- [x] Triển khai thành công trò chơi mô phỏng Xổ số Vietlott hỗ trợ đầy đủ 3 chế độ (Power 6/55, Mega 6/45, Keno) từ kết quả ngẫu nhiên Chainlink VRF, tích hợp hiệu ứng quay chốt bóng kịch tính và bảng highlight số Keno.
+
 
 
 

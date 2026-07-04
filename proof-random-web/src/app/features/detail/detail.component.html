@@ -464,6 +464,102 @@
         </div>
       </div>
 
+      <!-- 6. Vietlott Skin -->
+      <div *ngIf="skinType === 'Vietlott' && clientResult()" class="space-y-6 w-full max-w-xl mx-auto px-4 flex flex-col items-center animate-fade-in">
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Mô phỏng Xổ số Vietlott</p>
+        
+        <!-- Vietlott Mode Tabs -->
+        <div class="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 w-full max-w-xs justify-center mx-auto">
+          <button (click)="selectVietlottType('Power655')" [disabled]="isVietlottDrawing()" [ngClass]="{'bg-white dark:bg-slate-800 text-[var(--color-primary)] shadow-sm font-bold': selectedVietlottType() === 'Power655', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200': selectedVietlottType() !== 'Power655'}" class="flex-1 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-bold active:scale-98">
+            Power 6/55
+          </button>
+          <button (click)="selectVietlottType('Mega645')" [disabled]="isVietlottDrawing()" [ngClass]="{'bg-white dark:bg-slate-800 text-[var(--color-primary)] shadow-sm font-bold': selectedVietlottType() === 'Mega645', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200': selectedVietlottType() !== 'Mega645'}" class="flex-1 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-bold active:scale-98">
+            Mega 6/45
+          </button>
+          <button (click)="selectVietlottType('Keno')" [disabled]="isVietlottDrawing()" [ngClass]="{'bg-white dark:bg-slate-800 text-[var(--color-primary)] shadow-sm font-bold': selectedVietlottType() === 'Keno', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200': selectedVietlottType() !== 'Keno'}" class="flex-1 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-bold active:scale-98">
+            Keno
+          </button>
+        </div>
+
+        <!-- 6a. Mega 6/45 & Power 6/55 Display -->
+        <div *ngIf="selectedVietlottType() !== 'Keno'" class="w-full py-8 flex flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-950/20 rounded-2xl border border-slate-200/50 dark:border-slate-800/30 min-h-[160px]">
+          <div class="flex flex-wrap gap-3 justify-center items-center px-4">
+            <div *ngFor="let num of vietlottNumbers(); let i = index" class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg border animate-scale-in"
+              [ngClass]="{
+                'bg-gradient-to-tr from-rose-500 to-red-600 border-rose-400': selectedVietlottType() === 'Mega645' || (selectedVietlottType() === 'Power655' && i < 6)
+              }">
+              {{ num < 10 ? '0' + num : num }}
+            </div>
+            
+            <div *ngIf="isVietlottDrawing() && revealedCount() < (selectedVietlottType() === 'Power655' ? 7 : 6)" class="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-800 flex items-center justify-center font-bold text-lg text-slate-700 dark:text-slate-300 border border-slate-400 dark:border-slate-700 shadow-lg animate-pulse">
+              {{ currentSpinningNumber() < 10 ? '0' + currentSpinningNumber() : currentSpinningNumber() }}
+            </div>
+            
+            <ng-container *ngIf="selectedVietlottType() === 'Power655'">
+              <span *ngIf="revealedCount() >= 7 || (isVietlottDrawing() && revealedCount() === 6)" class="text-xl font-bold text-amber-500 mx-1 select-none animate-fade-in">+</span>
+              <div *ngIf="vietlottBonus() !== null" class="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 border border-amber-300 flex items-center justify-center font-bold text-lg text-slate-900 shadow-lg animate-scale-in">
+                {{ vietlottBonus()! < 10 ? '0' + vietlottBonus() : vietlottBonus() }}
+              </div>
+            </ng-container>
+            
+            <ng-container *ngIf="!isVietlottDrawing() && !vietlottDone()">
+              <div *ngFor="let item of [1,2,3,4,5,6]" class="w-12 h-12 rounded-full border border-dashed border-slate-300 dark:border-slate-800 flex items-center justify-center text-xs font-bold text-slate-300 dark:text-slate-800 select-none">
+                ?
+              </div>
+              <ng-container *ngIf="selectedVietlottType() === 'Power655'">
+                <span class="text-xl font-bold text-slate-200 dark:text-slate-800 mx-1 select-none">+</span>
+                <div class="w-12 h-12 rounded-full border border-dashed border-amber-300/30 flex items-center justify-center text-xs font-bold text-amber-300/30 select-none">
+                  ?
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- 6b. Keno 80 numbers grid Display -->
+        <div *ngIf="selectedVietlottType() === 'Keno'" class="w-full p-4 bg-slate-50/50 dark:bg-slate-950/20 rounded-2xl border border-slate-200/50 dark:border-slate-800/30">
+          <div class="grid grid-cols-10 gap-1.5 max-w-sm mx-auto">
+            <div *ngFor="let num of [].constructor(80); let idx = index" class="aspect-square flex items-center justify-center rounded-md text-[10px] font-bold border transition-all duration-300"
+              [ngClass]="{
+                'bg-emerald-500 text-white border-emerald-400 shadow-md scale-105 filter drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]': vietlottNumbers().includes(idx + 1),
+                'bg-slate-100 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800/40 text-slate-400 dark:text-slate-600': !vietlottNumbers().includes(idx + 1),
+                'animate-pulse ring-2 ring-emerald-500': isVietlottDrawing() && currentSpinningNumber() === idx + 1
+              }">
+              {{ idx + 1 }}
+            </div>
+          </div>
+          <div class="text-center mt-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            Đã xổ: {{ vietlottNumbers().length }} / 20 số
+          </div>
+        </div>
+
+        <!-- Control Actions -->
+        <div class="flex gap-3 justify-center w-full" *ngIf="!vietlottDone()">
+          <button (click)="startVietlottDraw()" [disabled]="isVietlottDrawing()" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
+            <span>{{ isVietlottDrawing() ? 'ĐANG QUAY SỐ...' : 'BẮT ĐẦU QUAY SỐ' }}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18v3z" />
+            </svg>
+          </button>
+          <button (click)="skipVietlott()" class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5">
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Show Vietlott details when done -->
+        <div *ngIf="vietlottDone() && selectedVietlottType() !== 'Keno'" class="animate-fade-in text-center space-y-2">
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            Giải thưởng Vietlott {{ selectedVietlottType() === 'Power655' ? 'Power 6/55' : 'Mega 6/45' }}
+          </div>
+          <h3 class="text-xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+            {{ vietlottNumbers().join(' - ') }} <span *ngIf="selectedVietlottType() === 'Power655'"> (+ {{ vietlottBonus() }})</span>
+          </h3>
+        </div>
+      </div>
+
       <!-- ================= STANDARD DRAW TYPES (IF NO SKIN) ================= -->
       <div *ngIf="!skinType" class="w-full flex flex-col items-center justify-center text-center">
         <!-- 1. Random Number Display -->
