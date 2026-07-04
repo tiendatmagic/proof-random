@@ -198,27 +198,23 @@ body.dark .btn-secondary:hover {
 
 /* ==================== INPUT SYSTEM ==================== */
 .form-input {
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-  @apply h-[42px] w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
+  @apply h-[42px] w-full px-4 text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
 }
 
 .form-input-sm {
-  padding-left: 0.75rem !important;
-  padding-right: 0.75rem !important;
-  @apply h-[32px] w-full text-xs font-semibold rounded-lg bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
+  @apply h-[32px] w-full px-3 text-xs font-semibold rounded-lg bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
 }
 
 .form-input-lg {
-  padding-left: 1.25rem !important;
-  padding-right: 1.25rem !important;
-  @apply h-[48px] text-base rounded-[12px];
+  @apply h-[48px] px-5 text-base rounded-[12px];
 }
 
-.search-input {
-  padding-left: 2.25rem !important;
-  padding-right: 1rem !important;
-  @apply h-[42px] w-full text-sm font-semibold rounded-xl bg-slate-50 dark:bg-slate-950/40 border border-slate-200/40 dark:border-slate-800/40 text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]/20 transition-all duration-200;
+.form-input-icon {
+  padding-left: 2.75rem !important;
+}
+
+.form-input-icon-lg {
+  padding-left: 3.25rem !important;
 }
 
 /* ==================== TAB GROUP SYSTEM ==================== */
@@ -242,11 +238,11 @@ body.dark .btn-secondary:hover {
 
 /* ==================== CARD SYSTEM ==================== */
 .app-card {
-  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-200/50 dark:shadow-lg dark:shadow-slate-900/30 rounded-[15px] transition-all duration-300 p-6;
+  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-200/50 dark:shadow-lg dark:shadow-slate-900/30 rounded-[15px] p-6;
 }
 
 .app-card-interactive {
-  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-200/50 dark:shadow-lg dark:shadow-slate-900/30 rounded-[15px] transition-all duration-300 cursor-pointer hover:scale-[1.01] hover:border-[var(--color-primary)]/40 dark:hover:border-[var(--color-secondary)]/40 p-6;
+  @apply bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 shadow-lg shadow-slate-200/50 dark:shadow-lg dark:shadow-slate-900/30 rounded-[15px] cursor-pointer hover:border-[var(--color-primary)]/40 dark:hover:border-[var(--color-secondary)]/40 p-6;
 }
 
 .app-card.p-0, .app-card-interactive.p-0 { padding: 0px !important; }

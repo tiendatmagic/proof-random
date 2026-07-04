@@ -6,16 +6,31 @@ import { Web3Service } from '../../core/services/web3.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { SpinnerComponent } from '../../shared/components/spinner/spinner.component';
 import { SkeletonLoaderComponent } from '../../shared/components/skeleton-loader/skeleton-loader.component';
+import { SelectComponent, SelectOption } from '../../shared/components/select/select.component';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CardComponent, SpinnerComponent, SkeletonLoaderComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CardComponent, SpinnerComponent, SkeletonLoaderComponent, SelectComponent],
   templateUrl: './history.component.html'
 })
 export class HistoryComponent {
   public readonly web3Service = inject(Web3Service);
   public readonly Math = Math;
+
+  // Cấu hình các tùy chọn lọc loại bốc thăm cho Custom Select
+  public readonly filterOptions: SelectOption[] = [
+    { value: 0, label: 'Tất cả chế độ' },
+    { value: 1, label: 'Quay số ngẫu nhiên (Random Number)' },
+    { value: 2, label: 'Chọn 1 tên ngẫu nhiên (Random Name)' },
+    { value: 3, label: 'Chọn nhiều người thắng (Multiple Winners)' },
+    { value: 4, label: 'Lật đồng xu (Coin Flip)' },
+    { value: 5, label: 'Quay xúc xắc (Dice Roll)' },
+    { value: 6, label: 'Chẵn / Lẻ (Even / Odd)' },
+    { value: 7, label: 'Màu sắc ngẫu nhiên (Random Color)' },
+    { value: 8, label: 'Chữ cái ngẫu nhiên (Random Letter)' },
+    { value: 9, label: 'Chia đội ngẫu nhiên (Random Team)' }
+  ];
 
   // Danh sách thô từ Event logs
   public readonly rawDraws = signal<any[]>([]);

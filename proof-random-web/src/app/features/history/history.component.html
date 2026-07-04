@@ -31,7 +31,7 @@
             type="text" 
             [(ngModel)]="filterSearch" 
             placeholder="Nhập từ khóa tìm kiếm..." 
-            class="form-input !pl-10"
+            class="form-input form-input-icon"
           />
         </div>
       </div>
@@ -47,7 +47,7 @@
             type="text" 
             [(ngModel)]="filterCreator" 
             placeholder="0x12a3..." 
-            class="form-input !pl-10"
+            class="form-input form-input-icon"
           />
         </div>
       </div>
@@ -55,18 +55,7 @@
       <!-- Lọc theo Loại bốc thăm -->
       <div class="space-y-1.5">
         <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Loại bốc thăm</label>
-        <select [(ngModel)]="filterType" class="form-input cursor-pointer">
-          <option [value]="0">Tất cả chế độ</option>
-          <option [value]="1">Quay số ngẫu nhiên (Random Number)</option>
-          <option [value]="2">Chọn 1 tên ngẫu nhiên (Random Name)</option>
-          <option [value]="3">Chọn nhiều người thắng (Multiple Winners)</option>
-          <option [value]="4">Lật đồng xu (Coin Flip)</option>
-          <option [value]="5">Quay xúc xắc (Dice Roll)</option>
-          <option [value]="6">Chẵn / Lẻ (Even / Odd)</option>
-          <option [value]="7">Màu sắc ngẫu nhiên (Random Color)</option>
-          <option [value]="8">Chữ cái ngẫu nhiên (Random Letter)</option>
-          <option [value]="9">Chia đội ngẫu nhiên (Random Team)</option>
-        </select>
+        <app-select [(value)]="filterType" [options]="filterOptions" class="w-full"></app-select>
       </div>
     </div>
   </app-card>

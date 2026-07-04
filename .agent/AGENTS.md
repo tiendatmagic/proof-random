@@ -42,5 +42,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Sửa lỗi đứt nét/méo mó của icon SVG xoay vòng (Refresh) bằng việc cập nhật sang path Heroicons v2 chuẩn.
 - [x] Tối ưu responsive cho phần Tiêu đề và nút Tải lên CSV của danh sách người tham gia bằng bố cục `flex-col` trên mobile.
 - [x] Tối ưu responsive cho phần Tiêu đề, nút Làm mới dữ liệu và Grid bộ lọc của trang Lịch sử (History) để hiển thị tốt trên tablet và mobile.
+- [x] Khắc phục triệt để lỗi lệch chiều cao input/button ở verify và lỗi icon đè chữ placeholder ở history/verify.
+- [x] Loại bỏ hoàn toàn hiệu ứng chuyển động (transition, duration) và phóng to (scale hover) của toàn bộ các card hệ thống trong CSS.
+- [x] Xây dựng Custom Select Component dùng chung có thiết kế Glassmorphism và thay thế toàn bộ thẻ `<select>` native trong ứng dụng.
 
 
