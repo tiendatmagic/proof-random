@@ -87,36 +87,82 @@
       Hộp quà bí ẩn (Mystery Box): Mở hộp quà/rương để rút ra phần thưởng ngẫu nhiên từ danh sách
       bạn nhập.
     </p>
+    <p
+      *ngIf="selectedSkin === 'WhatToEat'"
+      class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed"
+    >
+      Hôm nay ăn gì? (What to Eat Picker): Quay món ăn ngẫu nhiên từ thực đơn để chọn ra món ăn ngon cho ngày hôm nay.
+    </p>
     <div
       class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30"
     >
       <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-        Số lượng người thắng
+        Số lượng người thắng / Món ăn
       </div>
       <div class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]"></span>
-        1 Người chiến thắng (Winner)
+        1 Lựa chọn (Winner)
       </div>
     </div>
   </div>
 
   <!-- 3. Multiple Winners config -->
   <div *ngIf="drawType === 3" class="space-y-4 animate-fade-in">
-    <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Chọn ra danh sách K người chiến thắng không trùng nhau từ danh sách người tham gia.
-    </p>
-    <div class="space-y-1.5">
-      <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
-        >Số lượng người thắng (K)</label
+    <!-- Cấu hình cho bốc thăm Multi Winners chuẩn -->
+    <ng-container *ngIf="selectedSkin !== 'Sequence' && !selectedSkin.startsWith('Seating')">
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+        Chọn ra danh sách K người chiến thắng không trùng nhau từ danh sách người tham gia.
+      </p>
+      <div class="space-y-1.5">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+          >Số lượng người thắng (K)</label
+        >
+        <input
+          type="number"
+          [ngModel]="numWinners"
+          (ngModelChange)="numWinnersChange.emit($event)"
+          min="1"
+          class="form-input"
+        />
+      </div>
+    </ng-container>
+
+    <!-- Cấu hình cho Sequence skin -->
+    <ng-container *ngIf="selectedSkin === 'Sequence'">
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+        Thứ tự ngẫu nhiên (Random Sequence): Sắp xếp ngẫu nhiên và tráo đổi thứ tự toàn bộ danh sách thành viên đầu vào.
+      </p>
+      <div
+        class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-[var(--color-primary)]"
       >
-      <input
-        type="number"
-        [ngModel]="numWinners"
-        (ngModelChange)="numWinnersChange.emit($event)"
-        min="1"
-        class="form-input"
-      />
-    </div>
+        Tự động xáo trộn toàn bộ danh sách
+      </div>
+    </ng-container>
+
+    <!-- Cấu hình cho Seating Chart skin -->
+    <ng-container *ngIf="selectedSkin.startsWith('Seating')">
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+        Sơ đồ chỗ ngồi (Seating Chart): Sắp xếp vị trí bàn học/chỗ ngồi ngẫu nhiên cho lớp học hoặc phòng họp.
+      </p>
+      <div class="space-y-2">
+        <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
+          >Số cột trong sơ đồ (2 - 8 cột)</label
+        >
+        <div class="flex items-center gap-3">
+          <input
+            type="range"
+            min="2"
+            max="8"
+            [ngModel]="getSeatingCols()"
+            (ngModelChange)="changeSeatingCols($event)"
+            class="flex-1 accent-[var(--color-primary)] cursor-pointer"
+          />
+          <span class="text-xs font-black text-slate-800 dark:text-white w-16 text-center py-1.5 bg-slate-50 dark:bg-slate-950/30 border border-slate-200/50 dark:border-slate-800/50 rounded-lg">
+            {{ getSeatingCols() }} Cột
+          </span>
+        </div>
+      </div>
+    </ng-container>
   </div>
 
   <!-- 4. Coin Flip config -->

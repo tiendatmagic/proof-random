@@ -104,6 +104,9 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục triệt để lỗi hiển thị sai lệch và vỡ SVG của các icon game Oản Tù Tì (Rock-Paper-Scissors): Thay thế các SVG cũ (hình cây kéo bị lỗi path và biểu tượng tài liệu/búa công cụ không phù hợp) bằng các icon SVG biểu diễn nắm đấm (Búa), bàn tay mở (Bao) và cử chỉ tay kéo (Kéo) chuẩn FontAwesome Solid sắc nét, hoạt động hoàn hảo trên mọi chế độ.
 - [x] Tích hợp cơ chế cache 3 phút client-side (RAM kết hợp sessionStorage) cho dữ liệu thống kê Dashboard Stats, giúp tải trang tức thì, giảm tải RPC Node và tự động làm mới khi người dùng thực hiện bốc thăm thành công.
 - [x] Tích hợp cơ chế cache phân trang 3 phút cho trang Lịch sử (History), loại bỏ hoàn toàn việc nhấp nháy skeleton loader khi người dùng chuyển đổi qua lại giữa các tab (Dashboard, History, Detail).
+- [x] Triển khai thành công 3 chế độ bốc thăm mới: Thứ tự ngẫu nhiên (Sequence), Sơ đồ chỗ ngồi (Seating Chart) hỗ trợ số cột động, và Hôm nay ăn gì (What to Eat Picker) sử dụng hiệu ứng đĩa bạc mở nắp, đồng bộ hoàn hảo trên cả 4 trang Dashboard, Lịch sử, Chi tiết, Xác minh và hệ thống băm đối soát.
+- [x] Khắc phục lỗi câu chữ hiển thị kết quả game Oản Tù Tì (Rock-Paper-Scissors) mơ hồ ở trang Chi tiết (Detail), chuyển đổi định dạng hiển thị thành: "Người chơi \"[Tên]\" ([Kéo/Búa/Bao]) CHIẾN THẮNG Máy ([Kéo/Búa/Bao])" để làm rõ bên thắng/thua.
+- [x] Sửa lỗi hiển thị méo mó của icon nút "Chia sẻ Link" ở trang Chi tiết (Detail), thay thế bằng icon dạng liên kết (Link) chuẩn từ Heroicons v2 rõ nét và cân đối.
 
 
 

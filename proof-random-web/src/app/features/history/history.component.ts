@@ -41,6 +41,9 @@ export class HistoryComponent {
     { value: 'SlotMachine',  label: 'Quay Slot Machine (Slot Reels)' },
     { value: 'CardDraw',     label: 'Bốc bài tây (Card Draw)' },
     { value: 'OanTuTi',      label: 'Oản tù tì (Rock Paper Scissors)' },
+    { value: 'Sequence',     label: 'Thứ tự ngẫu nhiên (Random Sequence)' },
+    { value: 'Seating',      label: 'Sơ đồ chỗ ngồi (Seating Chart)' },
+    { value: 'WhatToEat',    label: 'Hôm nay ăn gì? (What to Eat Picker)' },
   ];
 
   // Danh sách thô từ Event logs hoặc danh sách phân trang từ blockchain
@@ -201,6 +204,8 @@ export class HistoryComponent {
    * Helper hiển thị tên loại bốc thăm
    */
   public getDrawTypeName(type: number, skin?: string): string {
+    if (skin && skin.startsWith('Seating')) return 'Sơ đồ chỗ ngồi';
+
     // Game skins ưu tiên hiển thị trước
     const skins: Record<string, string> = {
       LuckyWheel:  'Vòng quay may mắn',
@@ -213,6 +218,8 @@ export class HistoryComponent {
       SlotMachine: 'Quay Slot Machine',
       CardDraw:    'Bốc bài tây',
       OanTuTi:     'Oản tù tì',
+      Sequence:    'Thứ tự ngẫu nhiên',
+      WhatToEat:   'Hôm nay ăn gì?'
     };
     if (skin && skins[skin]) return skins[skin];
 
@@ -236,6 +243,11 @@ export class HistoryComponent {
   public getDrawTypeBadgeClass(type: number, skin?: string): string {
     // 1. Nhóm Game Skins (Đặc biệt) -> Dùng các tông màu Neon nổi bật
     if (skin) {
+      if (skin.startsWith('Seating')) {
+        // Sơ đồ chỗ ngồi: Xanh ngọc (Teal)
+        return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';
+      }
+
       switch (skin) {
         case 'Vietlott':
           // Vietlott: Đỏ cam nổi bật đặc trưng
@@ -267,6 +279,12 @@ export class HistoryComponent {
         case 'OanTuTi':
           // Oản tù tì: Xanh lục chàm
           return 'bg-indigo-500/10 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border-indigo-200/30 dark:border-indigo-800/30';
+        case 'Sequence':
+          // Thứ tự ngẫu nhiên: Màu tím chàm (Indigo)
+          return 'bg-indigo-500/10 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border-indigo-200/30 dark:border-indigo-800/30';
+        case 'WhatToEat':
+          // Hôm nay ăn gì: Màu hồng rose
+          return 'bg-rose-500/10 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 border-rose-200/30 dark:border-rose-800/30';
         default:
           return 'bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200/30 dark:border-purple-800/30';
       }

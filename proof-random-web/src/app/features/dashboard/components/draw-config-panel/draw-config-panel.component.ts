@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 export class DrawConfigPanelComponent {
   @Input() drawType = 2;
   @Input() selectedSkin = '';
+  @Output() selectedSkinChange = new EventEmitter<string>();
 
   @Input() numMin = 1;
   @Output() numMinChange = new EventEmitter<number>();
@@ -27,4 +28,15 @@ export class DrawConfigPanelComponent {
 
   @Input() numTeams = 3;
   @Output() numTeamsChange = new EventEmitter<number>();
+
+  public getSeatingCols(): number {
+    if (this.selectedSkin.startsWith('Seating-')) {
+      return parseInt(this.selectedSkin.split('-')[1]) || 4;
+    }
+    return 4;
+  }
+
+  public changeSeatingCols(cols: number) {
+    this.selectedSkinChange.emit(`Seating-${cols}`);
+  }
 }

@@ -145,12 +145,11 @@
             (click)="copyShareLink()"
             class="btn btn-secondary btn-sm flex items-center gap-1 cursor-pointer"
           >
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2.5"
-                d="M8.684 10.742l-2.072 1.137m0 0a3 3 0 100 4.138m0-4.138a3 3 0 110-4.138m2.072 1.137l2.072-1.137m0 0a3 3 0 100 4.138m0-4.138a3 3 0 110-4.138"
+                d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 00-6.364-6.364l-4.5 4.5a4.5 4.5 0 001.242 7.244"
               />
             </svg>
             Chia sẻ Link
@@ -1306,6 +1305,216 @@
           <h3 class="text-lg font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent leading-relaxed select-all">
             {{ oanTuTiResultText() }}
           </h3>
+        </div>
+      </div>
+
+      <!-- 11. Random Sequence Skin -->
+      <div
+        *ngIf="skinType === 'Sequence' && clientResult()"
+        class="space-y-6 w-full max-w-xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Sắp xếp thứ tự ngẫu nhiên
+        </p>
+
+        <!-- Khung hiển thị danh sách hàng đợi -->
+        <div class="w-full max-w-md bg-slate-50/50 dark:bg-slate-950/20 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/30 flex flex-col gap-2 min-h-[150px] shadow-lg">
+          <div
+            *ngFor="let name of shuffledQueue(); let idx = index"
+            class="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl transition-all duration-300 transform"
+            [class.animate-pulse]="isSequenceRunning()"
+            [ngClass]="{'opacity-40 select-none': !sequenceDone() && !isSequenceRunning()}"
+          >
+            <!-- Badge số thứ tự -->
+            <div class="w-6 h-6 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-black text-xs flex items-center justify-center">
+              #{{ idx + 1 }}
+            </div>
+            <span class="text-sm font-bold text-slate-800 dark:text-white truncate">
+              {{ name }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Điều khiển -->
+        <div class="flex gap-3 justify-center w-full" *ngIf="!sequenceDone()">
+          <button
+            (click)="startSequence()"
+            [disabled]="isSequenceRunning()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
+            <span>{{ isSequenceRunning() ? 'ĐANG SẮP XẾP...' : 'BẮT ĐẦU SẮP XẾP' }}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </button>
+          <button
+            (click)="skipSequence()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <div *ngIf="sequenceDone()" class="animate-fade-in text-center py-2">
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            Xếp hạng ngẫu nhiên hoàn tất!
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Các vị trí đã được cố định minh bạch on-chain.</p>
+        </div>
+      </div>
+
+      <!-- 12. Seating Chart Skin -->
+      <div
+        *ngIf="skinType.startsWith('Seating') && clientResult()"
+        class="space-y-6 w-full max-w-2xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Sơ đồ chỗ ngồi ngẫu nhiên (Seating Chart)
+        </p>
+
+        <!-- Sơ đồ Grid lớp học -->
+        <div class="w-full bg-slate-50/50 dark:bg-slate-950/20 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/30 flex flex-col gap-6 shadow-lg relative overflow-hidden">
+          <!-- Bàn giáo viên ở đầu -->
+          <div class="flex justify-center mb-2">
+            <div class="px-6 py-2 bg-slate-200 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-400 rounded-lg uppercase tracking-widest border border-slate-300 dark:border-slate-700">
+              BÀN GIÁO VIÊN / BẢNG ĐEN
+            </div>
+          </div>
+
+          <!-- Lưới chỗ ngồi -->
+          <div
+            class="grid gap-3 w-full"
+            [style.gridTemplateColumns]="'repeat(' + seatingCols() + ', minmax(0, 1fr))'"
+          >
+            <ng-container *ngFor="let row of seatingLayout(); let rIdx = index">
+              <div
+                *ngFor="let name of row; let cIdx = index"
+                class="aspect-[4/3] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 shadow-sm"
+                [class.animate-pulse]="isSeatingRunning()"
+                [ngClass]="{'opacity-40 select-none': !seatingDone() && !isSeatingRunning()}"
+              >
+                <!-- Số bàn -->
+                <span class="text-[9px] font-bold text-slate-400">
+                  Bàn {{ rIdx * seatingCols() + cIdx + 1 }}
+                </span>
+                
+                <!-- Tên học sinh -->
+                <span class="text-xs font-extrabold text-slate-800 dark:text-white truncate text-center w-full my-auto">
+                  {{ name }}
+                </span>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Điều khiển -->
+        <div class="flex gap-3 justify-center w-full" *ngIf="!seatingDone()">
+          <button
+            (click)="startSeating()"
+            [disabled]="isSeatingRunning()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
+            <span>{{ isSeatingRunning() ? 'ĐANG PHÂN BỔ...' : 'BẮT ĐẦU PHÂN CHỖ' }}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          </button>
+          <button
+            (click)="skipSeating()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <div *ngIf="seatingDone()" class="animate-fade-in text-center py-2">
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            Sơ đồ chỗ ngồi hoàn thành!
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Các vị trí chỗ ngồi đã được phân bổ ngẫu nhiên minh bạch.</p>
+        </div>
+      </div>
+
+      <!-- 13. What to Eat Skin -->
+      <div
+        *ngIf="skinType === 'WhatToEat' && clientResult()"
+        class="space-y-6 w-full max-w-xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Hôm nay ăn gì?
+        </p>
+
+        <!-- Đĩa bạc đậy thức ăn -->
+        <div class="relative w-72 h-72 flex items-center justify-center">
+          <!-- Food cover / Cloche SVG -->
+          <div
+            [ngClass]="{
+              'animate-[bounce_0.2s_infinite]': isFoodOpening(),
+              'translate-y-[-100px] opacity-0 pointer-events-none': foodOpened(),
+              'transition-all duration-700': foodOpened()
+            }"
+            class="absolute w-56 h-44 z-20 flex items-center justify-center text-slate-400 dark:text-slate-500"
+          >
+            <!-- Cloche SVG -->
+            <svg class="w-full h-full drop-shadow-lg" viewBox="0 0 24 24" fill="currentColor">
+              <!-- Nắp đậy -->
+              <path d="M12 3a1 1 0 011 1v1h.5A7.5 7.5 0 0121 12.5v1.5H3v-1.5A7.5 7.5 0 0110.5 5H11V4a1 1 0 011-1z" />
+              <!-- Khay -->
+              <path d="M2 17h20v2H2z" />
+            </svg>
+          </div>
+
+          <!-- Món ăn hiển thị sau khi mở nắp -->
+          <div
+            [ngClass]="{
+              'scale-100 opacity-100': foodOpened(),
+              'scale-50 opacity-0': !foodOpened()
+            }"
+            class="absolute inset-0 flex flex-col items-center justify-center bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/30 rounded-full shadow-2xl p-6 transition-all duration-500"
+          >
+            <!-- Icon đĩa thức ăn đẹp mắt -->
+            <svg class="w-16 h-16 text-rose-500 animate-pulse mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+            </svg>
+            <span class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-1.5">Món ngon hôm nay</span>
+            <h3 class="text-xl font-black text-center text-slate-800 dark:text-white max-w-xs break-words px-2 leading-snug">
+              {{ clientResult().winners[0] }}
+            </h3>
+          </div>
+        </div>
+
+        <!-- Điều khiển -->
+        <div class="flex gap-3 justify-center w-full" *ngIf="!foodOpened()">
+          <button
+            (click)="startWhatToEat()"
+            [disabled]="isFoodOpening()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
+            <span>{{ isFoodOpening() ? 'ĐANG MỞ NẮP...' : 'MỞ NẮP ĐĨA BẠC' }}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 11V7a4 4 0 118 0v4m0 0a2 2 0 100 4 2 2 0 000-4M8 11a2 2 0 110 4 2 2 0 000-4M8 11a2 2 0 110 4 2 2 0 010-4m0 0V7a4 4 0 018 0v4" />
+            </svg>
+          </button>
+          <button
+            (click)="skipWhatToEat()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Khối chúc mừng khi đã mở xong -->
+        <div *ngIf="foodOpened()" class="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-4 w-full max-w-sm text-center animate-fade-in">
+          <p class="text-xs text-rose-500 dark:text-rose-400 font-bold">Thưởng thức món ăn thôi nào! Chúc bạn ngon miệng!</p>
         </div>
       </div>
 

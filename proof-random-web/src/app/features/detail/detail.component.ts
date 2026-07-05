@@ -162,7 +162,7 @@ export class DetailComponent implements OnDestroy {
           label: 'Oản tù tì (OanTuTi) — Tính trực tiếp từ randomWord',
           formula: `(randomWord % 3) + 1`,
           modulo: `${randomWord} % 3 = ${mod.toString()} (0=Kéo, 1=Búa, 2=Bao)`,
-          result: `Người chiến thắng ra: ${chosenHand} vs Máy ra: ${cpuHandVal} → Người thắng cuộc!`
+          result: `Người chơi (${chosenHand}) CHIẾN THẮNG Máy (${cpuHandVal})`
         });
       } else {
         this.directModResult.set({
@@ -186,7 +186,8 @@ export class DetailComponent implements OnDestroy {
         CardDraw: 'Bốc bài tây',
         LuckyWheel: 'Vòng quay may mắn',
         Racing: 'Đua xe ngẫu nhiên',
-        MysteryBox: 'Hộp quà bí ẩn'
+        MysteryBox: 'Hộp quà bí ẩn',
+        WhatToEat: 'Hôm nay ăn gì?'
       };
 
       const prefix = details.skin && skinsWithStep[details.skin] ? `${skinsWithStep[details.skin]} — ` : 'Random Name — ';
@@ -280,6 +281,13 @@ export class DetailComponent implements OnDestroy {
 
       const pool = Array.from({ length: total }, (_, i) => i);
 
+      let labelPrefix = 'Chọn người thắng thứ';
+      if (details.skin === 'Sequence') {
+        labelPrefix = 'Xếp hạng vị trí thứ';
+      } else if (details.skin && details.skin.startsWith('Seating')) {
+        labelPrefix = 'Xếp vào chỗ ngồi thứ';
+      }
+
       for (let i = 0; i < k; i++) {
         const hashHex = this.web3Service.solidityKeccak256(
           ['uint256', 'uint256'],
@@ -291,16 +299,27 @@ export class DetailComponent implements OnDestroy {
         winnerIndices.push(originalIndex);
 
         const name = participants && participants[originalIndex] ? participants[originalIndex] : `Index ${originalIndex}`;
+        
+        let valueChosenText = `Vị trí trong pool: ${poolIndex} (người thứ ${originalIndex}) → Trúng giải: "${name}"`;
+        if (details.skin === 'Sequence') {
+          valueChosenText = `Chọn từ pool vị trí ${poolIndex} (người thứ ${originalIndex}) → Xếp hạng #${i + 1}: "${name}"`;
+        } else if (details.skin && details.skin.startsWith('Seating')) {
+          const cols = parseInt(details.skin.split('-')[1]) || 4;
+          const row = Math.floor(i / cols) + 1;
+          const col = (i % cols) + 1;
+          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Xếp vào Hàng ${row}, Cột ${col} (Bàn ${i + 1}): "${name}"`;
+        }
+
         steps.push({
           stepIndex: i + 1,
-          label: `Lượt ${i + 1} — Chọn người thắng thứ ${i + 1}`,
+          label: `Lượt ${i + 1} — ${labelPrefix} ${i + 1}`,
           inputSeed: this.shortHash(tempRandom.toString()),
           inputSeedFull: tempRandom.toString(),
           hashOutput: this.shortHash(hashHex),
           hashOutputFull: hashHex,
           poolSizeBefore: pool.length + 1,
           indexChosen: poolIndex,
-          valueChosen: `Vị trí trong pool: ${poolIndex} (người thứ ${originalIndex}) → Trúng giải: "${name}"`
+          valueChosen: valueChosenText
         });
 
         tempRandom = randVal;
@@ -418,6 +437,12 @@ export class DetailComponent implements OnDestroy {
       this.initCardDraw();
     } else if (data && data.skin === 'OanTuTi') {
       this.resetOanTuTi();
+    } else if (data && data.skin === 'Sequence') {
+      this.initSequence();
+    } else if (data && data.skin && data.skin.startsWith('Seating')) {
+      this.initSeating();
+    } else if (data && data.skin === 'WhatToEat') {
+      this.initWhatToEat();
     }
   }
 
@@ -811,6 +836,19 @@ export class DetailComponent implements OnDestroy {
   public readonly cpuHand = signal<string>('rock');
   public readonly oanTuTiResultText = signal<string>('');
 
+  // --- TRÒ CHƠI NGẪU NHIÊN: ĐĂNG KÝ SIGNALS CHO 3 CHẾ ĐỘ MỚI ---
+  public readonly isSequenceRunning = signal<boolean>(false);
+  public readonly sequenceDone = signal<boolean>(false);
+  public readonly shuffledQueue = signal<string[]>([]);
+
+  public readonly isSeatingRunning = signal<boolean>(false);
+  public readonly seatingDone = signal<boolean>(false);
+  public readonly seatingLayout = signal<string[][]>([]);
+  public readonly seatingCols = signal<number>(4);
+
+  public readonly isFoodOpening = signal<boolean>(false);
+  public readonly foodOpened = signal<boolean>(false);
+
   private markAnimationsAsDone() {
     this.wheelSpinDone.set(true);
     this.raceDone.set(true);
@@ -822,6 +860,9 @@ export class DetailComponent implements OnDestroy {
     this.slotDone.set(true);
     this.cardDone.set(true);
     this.oanTuTiDone.set(true);
+    this.sequenceDone.set(true);
+    this.seatingDone.set(true);
+    this.foodOpened.set(true);
     
     // Thiết lập kết quả Vietlott
     const type = this.selectedVietlottType();
@@ -866,7 +907,32 @@ export class DetailComponent implements OnDestroy {
         const handsVN = ['Kéo', 'Búa', 'Bao'];
         this.playerHand.set(hands[mod]);
         this.cpuHand.set(hands[(mod + 2) % 3]); // CPU thua
-        this.oanTuTiResultText.set(`Người thắng cuộc ra: ${handsVN[mod]} vs Máy ra: ${handsVN[(mod + 2) % 3]} → Người thắng!`);
+        const winnerName = this.clientResult()?.winners[0] || 'Người chơi';
+        this.oanTuTiResultText.set(`Người chơi "${winnerName}" (${handsVN[mod]}) CHIẾN THẮNG Máy (${handsVN[(mod + 2) % 3]})`);
+      }
+
+      // Đồng bộ Sequence (Hàng đợi)
+      if (details.skin === 'Sequence') {
+        const res = this.clientResult();
+        if (res && res.winners) {
+          this.shuffledQueue.set(res.winners);
+        }
+      }
+
+      // Đồng bộ Seating (Sơ đồ chỗ ngồi)
+      if (details.skin && details.skin.startsWith('Seating')) {
+        const res = this.clientResult();
+        if (res && res.winners) {
+          const cols = parseInt(details.skin.split('-')[1]) || 4;
+          this.seatingCols.set(cols);
+          
+          const layout: string[][] = [];
+          const winners = res.winners;
+          for (let i = 0; i < winners.length; i += cols) {
+            layout.push(winners.slice(i, i + cols));
+          }
+          this.seatingLayout.set(layout);
+        }
       }
     }
   }
@@ -1713,7 +1779,7 @@ export class DetailComponent implements OnDestroy {
       this.oanTuTiDone.set(true);
       
       const winnerName = this.clientResult()?.winners[0] || 'Người chơi';
-      this.oanTuTiResultText.set(`Người chiến thắng "${winnerName}" ra: ${handsVN[mod]} vs Máy ra: ${handsVN[(mod + 2) % 3]} → Thắng cuộc!`);
+      this.oanTuTiResultText.set(`Người chơi "${winnerName}" (${handsVN[mod]}) CHIẾN THẮNG Máy (${handsVN[(mod + 2) % 3]})`);
       this.toastService.showToast(`Oản tù tì kết thúc! ${winnerName} chiến thắng!`, 'success');
     }, 2000);
   }
@@ -1732,7 +1798,165 @@ export class DetailComponent implements OnDestroy {
       this.cpuHand.set(hands[(mod + 2) % 3]);
       
       const winnerName = this.clientResult()?.winners[0] || 'Người chơi';
-      this.oanTuTiResultText.set(`Người chiến thắng "${winnerName}" ra: ${handsVN[mod]} vs Máy ra: ${handsVN[(mod + 2) % 3]} → Thắng cuộc!`);
+      this.oanTuTiResultText.set(`Người chơi "${winnerName}" (${handsVN[mod]}) CHIẾN THẮNG Máy (${handsVN[(mod + 2) % 3]})`);
     }
+  }
+
+  // ================= 11. THỨ TỰ NGẪU NHIÊN (SEQUENCE) =================
+  public initSequence() {
+    this.isSequenceRunning.set(false);
+    this.sequenceDone.set(false);
+    const details = this.sessionDetails();
+    if (details && details.participants) {
+      this.shuffledQueue.set(Array.from(details.participants));
+    } else {
+      this.shuffledQueue.set([]);
+    }
+  }
+
+  public startSequence() {
+    if (this.isSequenceRunning() || this.sequenceDone()) return;
+    this.isSequenceRunning.set(true);
+
+    const details = this.sessionDetails();
+    if (!details) return;
+
+    let count = 0;
+    const participantsList = Array.from(details.participants || []) as string[];
+    const interval = setInterval(() => {
+      const mock = [...participantsList].sort(() => Math.random() - 0.5);
+      this.shuffledQueue.set(mock);
+      count++;
+      if (count >= 15) {
+        clearInterval(interval);
+        
+        const res = this.clientResult();
+        if (res && res.winners) {
+          this.shuffledQueue.set(res.winners);
+        }
+        this.isSequenceRunning.set(false);
+        this.sequenceDone.set(true);
+        this.toastService.showToast('Xếp thứ tự ngẫu nhiên hoàn tất!', 'success');
+      }
+    }, 150);
+  }
+
+  public skipSequence() {
+    this.isSequenceRunning.set(false);
+    this.sequenceDone.set(true);
+    const res = this.clientResult();
+    if (res && res.winners) {
+      this.shuffledQueue.set(res.winners);
+    }
+  }
+
+  // ================= 12. SƠ ĐỒ CHỖ NGỒI (SEATING CHART) =================
+  public initSeating() {
+    this.isSeatingRunning.set(false);
+    this.seatingDone.set(false);
+    
+    const details = this.sessionDetails();
+    if (!details) return;
+    const cols = parseInt(details.skin.split('-')[1]) || 4;
+    this.seatingCols.set(cols);
+
+    if (details.participants) {
+      const layout: string[][] = [];
+      const participantsList = Array.from(details.participants) as string[];
+      for (let i = 0; i < participantsList.length; i += cols) {
+        layout.push(participantsList.slice(i, i + cols));
+      }
+      this.seatingLayout.set(layout);
+    } else {
+      this.seatingLayout.set([]);
+    }
+  }
+
+  public startSeating() {
+    if (this.isSeatingRunning() || this.seatingDone()) return;
+    this.isSeatingRunning.set(true);
+
+    const details = this.sessionDetails();
+    if (!details) return;
+    
+    const cols = this.seatingCols();
+    const participantsList = Array.from(details.participants || []) as string[];
+
+    let count = 0;
+    const interval = setInterval(() => {
+      const mock = [...participantsList].sort(() => Math.random() - 0.5);
+      const layout: string[][] = [];
+      for (let i = 0; i < mock.length; i += cols) {
+        layout.push(mock.slice(i, i + cols));
+      }
+      this.seatingLayout.set(layout);
+      count++;
+      
+      if (count >= 15) {
+        clearInterval(interval);
+        
+        const res = this.clientResult();
+        if (res && res.winners) {
+          const layoutReal: string[][] = [];
+          const winners = res.winners;
+          for (let i = 0; i < winners.length; i += cols) {
+            layoutReal.push(winners.slice(i, i + cols));
+          }
+          this.seatingLayout.set(layoutReal);
+        }
+        
+        this.isSeatingRunning.set(false);
+        this.seatingDone.set(true);
+        this.toastService.showToast('Xếp sơ đồ chỗ ngồi hoàn tất!', 'success');
+      }
+    }, 150);
+  }
+
+  public skipSeating() {
+    this.isSeatingRunning.set(false);
+    this.seatingDone.set(true);
+    
+    const details = this.sessionDetails();
+    const res = this.clientResult();
+    if (details && res && res.winners) {
+      const cols = this.seatingCols();
+      const layoutReal: string[][] = [];
+      const winners = res.winners;
+      for (let i = 0; i < winners.length; i += cols) {
+        layoutReal.push(winners.slice(i, i + cols));
+      }
+      this.seatingLayout.set(layoutReal);
+    }
+  }
+
+  // ================= 13. HÔM NAY ĂN GÌ? (WHAT TO EAT) =================
+  private eatTimeoutId: any = null;
+
+  public initWhatToEat() {
+    this.isFoodOpening.set(false);
+    this.foodOpened.set(false);
+    if (this.eatTimeoutId) clearTimeout(this.eatTimeoutId);
+  }
+
+  public startWhatToEat() {
+    if (this.isFoodOpening() || this.foodOpened()) return;
+    this.isFoodOpening.set(true);
+
+    this.eatTimeoutId = setTimeout(() => {
+      this.isFoodOpening.set(false);
+      this.foodOpened.set(true);
+      
+      const winnerName = this.clientResult()?.winners[0] || 'Món ngon';
+      this.toastService.showToast(`Món ngon của bạn hôm nay: ${winnerName}!`, 'success');
+    }, 2500);
+  }
+
+  public skipWhatToEat() {
+    if (this.eatTimeoutId) clearTimeout(this.eatTimeoutId);
+    this.isFoodOpening.set(false);
+    this.foodOpened.set(true);
+    
+    const winnerName = this.clientResult()?.winners[0] || 'Món ngon';
+    this.toastService.showToast(`Món ngon của bạn hôm nay: ${winnerName}!`, 'success');
   }
 }

@@ -86,6 +86,15 @@ export class DashboardComponent {
     } else if (skin === 'OanTuTi') {
       this.numMin = 1;
       this.numMax = 3;
+    } else if (skin === 'WhatToEat') {
+      if (!this.participantsText.trim() || this.participantsText.includes('Nguyễn Văn A')) {
+        this.participantsText = 'Cơm tấm Sườn Bì Chả\nPhở Bò Tái Nạm\nBún Chả Hà Nội\nGà Rán KFC\nBánh Mì Thịt Nướng\nPizza Hải Sản\nBún Đậu Mắm Tôm\nSushi Nhật Bản\nLẩu Thái Cay CoCo';
+      }
+    } else {
+      // Nếu quay lại các chế độ thông thường mà đang chứa món ăn mẫu, reset về rỗng
+      if (this.participantsText.includes('Cơm tấm Sườn Bì Chả')) {
+        this.participantsText = '';
+      }
     }
   }
 
@@ -204,6 +213,11 @@ export class DashboardComponent {
 
     const participants = this.getProcessedParticipants();
     
+    // Tự động gán số người thắng bằng tổng số người tham gia đối với chế độ Hàng đợi và Sơ đồ chỗ ngồi
+    if (this.selectedSkin === 'Sequence' || this.selectedSkin.startsWith('Seating')) {
+      this.numWinners = participants.length;
+    }
+
     // Validate theo từng chế độ quay
     if (this.drawType === 1) { // Random Number
       if (this.numMin >= this.numMax) {
@@ -304,6 +318,8 @@ export class DashboardComponent {
    * Helper hiển thị tên loại bốc thăm
    */
   public getDrawTypeName(type: number, skin?: string): string {
+    if (skin && skin.startsWith('Seating')) return 'Sơ đồ chỗ ngồi';
+    
     // Game skins ưu tiên hiển thị trước
     const skins: Record<string, string> = {
       LuckyWheel:  'Vòng quay may mắn',
@@ -316,6 +332,8 @@ export class DashboardComponent {
       SlotMachine: 'Quay Slot Machine',
       CardDraw:    'Bốc bài tây',
       OanTuTi:     'Oản tù tì',
+      Sequence:    'Thứ tự ngẫu nhiên',
+      WhatToEat:   'Hôm nay ăn gì?'
     };
     if (skin && skins[skin]) return skins[skin];
 

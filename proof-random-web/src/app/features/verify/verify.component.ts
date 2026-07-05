@@ -209,6 +209,13 @@ export class VerifyComponent implements OnInit {
       let tempRandom = seed;
       const winnerIndices: number[] = [];
 
+      let labelPrefix = 'Chọn người thắng thứ';
+      if (details.skin === 'Sequence') {
+        labelPrefix = 'Xếp vị trí thứ';
+      } else if (details.skin && details.skin.startsWith('Seating')) {
+        labelPrefix = 'Xếp vào vị trí ghế thứ';
+      }
+
       for (let i = 0; i < k; i++) {
         const inputSeed = tempRandom.toString();
         const hashHex = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), i.toString()]);
@@ -229,16 +236,27 @@ export class VerifyComponent implements OnInit {
         winnerIndices.push(candidate);
 
         const name = participants && participants[candidate] ? `"${participants[candidate]}"` : `Index ${candidate}`;
+        
+        let valueChosenText = `Vị trí index ${candidate} → ${name}`;
+        if (details.skin === 'Sequence') {
+          valueChosenText = `Hàng đợi #${i + 1} → ${name}`;
+        } else if (details.skin && details.skin.startsWith('Seating')) {
+          const cols = parseInt(details.skin.split('-')[1]) || 4;
+          const row = Math.floor(i / cols) + 1;
+          const col = (i % cols) + 1;
+          valueChosenText = `Hàng ${row}, Cột ${col} (Bàn số ${i + 1}) → ${name}`;
+        }
+
         steps.push({
           stepIndex: i + 1,
-          label: `Bước ${i + 1} — Chọn người thắng thứ ${i + 1}`,
+          label: `Bước ${i + 1} — ${labelPrefix} ${i + 1}`,
           inputSeed: this.shortHash(inputSeed),
           inputSeedFull: inputSeed,
           hashOutput: this.shortHash(hashHex),
           hashOutputFull: hashHex,
           poolSizeBefore: total - i,
           indexChosen: candidate,
-          valueChosen: `Vị trí ${candidate} → ${name}`
+          valueChosen: valueChosenText
         });
       }
       this.hashSteps.set(steps);
@@ -361,6 +379,8 @@ export class VerifyComponent implements OnInit {
   }
 
   public getDrawTypeName(type: number, skin?: string): string {
+    if (skin && skin.startsWith('Seating')) return 'Sơ đồ chỗ ngồi';
+
     const skins: Record<string, string> = {
       LuckyWheel:  'Vòng quay may mắn',
       Racing:      'Đua xe ngẫu nhiên',
@@ -372,6 +392,8 @@ export class VerifyComponent implements OnInit {
       SlotMachine: 'Quay Slot Machine',
       CardDraw:    'Bốc bài tây',
       OanTuTi:     'Oản tù tì',
+      Sequence:    'Thứ tự ngẫu nhiên',
+      WhatToEat:   'Hôm nay ăn gì?'
     };
     if (skin && skins[skin]) return skins[skin];
     const names: Record<number, string> = {

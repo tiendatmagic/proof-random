@@ -698,6 +698,72 @@
                   <div class="text-[10px] text-slate-400">Rock Paper Scissors</div>
                 </div>
               </button>
+
+              <button
+                type="button"
+                (click)="selectMode(3, 'Sequence')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'Sequence',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Thứ tự ngẫu nhiên</div>
+                  <div class="text-[10px] text-slate-400">Random Sequence</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="selectMode(3, 'Seating-4')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin.startsWith('Seating'),
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Sơ đồ chỗ ngồi</div>
+                  <div class="text-[10px] text-slate-400">Seating Chart</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="selectMode(2, 'WhatToEat')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'WhatToEat',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3a1 1 0 011 1v1h.5A7.5 7.5 0 0121 12.5v1.5H3v-1.5A7.5 7.5 0 0110.5 5H11V4a1 1 0 011-1zM3 17h18m-18 3h18" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Hôm nay ăn gì?</div>
+                  <div class="text-[10px] text-slate-400">What to Eat Picker</div>
+                </div>
+              </button>
             </div>
           </div>
 
@@ -822,7 +888,7 @@
 
           <app-draw-config-panel
             [drawType]="drawType"
-            [selectedSkin]="selectedSkin"
+            [(selectedSkin)]="selectedSkin"
             [(numMin)]="numMin"
             [(numMax)]="numMax"
             [(numWinners)]="numWinners"
