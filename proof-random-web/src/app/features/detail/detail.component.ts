@@ -156,13 +156,25 @@ export class DetailComponent implements OnDestroy {
       
       if (details.skin === 'OanTuTi') {
         const hands = ['Kéo', 'Búa', 'Bao'];
-        const chosenHand = hands[Number(mod)];
-        const cpuHandVal = hands[(Number(mod) + 2) % 3]; // CPU thua
+        const playerMod = Number(seed % 3n);
+        const cpuMod = Number((seed / 3n) % 3n);
+        const playerHand = hands[playerMod];
+        const cpuHandVal = hands[cpuMod];
+        
+        let stepResultText = '';
+        if (playerMod === cpuMod) {
+          stepResultText = `Người chơi (${playerHand}) HÒA Máy (${cpuHandVal})`;
+        } else if ((playerMod === 0 && cpuMod === 2) || (playerMod === 1 && cpuMod === 0) || (playerMod === 2 && cpuMod === 1)) {
+          stepResultText = `Người chơi (${playerHand}) CHIẾN THẮNG Máy (${cpuHandVal})`;
+        } else {
+          stepResultText = `Máy (${cpuHandVal}) CHIẾN THẮNG Người chơi (${playerHand})`;
+        }
+
         this.directModResult.set({
           label: 'Oản tù tì (OanTuTi) — Tính trực tiếp từ randomWord',
-          formula: `(randomWord % 3) + 1`,
-          modulo: `${randomWord} % 3 = ${mod.toString()} (0=Kéo, 1=Búa, 2=Bao)`,
-          result: `Người chơi (${chosenHand}) CHIẾN THẮNG Máy (${cpuHandVal})`
+          formula: `Player = randomWord % 3; CPU = (randomWord / 3) % 3`,
+          modulo: `Player = ${randomWord} % 3 = ${playerMod} (${playerHand}); CPU = (${randomWord} / 3) % 3 = ${cpuMod} (${cpuHandVal})`,
+          result: stepResultText
         });
       } else {
         this.directModResult.set({
@@ -902,13 +914,24 @@ export class DetailComponent implements OnDestroy {
 
       // Đồng bộ Oản tù tì
       if (details.drawType === 1) {
-        const mod = Number(BigInt(details.randomWord) % 3n);
+        const seedVal = BigInt(details.randomWord);
+        const playerMod = Number(seedVal % 3n);
+        const cpuMod = Number((seedVal / 3n) % 3n);
         const hands = ['scissors', 'rock', 'paper'];
         const handsVN = ['Kéo', 'Búa', 'Bao'];
-        this.playerHand.set(hands[mod]);
-        this.cpuHand.set(hands[(mod + 2) % 3]); // CPU thua
+        this.playerHand.set(hands[playerMod]);
+        this.cpuHand.set(hands[cpuMod]);
         const winnerName = this.clientResult()?.winners[0] || 'Người chơi';
-        this.oanTuTiResultText.set(`Người chơi "${winnerName}" (${handsVN[mod]}) CHIẾN THẮNG Máy (${handsVN[(mod + 2) % 3]})`);
+        
+        let winnerText = '';
+        if (playerMod === cpuMod) {
+          winnerText = `Người chơi "${winnerName}" (${handsVN[playerMod]}) HÒA Máy (${handsVN[cpuMod]})`;
+        } else if ((playerMod === 0 && cpuMod === 2) || (playerMod === 1 && cpuMod === 0) || (playerMod === 2 && cpuMod === 1)) {
+          winnerText = `Người chơi "${winnerName}" (${handsVN[playerMod]}) CHIẾN THẮNG Máy (${handsVN[cpuMod]})`;
+        } else {
+          winnerText = `Máy (${handsVN[cpuMod]}) CHIẾN THẮNG Người chơi "${winnerName}" (${handsVN[playerMod]})`;
+        }
+        this.oanTuTiResultText.set(winnerText);
       }
 
       // Đồng bộ Sequence (Hàng đợi)
@@ -1765,12 +1788,14 @@ export class DetailComponent implements OnDestroy {
     this.cpuHand.set('rock');
 
     this.oanTuTiTimeoutId = setTimeout(() => {
-      const mod = Number(BigInt(details.randomWord) % 3n);
+      const seedVal = BigInt(details.randomWord);
+      const playerMod = Number(seedVal % 3n);
+      const cpuMod = Number((seedVal / 3n) % 3n);
       const handsValue = ['scissors', 'rock', 'paper']; // 0 = Kéo, 1 = Búa, 2 = Bao
       const handsVN = ['Kéo', 'Búa', 'Bao'];
       
-      const pHand = handsValue[mod];
-      const cHand = handsValue[(mod + 2) % 3]; // CPU thua
+      const pHand = handsValue[playerMod];
+      const cHand = handsValue[cpuMod];
 
       this.playerHand.set(pHand);
       this.cpuHand.set(cHand);
@@ -1779,8 +1804,20 @@ export class DetailComponent implements OnDestroy {
       this.oanTuTiDone.set(true);
       
       const winnerName = this.clientResult()?.winners[0] || 'Người chơi';
-      this.oanTuTiResultText.set(`Người chơi "${winnerName}" (${handsVN[mod]}) CHIẾN THẮNG Máy (${handsVN[(mod + 2) % 3]})`);
-      this.toastService.showToast(`Oản tù tì kết thúc! ${winnerName} chiến thắng!`, 'success');
+      let winnerText = '';
+      let toastMsg = '';
+      if (playerMod === cpuMod) {
+        winnerText = `Người chơi "${winnerName}" (${handsVN[playerMod]}) HÒA Máy (${handsVN[cpuMod]})`;
+        toastMsg = `Oản tù tì kết thúc! Kết quả HÒA!`;
+      } else if ((playerMod === 0 && cpuMod === 2) || (playerMod === 1 && cpuMod === 0) || (playerMod === 2 && cpuMod === 1)) {
+        winnerText = `Người chơi "${winnerName}" (${handsVN[playerMod]}) CHIẾN THẮNG Máy (${handsVN[cpuMod]})`;
+        toastMsg = `Oản tù tì kết thúc! Người chơi ${winnerName} chiến thắng!`;
+      } else {
+        winnerText = `Máy (${handsVN[cpuMod]}) CHIẾN THẮNG Người chơi "${winnerName}" (${handsVN[playerMod]})`;
+        toastMsg = `Oản tù tì kết thúc! Máy chiến thắng!`;
+      }
+      this.oanTuTiResultText.set(winnerText);
+      this.toastService.showToast(toastMsg, 'success');
     }, 2000);
   }
 
@@ -1791,14 +1828,24 @@ export class DetailComponent implements OnDestroy {
 
     const details = this.sessionDetails();
     if (details) {
-      const mod = Number(BigInt(details.randomWord) % 3n);
+      const seedVal = BigInt(details.randomWord);
+      const playerMod = Number(seedVal % 3n);
+      const cpuMod = Number((seedVal / 3n) % 3n);
       const hands = ['scissors', 'rock', 'paper'];
       const handsVN = ['Kéo', 'Búa', 'Bao'];
-      this.playerHand.set(hands[mod]);
-      this.cpuHand.set(hands[(mod + 2) % 3]);
+      this.playerHand.set(hands[playerMod]);
+      this.cpuHand.set(hands[cpuMod]);
       
       const winnerName = this.clientResult()?.winners[0] || 'Người chơi';
-      this.oanTuTiResultText.set(`Người chơi "${winnerName}" (${handsVN[mod]}) CHIẾN THẮNG Máy (${handsVN[(mod + 2) % 3]})`);
+      let winnerText = '';
+      if (playerMod === cpuMod) {
+        winnerText = `Người chơi "${winnerName}" (${handsVN[playerMod]}) HÒA Máy (${handsVN[cpuMod]})`;
+      } else if ((playerMod === 0 && cpuMod === 2) || (playerMod === 1 && cpuMod === 0) || (playerMod === 2 && cpuMod === 1)) {
+        winnerText = `Người chơi "${winnerName}" (${handsVN[playerMod]}) CHIẾN THẮNG Máy (${handsVN[cpuMod]})`;
+      } else {
+        winnerText = `Máy (${handsVN[cpuMod]}) CHIẾN THẮNG Người chơi "${winnerName}" (${handsVN[playerMod]})`;
+      }
+      this.oanTuTiResultText.set(winnerText);
     }
   }
 
