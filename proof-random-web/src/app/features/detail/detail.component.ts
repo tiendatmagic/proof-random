@@ -1408,7 +1408,8 @@ export class DetailComponent implements OnDestroy {
       binNames[midBin] = winnerName.length > 8 ? winnerName.substring(0, 6) + '..' : winnerName;
       
       let othersIdx = 0;
-      const others = details.participants.filter((p: string) => p !== winnerName);
+      const participantsList = Array.from(details.participants || []) as string[];
+      const others = participantsList.filter((p: string) => p !== winnerName);
       for (let b = 0; b < totalBins; b++) {
         if (b !== midBin) {
           const name = others[othersIdx] || `Khe ${b}`;
