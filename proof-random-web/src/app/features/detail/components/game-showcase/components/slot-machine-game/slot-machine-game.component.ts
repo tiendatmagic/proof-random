@@ -1,4 +1,4 @@
-import { Component, signal, OnDestroy } from '@angular/core';
+import { Component, signal, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseGameComponent } from '../base-game.component';
 import { Web3Service } from '../../../../../../core/services/web3.service';
@@ -12,6 +12,18 @@ import { inject } from '@angular/core';
   templateUrl: './slot-machine-game.component.html'
 })
 export class SlotMachineGameComponent extends BaseGameComponent implements OnDestroy {
+  constructor() {
+    super();
+    effect(() => {
+      const details = this.sessionDetails();
+      const res = this.clientResult();
+      if (details && res) {
+        this.isSlotSpinning.set(false);
+        this.slotDone.set(false);
+        this.initSlotMachine();
+      }
+    });
+  }
   public readonly web3Service = inject(Web3Service);
   private readonly toastService = inject(ToastService);
 

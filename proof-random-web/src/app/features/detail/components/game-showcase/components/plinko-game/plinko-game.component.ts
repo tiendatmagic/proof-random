@@ -1,4 +1,4 @@
-import { Component, signal, OnDestroy } from '@angular/core';
+import { Component, signal, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseGameComponent } from '../base-game.component';
 import { Web3Service } from '../../../../../../core/services/web3.service';
@@ -12,6 +12,18 @@ import { inject } from '@angular/core';
   templateUrl: './plinko-game.component.html'
 })
 export class PlinkoGameComponent extends BaseGameComponent implements OnDestroy {
+  constructor() {
+    super();
+    effect(() => {
+      const details = this.sessionDetails();
+      const res = this.clientResult();
+      if (details && res) {
+        this.isPlinkoRunning.set(false);
+        this.plinkoDone.set(false);
+        this.initPlinkoCanvas();
+      }
+    });
+  }
   public readonly web3Service = inject(Web3Service);
   private readonly toastService = inject(ToastService);
 

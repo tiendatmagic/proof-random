@@ -1,4 +1,4 @@
-import { Component, signal, OnDestroy } from '@angular/core';
+import { Component, signal, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseGameComponent } from '../base-game.component';
 import { Web3Service } from '../../../../../../core/services/web3.service';
@@ -12,6 +12,18 @@ import { inject } from '@angular/core';
   templateUrl: './lucky-wheel-game.component.html'
 })
 export class LuckyWheelGameComponent extends BaseGameComponent implements OnDestroy {
+  constructor() {
+    super();
+    effect(() => {
+      const details = this.sessionDetails();
+      const res = this.clientResult();
+      if (details && res) {
+        this.isWheelSpinning.set(false);
+        this.wheelSpinDone.set(false);
+        this.initWheelCanvas();
+      }
+    });
+  }
   public readonly web3Service = inject(Web3Service);
   private readonly toastService = inject(ToastService);
 
