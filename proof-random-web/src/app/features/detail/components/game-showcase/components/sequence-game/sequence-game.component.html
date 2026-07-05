@@ -1,0 +1,58 @@
+      <!-- 11. Random Sequence Skin -->
+      <div
+        *ngIf="skinType === 'Sequence' && clientResult()"
+        class="space-y-6 w-full max-w-xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Sắp xếp thứ tự ngẫu nhiên
+        </p>
+
+        <!-- Khung hiển thị danh sách hàng đợi -->
+        <div class="w-full max-w-md bg-slate-50/50 dark:bg-slate-950/20 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/30 flex flex-col gap-2 min-h-[150px] shadow-lg">
+          <div
+            *ngFor="let name of shuffledQueue(); let idx = index"
+            class="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl transition-all duration-300 transform"
+            [class.animate-pulse]="isSequenceRunning()"
+            [ngClass]="{'opacity-40 select-none': !sequenceDone() && !isSequenceRunning()}"
+          >
+            <!-- Badge số thứ tự -->
+            <div class="w-6 h-6 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] font-black text-xs flex items-center justify-center">
+              #{{ idx + 1 }}
+            </div>
+            <span class="text-sm font-bold text-slate-800 dark:text-white truncate">
+              {{ name }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Điều khiển -->
+        <div class="flex gap-3 justify-center w-full" *ngIf="!sequenceDone()">
+          <button
+            (click)="startSequence()"
+            [disabled]="isSequenceRunning()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
+            <span>{{ isSequenceRunning() ? 'ĐANG SẮP XẾP...' : 'BẮT ĐẦU SẮP XẾP' }}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </button>
+          <button
+            (click)="skipSequence()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <div *ngIf="sequenceDone()" class="animate-fade-in text-center py-2">
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            Xếp hạng ngẫu nhiên hoàn tất!
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Các vị trí đã được cố định minh bạch on-chain.</p>
+        </div>
+      </div>
+

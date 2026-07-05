@@ -1,0 +1,45 @@
+      <!-- 7. Plinko Board May Mắn -->
+      <div
+        *ngIf="skinType === 'Plinko' && clientResult()"
+        class="space-y-6 w-full max-w-xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Thả bóng Plinko may mắn
+        </p>
+
+        <div class="relative w-[320px] h-[360px] bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-200 dark:border-slate-800/40 shadow-inner flex items-center justify-center overflow-hidden mx-auto">
+          <canvas id="plinkoCanvas" width="320" height="360" class="max-w-full"></canvas>
+        </div>
+
+        <div class="flex gap-3 justify-center w-full" *ngIf="!plinkoDone()">
+          <button
+            (click)="startPlinko()"
+            [disabled]="isPlinkoRunning()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
+            <span>{{ isPlinkoRunning() ? 'ĐANG THẢ BÓNG...' : 'THẢ BÓNG PLINKO' }}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-6l-7 7-7-7" />
+            </svg>
+          </button>
+          <button
+            (click)="skipPlinko()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <div *ngIf="plinkoDone()" class="animate-fade-in text-center space-y-2">
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            Người chiến thắng
+          </div>
+          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+            {{ clientResult().winners[0] }}
+          </h3>
+        </div>
+      </div>
+

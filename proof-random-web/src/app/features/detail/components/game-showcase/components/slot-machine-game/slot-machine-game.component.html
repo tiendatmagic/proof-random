@@ -1,0 +1,89 @@
+      <!-- 8. Slot Machine Skin -->
+      <div
+        *ngIf="skinType === 'SlotMachine' && clientResult()"
+        class="space-y-6 w-full max-w-xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <!-- Khung máy Slot Machine thiết kế retro, viền vàng cam neon -->
+        <div class="w-full max-w-md bg-gradient-to-b from-slate-100 via-slate-50 to-slate-200 dark:from-slate-900 dark:via-slate-800 dark:to-slate-950 p-5 rounded-[24px] border-4 border-amber-400 dark:border-amber-500/80 shadow-lg dark:shadow-[0_0_35px_rgba(245,158,11,0.25)] relative overflow-hidden flex flex-col items-center gap-4">
+          <!-- Bảng đèn tiêu đề ở đỉnh máy -->
+          <div class="w-full bg-gradient-to-r from-amber-600 via-yellow-400 to-amber-600 text-slate-950 py-1.5 px-4 rounded-xl text-center font-black text-xs uppercase tracking-widest shadow-md flex items-center justify-center gap-1 select-none">
+            <svg class="w-4 h-4 text-slate-950 animate-pulse shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
+            </svg>
+            LUCKY JACKPOT SPIN
+          </div>
+
+          <!-- Khung hiển thị các cuộn quay (Reels Screen) -->
+          <div class="relative w-full bg-slate-200 dark:bg-slate-950 p-4 rounded-2xl border border-slate-300 dark:border-slate-850 shadow-inner flex gap-3 overflow-hidden">
+            <!-- Vạch line trúng thưởng ở giữa (Payline band) -->
+            <div class="absolute left-0 right-0 top-[calc(50%-22px)] h-[44px] bg-gradient-to-r from-pink-500/5 via-pink-500/10 to-pink-500/5 border-y border-dashed border-pink-400/50 dark:border-pink-500/30 pointer-events-none z-10"></div>
+            
+            <!-- Đèn báo trúng thưởng 2 bên sườn máy -->
+            <div class="absolute left-1 top-1/2 -translate-y-1/2 w-2 h-4 bg-red-500 rounded-full z-20 animate-pulse"></div>
+            <div class="absolute right-1 top-1/2 -translate-y-1/2 w-2 h-4 bg-red-500 rounded-full z-20 animate-pulse"></div>
+
+            <!-- Các cuộn quay Plinko/Slot -->
+            <div
+              *ngFor="let reel of slotReels(); let rIdx = index"
+              class="flex-1 h-36 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl overflow-hidden relative flex items-center justify-center shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_4px_12px_rgba(0,0,0,0.8)]"
+            >
+              <!-- 3 visible slots (Top, Middle/Active, Bottom) inside each reel -->
+              <div class="flex flex-col items-center justify-center h-full w-full py-1 gap-2.5">
+                <!-- Top item (Faded & Scaled down) -->
+                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 truncate w-full px-1 text-center opacity-40 select-none scale-90 blur-[0.5px]">
+                  {{ reel[(slotCurrentIndices()[rIdx] - 1 + reel.length) % reel.length] }}
+                </span>
+                
+                <!-- Active/Middle item (Payline target, Pink neon outline) -->
+                <span class="text-xs font-black text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-500/10 border border-pink-200 dark:border-pink-500/20 py-2 px-1 rounded-xl shadow-inner truncate w-full text-center select-none scale-110 z-10 transition-transform">
+                  {{ reel[slotCurrentIndices()[rIdx]] || 'Slot' }}
+                </span>
+                
+                <!-- Bottom item (Faded & Scaled down) -->
+                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 truncate w-full px-1 text-center opacity-40 select-none scale-90 blur-[0.5px]">
+                  {{ reel[(slotCurrentIndices()[rIdx] + 1) % reel.length] }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Các nút điều khiển khi chưa quay xong -->
+        <div class="flex gap-3 justify-center w-full" *ngIf="!slotDone()">
+          <button
+            (click)="startSlot()"
+            [disabled]="isSlotSpinning()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
+            <span>{{ isSlotSpinning() ? 'ĐANG QUAY...' : 'QUAY SLOT MACHINE' }}</span>
+            <svg class="w-4 h-4 shrink-0" [class.animate-spin]="isSlotSpinning()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+          </button>
+          <button
+            (click)="skipSlot()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Hộp chúc mừng chiến thắng (Jackpot congratulations panel) -->
+        <div *ngIf="slotDone()" class="bg-gradient-to-r from-amber-500/10 via-yellow-500/15 to-amber-500/10 border border-amber-500/30 rounded-2xl p-4 w-full max-w-md text-center space-y-2 animate-fade-in shadow-lg shadow-amber-500/5">
+          <div class="flex justify-center">
+            <svg class="w-8 h-8 text-yellow-500 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5a2 2 0 10-2 2h2zm0 0H4m8 0h8m-8 0a2 2 0 102 2H10a2 2 0 102-2z" />
+            </svg>
+          </div>
+          <div class="text-[10px] font-black text-amber-500 dark:text-amber-400 uppercase tracking-widest">
+            Jackpot Winner!
+          </div>
+          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all leading-normal">
+            {{ clientResult().winners[0] }}
+          </h3>
+        </div>
+      </div>
+

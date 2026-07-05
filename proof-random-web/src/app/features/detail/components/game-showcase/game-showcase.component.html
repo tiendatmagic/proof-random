@@ -1,0 +1,51 @@
+@switch (skinType) {
+  @case ('LuckyWheel') {
+    <app-lucky-wheel-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-lucky-wheel-game>
+  }
+  @case ('Racing') {
+    <app-racing-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-racing-game>
+  }
+  @case ('MysteryBox') {
+    <app-mystery-box-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-mystery-box-game>
+  }
+  @case ('BauCua') {
+    <app-bau-cua-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-bau-cua-game>
+  }
+  @case ('ScratchCard') {
+    <app-scratch-card-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-scratch-card-game>
+  }
+  @case ('Vietlott') {
+    <app-vietlott-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-vietlott-game>
+  }
+  @case ('Plinko') {
+    <app-plinko-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-plinko-game>
+  }
+  @case ('SlotMachine') {
+    <app-slot-machine-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-slot-machine-game>
+  }
+  @case ('CardDraw') {
+    <app-card-draw-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-card-draw-game>
+  }
+  @case ('OanTuTi') {
+    <app-oan-tu-ti-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-oan-tu-ti-game>
+  }
+  @case ('Sequence') {
+    <app-sequence-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-sequence-game>
+  }
+  @case ('WhatToEat') {
+    <app-what-to-eat-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-what-to-eat-game>
+  }
+  @case ('Tarot') {
+    <app-tarot-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-tarot-game>
+  }
+  @case ('Bingo') {
+    <app-bingo-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-bingo-game>
+  }
+  @default {
+    @if (skinType.startsWith('Seating')) {
+      <app-seating-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-seating-game>
+    } @else {
+      <app-standard-game [sessionDetails]="sessionDetails()" [clientResult]="clientResult()"></app-standard-game>
+    }
+  }
+}

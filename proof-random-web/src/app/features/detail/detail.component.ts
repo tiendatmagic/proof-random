@@ -1,3 +1,4 @@
+import { GameShowcaseComponent } from './components/game-showcase/game-showcase.component';
 import { Component, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -10,7 +11,7 @@ import { HashStep, DirectModResult } from '../verify/verify.component';
 @Component({
   selector: 'app-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, CardComponent, SkeletonLoaderComponent],
+  imports: [CommonModule, RouterLink, CardComponent, SkeletonLoaderComponent, GameShowcaseComponent],
   templateUrl: './detail.component.html'
 })
 export class DetailComponent implements OnDestroy {
@@ -100,7 +101,7 @@ export class DetailComponent implements OnDestroy {
           this.clientResult.set(res);
           this.buildHashSteps(data); // Sinh bước hash hiển thị thuật toán công khai
           this.stopPolling(); // Dừng polling nếu đã nhận được kết quả
-          this.checkAndInitSkins(data);
+          
         } else {
           // Bắt đầu cơ chế polling nếu chưa nhận được kết quả (đang chờ VRF callback)
           this.startPolling();
@@ -443,35 +444,6 @@ export class DetailComponent implements OnDestroy {
   /**
    * Khởi tạo canvas cho các trò chơi ngẫu nhiên
    */
-  private checkAndInitSkins(data: any) {
-    if (data && data.skin === 'LuckyWheel') {
-      this.initWheelCanvas();
-    } else if (data && data.skin === 'ScratchCard') {
-      this.initScratchCard();
-    } else if (data && data.skin === 'Racing') {
-      this.initRacingProgress();
-    } else if (data && data.skin === 'Vietlott') {
-      this.resetVietlottState();
-    } else if (data && data.skin === 'Plinko') {
-      this.initPlinkoCanvas();
-    } else if (data && data.skin === 'SlotMachine') {
-      this.initSlotMachine();
-    } else if (data && data.skin === 'CardDraw') {
-      this.initCardDraw();
-    } else if (data && data.skin === 'OanTuTi') {
-      this.resetOanTuTi();
-    } else if (data && data.skin === 'Sequence') {
-      this.initSequence();
-    } else if (data && data.skin && data.skin.startsWith('Seating')) {
-      this.initSeating();
-    } else if (data && data.skin === 'WhatToEat') {
-      this.initWhatToEat();
-    } else if (data && data.skin === 'Tarot') {
-      this.initTarot();
-    } else if (data && data.skin === 'Bingo') {
-      this.initBingo();
-    }
-  }
 
   /**
    * Cơ chế tự động truy vấn cập nhật trạng thái (Polling)
@@ -504,7 +476,7 @@ export class DetailComponent implements OnDestroy {
           this.clientResult.set(res);
           this.toastService.showToast('Bốc thăm hoàn tất! Số ngẫu nhiên đã được trả về.', 'success');
           this.stopPolling();
-          this.checkAndInitSkins(data);
+          
         }
       }
     }, 5000); // Polling mỗi 5 giây

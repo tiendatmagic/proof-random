@@ -1,0 +1,67 @@
+      <!-- 1. Lucky Wheel Skin -->
+      <div
+        *ngIf="skinType === 'LuckyWheel' && clientResult()"
+        class="space-y-6 mx-auto flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Vòng quay may mắn</p>
+        <div class="relative w-[300px] h-[300px] flex items-center justify-center mx-auto">
+          <canvas id="wheelCanvas" width="300" height="300" class="max-w-full"></canvas>
+          <!-- Center arrow pointer -->
+          <div
+            class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-[var(--color-primary)] filter drop-shadow-md"
+          ></div>
+          <!-- Inner circle spin button -->
+          <button
+            (click)="spinWheel()"
+            [disabled]="isWheelSpinning()"
+            class="absolute w-14 h-14 rounded-full bg-slate-900 border border-[var(--color-primary)]/40 flex items-center justify-center text-xs font-black uppercase text-white shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition-all select-none"
+          >
+            <svg
+              *ngIf="wheelSpinDone()"
+              class="w-5 h-5 text-amber-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+            <span *ngIf="!wheelSpinDone()">{{ isWheelSpinning() ? '...' : 'QUAY' }}</span>
+          </button>
+        </div>
+
+        <!-- Skip Action for Lucky Wheel -->
+        <div class="flex justify-center w-full" *ngIf="!wheelSpinDone()">
+          <button
+            (click)="skipWheel()"
+            class="btn btn-secondary btn-sm cursor-pointer font-bold flex items-center gap-1.5"
+          >
+            <span>Bỏ qua quay</span>
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 5l7 7-7 7M5 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Show winner when done -->
+        <div *ngIf="wheelSpinDone()" class="animate-fade-in text-center space-y-2">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Người chiến thắng
+          </div>
+          <h3
+            class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
+          >
+            {{ clientResult().winners[0] }}
+          </h3>
+        </div>
+      </div>
+

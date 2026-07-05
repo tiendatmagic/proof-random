@@ -1,0 +1,83 @@
+      <!-- 9. Card Draw Skin -->
+      <div
+        *ngIf="skinType === 'CardDraw' && clientResult()"
+        class="space-y-6 w-full max-w-xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Bốc bài tây tìm người may mắn
+        </p>
+
+        <div class="flex flex-wrap gap-4 justify-center items-center py-6 w-full max-w-md">
+          <div
+            *ngFor="let card of cards(); let cIdx = index"
+            (click)="pickCard(cIdx)"
+            class="relative w-20 h-28 cursor-pointer transition-all duration-300 transform select-none hover:scale-105 active:scale-95"
+            [ngClass]="{
+              'scale-105 shadow-xl border border-[var(--color-primary)]/50': pickedCardIdx() === cIdx,
+              'pointer-events-none': cardDone() || isCardShuffling() || pickedCardIdx() !== null
+            }"
+          >
+            <!-- Card Flip container -->
+            <div
+              class="absolute inset-0 w-full h-full rounded-xl transition-transform duration-500 transform-style-3d border"
+              [ngClass]="{
+                'rotate-y-180': card.flipped,
+                'bg-pink-50 dark:bg-slate-950 border-pink-200 dark:border-purple-500/20 text-pink-500 dark:text-purple-400 shadow-md': !card.flipped,
+                'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white': card.flipped,
+                'ring-2 ring-[var(--color-primary)]': card.flipped && card.isWinner
+              }"
+            >
+              <!-- Back -->
+              <div *ngIf="!card.flipped" class="absolute inset-0 flex items-center justify-center flex-col gap-1.5 backface-hidden">
+                <svg class="w-6 h-6 opacity-35" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span class="text-[8px] font-bold opacity-30 tracking-widest">PROOF</span>
+              </div>
+
+              <!-- Front -->
+              <div *ngIf="card.flipped" class="absolute inset-0 flex items-center justify-center text-center p-2 rotate-y-180 backface-hidden flex-col gap-1.5">
+                <span class="text-[8px] font-bold uppercase tracking-wider" [ngClass]="card.isWinner ? 'text-amber-500' : 'text-slate-500 dark:text-slate-400'">
+                  {{ card.isWinner ? 'Chiến thắng' : 'Trượt' }}
+                </span>
+                <span class="text-xs font-black truncate w-full">
+                  {{ card.name }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-3 justify-center w-full">
+          <button
+            *ngIf="!cardDone() && cards().length > 0 && !isCardShuffling() && pickedCardIdx() === null"
+            (click)="shuffleCards()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
+            <span>Xáo bài</span>
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+          </button>
+          <button
+            *ngIf="!cardDone()"
+            (click)="skipCard()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <div *ngIf="cardDone()" class="animate-fade-in text-center space-y-2">
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            Người chiến thắng bốc bài tây
+          </div>
+          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+            {{ clientResult().winners[0] }}
+          </h3>
+        </div>
+      </div>
+

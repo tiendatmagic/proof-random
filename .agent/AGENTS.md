@@ -114,17 +114,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục lỗi reverted InvalidInput() (0xb4fa3fb3) khi thực hiện quay số Bingo với số lượng bóng > 1 (drawType = 3) bằng cách tự động điền danh sách bóng ["1", "2", ..., "90"] khớp với độ dài param1 để đáp ứng xác thực dữ liệu đầu vào của Smart Contract.
 - [x] Tối ưu hóa giao diện rút bài Tarot: Chuyển đổi màu sắc của mặt sau lá bài (Card Back) từ màu xanh đậm cố định sang màu sắc linh động, tương thích hoàn hảo cho cả Light Mode (màu Indigo sáng nhẹ nhàng) và Dark Mode (màu Indigo/Slate huyền bí), giúp giao diện không bị lệch tone màu.
 - [x] Tích hợp tính năng bốc thăm nhiều số ngẫu nhiên cùng lúc cho chế độ "Quay số (Random Number)": Thêm trường nhập số lượng cần quay vào cấu hình, tự động chuyển đổi logic sang drawType 3 (Multiple Winners) trên blockchain và tự động điền danh sách khoảng số để thỏa mãn xác thực on-chain. Cập nhật giao diện trang chi tiết để hiển thị đẹp mắt danh sách các số trúng giải mà không bị nhầm lẫn với bốc thăm tên người.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+- [x] Phân tách thành công component `GameShowcaseComponent` trung gian thành 16 component con độc lập cho từng game (LuckyWheel, Racing, MysteryBox, BauCua, ScratchCard, Vietlott, Plinko, SlotMachine, CardDraw, OanTuTi, Sequence, Seating, WhatToEat, Tarot, Bingo và StandardGame).
+- [x] Kế thừa tất cả 16 component con từ `BaseGameComponent` và vá thành công lỗi thiếu các hàm `skipWheel()`, `skipRace()`, `skipBox()` cục bộ trong từng component con.
+- [x] Sửa lỗi cú pháp dấu đóng ngoặc class thừa ở BingoGameComponent và dọn dẹp các hàm skip rác bị cào nhầm trong BauCuaGameComponent.
+- [x] Rút gọn tệp `detail.component.ts` chính xuống chỉ còn 768 dòng và `detail.component.html` xuống còn 735 dòng, import thành công GameShowcaseComponent và biên dịch dự án chạy thành công 100% không một lỗi cảnh báo nào.

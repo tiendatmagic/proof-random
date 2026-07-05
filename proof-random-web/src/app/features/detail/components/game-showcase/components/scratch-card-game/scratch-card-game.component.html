@@ -1,0 +1,43 @@
+      <!-- 5. Scratch Card Skin -->
+      <div
+        *ngIf="skinType === 'ScratchCard' && clientResult()"
+        class="space-y-6 flex flex-col items-center mx-auto animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Vé số cào may mắn
+        </p>
+
+        <div
+          class="relative w-[240px] h-[120px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800/20 bg-slate-50 dark:bg-slate-950/60 shadow-lg flex flex-col items-center justify-center mx-auto"
+        >
+          <div
+            class="absolute inset-0 flex flex-col items-center justify-center select-all space-y-1"
+          >
+            <span
+              class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
+              >Con số cào được</span
+            >
+            <span class="text-4xl font-black text-[var(--color-primary)] font-mono">{{
+              clientResult().result
+            }}</span>
+          </div>
+
+          <canvas
+            id="scratchCanvas"
+            width="240"
+            height="120"
+            class="absolute z-10 transition-opacity duration-300 mx-auto"
+          ></canvas>
+        </div>
+
+        <div class="flex gap-2 justify-center w-full">
+          <button
+            (click)="autoScratch()"
+            *ngIf="!scratchDone()"
+            class="btn btn-secondary btn-sm cursor-pointer font-bold"
+          >
+            Cào tự động
+          </button>
+        </div>
+      </div>
+

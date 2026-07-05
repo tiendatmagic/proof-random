@@ -1,0 +1,75 @@
+      <!-- 12. Seating Chart Skin -->
+      <div
+        *ngIf="skinType.startsWith('Seating') && clientResult()"
+        class="space-y-6 w-full max-w-2xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Sơ đồ chỗ ngồi ngẫu nhiên (Seating Chart)
+        </p>
+
+        <!-- Sơ đồ Grid lớp học -->
+        <div class="w-full bg-slate-50/50 dark:bg-slate-950/20 p-6 rounded-3xl border border-slate-200/50 dark:border-slate-800/30 flex flex-col gap-6 shadow-lg relative overflow-hidden">
+          <!-- Bàn giáo viên ở đầu -->
+          <div class="flex justify-center mb-2">
+            <div class="px-6 py-2 bg-slate-200 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-400 rounded-lg uppercase tracking-widest border border-slate-300 dark:border-slate-700">
+              BÀN GIÁO VIÊN / BẢNG ĐEN
+            </div>
+          </div>
+
+          <!-- Lưới chỗ ngồi -->
+          <div
+            class="grid gap-3 w-full"
+            [style.gridTemplateColumns]="'repeat(' + seatingCols() + ', minmax(0, 1fr))'"
+          >
+            <ng-container *ngFor="let row of seatingLayout(); let rIdx = index">
+              <div
+                *ngFor="let name of row; let cIdx = index"
+                class="aspect-[4/3] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-2.5 flex flex-col justify-between transition-all duration-300 shadow-sm"
+                [class.animate-pulse]="isSeatingRunning()"
+                [ngClass]="{'opacity-40 select-none': !seatingDone() && !isSeatingRunning()}"
+              >
+                <!-- Số bàn -->
+                <span class="text-[9px] font-bold text-slate-400">
+                  Bàn {{ rIdx * seatingCols() + cIdx + 1 }}
+                </span>
+                
+                <!-- Tên học sinh -->
+                <span class="text-xs font-extrabold text-slate-800 dark:text-white truncate text-center w-full my-auto">
+                  {{ name }}
+                </span>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Điều khiển -->
+        <div class="flex gap-3 justify-center w-full" *ngIf="!seatingDone()">
+          <button
+            (click)="startSeating()"
+            [disabled]="isSeatingRunning()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
+            <span>{{ isSeatingRunning() ? 'ĐANG PHÂN BỔ...' : 'BẮT ĐẦU PHÂN CHỖ' }}</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+            </svg>
+          </button>
+          <button
+            (click)="skipSeating()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
+            <span>Bỏ qua</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <div *ngIf="seatingDone()" class="animate-fade-in text-center py-2">
+          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            Sơ đồ chỗ ngồi hoàn thành!
+          </div>
+          <p class="text-xs text-slate-500 mt-1">Các vị trí chỗ ngồi đã được phân bổ ngẫu nhiên minh bạch.</p>
+        </div>
+      </div>
+
