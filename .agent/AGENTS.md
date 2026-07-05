@@ -101,6 +101,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Xây dựng component phân trang dùng chung `PaginationComponent` độc lập và thay thế phần phân trang cũ tại trang Lịch sử (History) bằng thiết kế hình tròn Glassmorphism với màu sắc hoạt động hồng neon cực kỳ cao cấp, giống với cafe-blockchain.
 - [x] Khắc phục triệt để lỗi trò chơi Thả bóng Plinko bị đứng im không chạy do lỗi RangeError của đối tượng Proxy Result từ thư viện ethers v6, đồng thời tối ưu hóa giao diện hiển thị động số lượng khe (nếu số người tham gia <= 9 người) và dẫn bóng rơi chính xác vào vị trí khe của người chiến thắng thực tế, loại bỏ các khe giả lập "Khe X" thừa.
 - [x] Khắc phục triệt để lỗi không hiển thị danh sách thẻ bài trong trò chơi Bốc bài tây (Card Draw) do lỗi RangeError / Proxy Result của ethers v6 khi filter trực tiếp trên mảng Proxy của người tham gia, bằng cách chuyển đổi sang mảng Javascript gốc qua `Array.from` trong cả hàm `initCardDraw` và `markAnimationsAsDone`.
+- [x] Khắc phục triệt để lỗi hiển thị sai lệch và vỡ SVG của các icon game Oản Tù Tì (Rock-Paper-Scissors): Thay thế các SVG cũ (hình cây kéo bị lỗi path và biểu tượng tài liệu/búa công cụ không phù hợp) bằng các icon SVG biểu diễn nắm đấm (Búa), bàn tay mở (Bao) và cử chỉ tay kéo (Kéo) chuẩn FontAwesome Solid sắc nét, hoạt động hoàn hảo trên mọi chế độ.
+
 
 
 
