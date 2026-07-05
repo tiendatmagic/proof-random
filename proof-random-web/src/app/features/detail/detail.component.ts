@@ -283,6 +283,61 @@ export class DetailComponent implements OnDestroy {
       this.hashSteps.set(steps);
       return;
     }
+
+    // --- Skin: Bầu Cua Tôm Cá ---
+    // 3 xúc xắc: d1 = seed%6, d2 = keccak256(seed,'1')%6, d3 = keccak256(seed,'2')%6
+    if (details.skin === 'BauCua') {
+      this.isHashChain.set(true);
+      const bauCuaNames = ['Bầu', 'Cua', 'Tôm', 'Cá', 'Gà', 'Nai'];
+      const steps: HashStep[] = [];
+
+      // Xúc xắc 1: mod trực tiếp
+      const d1 = Number(seed % 6n);
+      steps.push({
+        stepIndex: 1,
+        label: 'Xúc xắc 1 — Tính trực tiếp từ randomWord',
+        inputSeed: this.shortHash(randomWord),
+        inputSeedFull: randomWord,
+        hashOutput: 'mod trực tiếp',
+        hashOutputFull: randomWord,
+        poolSizeBefore: 6,
+        indexChosen: d1,
+        valueChosen: `${randomWord} % 6 = ${d1} → ${bauCuaNames[d1]}`
+      });
+
+      // Xúc xắc 2: keccak256(seed, '1') % 6
+      const hash2 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '1']);
+      const d2 = Number(BigInt(hash2) % 6n);
+      steps.push({
+        stepIndex: 2,
+        label: 'Xúc xắc 2 — Băm với nonce "1"',
+        inputSeed: this.shortHash(randomWord),
+        inputSeedFull: randomWord,
+        hashOutput: this.shortHash(hash2),
+        hashOutputFull: hash2,
+        poolSizeBefore: 6,
+        indexChosen: d2,
+        valueChosen: `keccak256(seed, "1") % 6 = ${d2} → ${bauCuaNames[d2]}`
+      });
+
+      // Xúc xắc 3: keccak256(seed, '2') % 6
+      const hash3 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '2']);
+      const d3 = Number(BigInt(hash3) % 6n);
+      steps.push({
+        stepIndex: 3,
+        label: 'Xúc xắc 3 — Băm với nonce "2"',
+        inputSeed: this.shortHash(randomWord),
+        inputSeedFull: randomWord,
+        hashOutput: this.shortHash(hash3),
+        hashOutputFull: hash3,
+        poolSizeBefore: 6,
+        indexChosen: d3,
+        valueChosen: `keccak256(seed, "2") % 6 = ${d3} → ${bauCuaNames[d3]}`
+      });
+
+      this.hashSteps.set(steps);
+      return;
+    }
   }
 
   /**

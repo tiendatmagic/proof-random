@@ -358,18 +358,27 @@ export class VerifyComponent implements OnInit {
     return details && details.skin ? details.skin : '';
   }
 
-  public getDrawTypeName(type: number): string {
-    const names: Record<number, string> = {
-      1: "Quay số ngẫu nhiên",
-      2: "Chọn 1 tên ngẫu nhiên",
-      3: "Chọn nhiều người thắng",
-      4: "Lật đồng xu",
-      5: "Quay xúc xắc",
-      6: "Chẵn / Lẻ",
-      7: "Màu sắc ngẫu nhiên",
-      8: "Chữ cái ngẫu nhiên (A-Z)",
-      9: "Chia đội ngẫu nhiên"
+  public getDrawTypeName(type: number, skin?: string): string {
+    const skins: Record<string, string> = {
+      LuckyWheel:  'Vòng quay may mắn',
+      Racing:      'Đua xe ngẫu nhiên',
+      MysteryBox:  'Hộp quà bí ẩn',
+      BauCua:      'Bầu Cua Tôm Cá',
+      ScratchCard: 'Vé số cào',
+      Vietlott:    'Xổ số Vietlott',
     };
-    return names[type] || "Chưa xác định";
+    if (skin && skins[skin]) return skins[skin];
+    const names: Record<number, string> = {
+      1: 'Quay số ngẫu nhiên',
+      2: 'Chọn 1 tên ngẫu nhiên',
+      3: 'Chọn nhiều người thắng',
+      4: 'Lật đồng xu',
+      5: 'Quay xúc xắc',
+      6: 'Chẵn / Lẻ',
+      7: 'Màu sắc ngẫu nhiên',
+      8: 'Chữ cái ngẫu nhiên (A-Z)',
+      9: 'Chia đội ngẫu nhiên',
+    };
+    return names[type] || 'Chưa xác định';
   }
 }

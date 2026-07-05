@@ -179,8 +179,8 @@
               <!-- Loại bốc thăm -->
               <tr>
                 <td class="font-extrabold text-slate-800 dark:text-white">Loại bốc thăm (Draw Type)</td>
-                <td>{{ getDrawTypeName(sessionDetails().drawType) }} (Mã: {{ sessionDetails().drawType }})</td>
-                <td>{{ getDrawTypeName(sessionDetails().drawType) }} (Mã: {{ sessionDetails().drawType }})</td>
+                <td>{{ getDrawTypeName(sessionDetails().drawType, sessionDetails().skin) }} (Mã: {{ sessionDetails().drawType }})</td>
+                <td>{{ getDrawTypeName(sessionDetails().drawType, sessionDetails().skin) }} (Mã: {{ sessionDetails().drawType }})</td>
                 <td>
                   <div class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-xs select-none">
                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

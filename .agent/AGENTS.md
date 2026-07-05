@@ -70,6 +70,9 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Đồng bộ hóa tài liệu README.md và cấu hình package.json: Cập nhật tên dự án sang ProofRandom, bổ sung hướng dẫn chạy nhanh npm start, hướng dẫn cấu hình Chainlink VRF v2.5, mô tả chi tiết 5 mini-game trực quan, game xổ số Vietlott, tính năng tự động nhận dạng mạng lưới và thống kê số dư Oracle LINK.
 - [x] Triển khai khối "Chuỗi băm xác minh theo từng bước" trên trang Verify: hiển thị trực quan randomWord gốc on-chain → từng bước keccak256 (drawType 3,7,9) hoặc công thức mod trực tiếp (drawType 1,2,4,5,6,8) → kết quả cuối cùng khớp on-chain. Hỗ trợ copy hash đầy đủ, Timeline layout, không cần sửa Smart Contract.
 - [x] Áp dụng khối "Chuỗi băm xác minh theo từng bước" cho cả trang Detail page (tất cả 9 chế độ bốc thăm). Import HashStep/DirectModResult interface từ verify component, thêm buildHashSteps() vào detail.component.ts, thêm UI timeline vào detail.component.html.
+- [x] Bổ sung case Bầu Cua (BauCua skin) vào buildHashSteps(): hiển thị rõ 3 xúc xắc (d1=seed%6, d2=keccak256(seed,"1")%6, d3=keccak256(seed,"2")%6) kèm tên con vật tương ứng.
+- [x] Cập nhật đầy đủ 15 chế độ quay (9 drawType + 6 game skin) cho bộ lọc trang History: thêm skin vào filterOptions, logic filter theo skin, badge màu tím phân biệt skin vs drawType thuần, hàm getDrawTypeName nhận thêm skin param. Đồng bộ getDrawTypeName cho cả Verify page và hiển thị skin đúng trong bảng đối soát.
+
 
 
 

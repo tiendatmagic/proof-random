@@ -29,7 +29,8 @@
           </svg>
           <input 
             type="text" 
-            [(ngModel)]="filterSearch" 
+            [ngModel]="filterSearch()" 
+            (ngModelChange)="filterSearch.set($event); currentPage.set(1)"
             placeholder="Nhập từ khóa tìm kiếm..." 
             class="form-input form-input-icon"
           />
@@ -45,7 +46,8 @@
           </svg>
           <input 
             type="text" 
-            [(ngModel)]="filterCreator" 
+            [ngModel]="filterCreator()" 
+            (ngModelChange)="filterCreator.set($event); currentPage.set(1)"
             placeholder="0x12a3..." 
             class="form-input form-input-icon"
           />
@@ -55,7 +57,7 @@
       <!-- Lọc theo Loại bốc thăm -->
       <div class="space-y-1.5">
         <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest min-h-[28px] flex items-end pb-0.5">Loại bốc thăm</label>
-        <app-select [(value)]="filterType" [options]="filterOptions" class="w-full"></app-select>
+        <app-select [value]="filterType()" (valueChange)="filterType.set($event); currentPage.set(1)" [options]="filterOptions" class="w-full"></app-select>
       </div>
     </div>
   </app-card>
@@ -95,8 +97,11 @@
               </td>
               <!-- Loại quay -->
               <td>
-                <span class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-950/40 text-slate-500 border border-slate-200/20">
-                  {{ getDrawTypeName(item.drawType) }}
+                <span class="px-2.5 py-1 rounded-lg text-xs font-bold border"
+                  [class]="item.skin
+                    ? 'bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200/30 dark:border-purple-800/30'
+                    : 'bg-slate-100 dark:bg-slate-950/40 text-slate-500 border-slate-200/20'">
+                  {{ getDrawTypeName(item.drawType, item.skin) }}
                 </span>
               </td>
               <!-- Ví creator -->
@@ -137,15 +142,15 @@
       <!-- PHÂN TRANG (PAGINATION FOOTER BAR) -->
       <div *ngIf="paginatedDraws().length > 0" class="px-6 py-4 bg-slate-50/50 dark:bg-slate-950/20 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between flex-wrap gap-4 shrink-0">
       <div class="text-xs font-bold text-slate-400 dark:text-slate-500">
-        Hiển thị bản ghi {{ filteredDraws().length === 0 ? 0 : (currentPage - 1) * pageSize + 1 }} - 
-        {{ Math.min(currentPage * pageSize, filteredDraws().length) }} trên tổng số 
+        Hiển thị bản ghi {{ filteredDraws().length === 0 ? 0 : (currentPage() - 1) * pageSize + 1 }} - 
+        {{ Math.min(currentPage() * pageSize, filteredDraws().length) }} trên tổng số 
         {{ filteredDraws().length }} phiên lọc được
       </div>
 
       <div class="flex items-center gap-2">
         <button 
-          (click)="setPage(currentPage - 1)" 
-          [disabled]="currentPage === 1"
+          (click)="setPage(currentPage() - 1)" 
+          [disabled]="currentPage() === 1"
           class="btn btn-cancel btn-sm flex items-center justify-center p-2 cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
         >
           <!-- Left Arrow Icon SVG -->
@@ -155,12 +160,12 @@
         </button>
 
         <span class="text-xs font-extrabold text-slate-600 dark:text-slate-300 px-3">
-          Trang {{ currentPage }} / {{ totalPages() }}
+          Trang {{ currentPage() }} / {{ totalPages() }}
         </span>
 
         <button 
-          (click)="setPage(currentPage + 1)" 
-          [disabled]="currentPage === totalPages()"
+          (click)="setPage(currentPage() + 1)" 
+          [disabled]="currentPage() === totalPages()"
           class="btn btn-cancel btn-sm flex items-center justify-center p-2 cursor-pointer disabled:opacity-30 disabled:pointer-events-none"
         >
           <!-- Right Arrow Icon SVG -->
