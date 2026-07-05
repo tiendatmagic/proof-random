@@ -1390,7 +1390,39 @@ export class DetailComponent implements OnDestroy {
     // Vẽ các khe ở đáy bảng Plinko
     const details = this.sessionDetails();
     if (details && details.participants) {
-      const totalBins = 9;
+      const participantsList = Array.from(details.participants || []) as string[];
+      const count = participantsList.length;
+      const winnerIdx = Number(details.result);
+      const winnerName = participantsList[winnerIdx] || 'Winner';
+
+      let totalBins = 9;
+      let targetBinIdx = 4;
+      
+      if (count <= 9) {
+        totalBins = count;
+        targetBinIdx = winnerIdx;
+      } else {
+        totalBins = 9;
+        targetBinIdx = 4;
+      }
+      
+      const binNames = new Array(totalBins).fill('');
+      if (count <= 9) {
+        for (let i = 0; i < count; i++) {
+          binNames[i] = participantsList[i];
+        }
+      } else {
+        binNames[targetBinIdx] = winnerName;
+        let othersIdx = 0;
+        const others = participantsList.filter((p: string) => p !== winnerName);
+        for (let b = 0; b < totalBins; b++) {
+          if (b !== targetBinIdx) {
+            binNames[b] = others[othersIdx] || '';
+            othersIdx++;
+          }
+        }
+      }
+
       const binWidth = width / totalBins;
       ctx.fillStyle = isDark ? '#0f172a' : '#e2e8f0';
       ctx.strokeStyle = isDark ? '#1e293b' : '#cbd5e1';
@@ -1398,25 +1430,6 @@ export class DetailComponent implements OnDestroy {
       
       ctx.font = 'bold 9px Quicksand, sans-serif';
       ctx.textAlign = 'center';
-      
-      const winners = this.clientResult()?.winners || [];
-      const winnerName = winners[0] || 'Winner';
-      
-      // Phân bổ kết quả vào khe trung tâm (midBin)
-      const midBin = 4;
-      const binNames = new Array(totalBins).fill('');
-      binNames[midBin] = winnerName.length > 8 ? winnerName.substring(0, 6) + '..' : winnerName;
-      
-      let othersIdx = 0;
-      const participantsList = Array.from(details.participants || []) as string[];
-      const others = participantsList.filter((p: string) => p !== winnerName);
-      for (let b = 0; b < totalBins; b++) {
-        if (b !== midBin) {
-          const name = others[othersIdx] || `Khe ${b}`;
-          binNames[b] = name.length > 8 ? name.substring(0, 6) + '..' : name;
-          othersIdx++;
-        }
-      }
 
       for (let b = 0; b < totalBins; b++) {
         const x = b * binWidth;
@@ -1427,8 +1440,10 @@ export class DetailComponent implements OnDestroy {
         ctx.stroke();
 
         // Vẽ chữ kết quả
-        ctx.fillStyle = b === midBin ? '#ff00dd' : (isDark ? '#64748b' : '#64748b');
-        ctx.fillText(binNames[b], x + binWidth / 2, height - 10);
+        const name = binNames[b] || '';
+        const displayName = name.length > 8 ? name.substring(0, 6) + '..' : name;
+        ctx.fillStyle = b === targetBinIdx ? '#ff00dd' : '#64748b';
+        ctx.fillText(displayName, x + binWidth / 2, height - 10);
       }
     }
   }
@@ -1445,9 +1460,27 @@ export class DetailComponent implements OnDestroy {
     const width = canvas.width;
     const height = canvas.height;
     const rows = 12;
-    const midBin = 4;
-    const binWidth = width / 9;
-    const targetX = midBin * binWidth + binWidth / 2;
+
+    const details = this.sessionDetails();
+    if (!details || !details.participants) return;
+
+    const participantsList = Array.from(details.participants || []) as string[];
+    const count = participantsList.length;
+    const winnerIdx = Number(details.result);
+
+    let totalBins = 9;
+    let targetBinIdx = 4;
+
+    if (count <= 9) {
+      totalBins = count;
+      targetBinIdx = winnerIdx;
+    } else {
+      totalBins = 9;
+      targetBinIdx = 4;
+    }
+
+    const binWidth = width / totalBins;
+    const targetX = targetBinIdx * binWidth + binWidth / 2;
 
     let currentX = width / 2;
     let currentY = 20;
@@ -1474,7 +1507,7 @@ export class DetailComponent implements OnDestroy {
       } else {
         this.isPlinkoRunning.set(false);
         this.plinkoDone.set(true);
-        this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã chiến thắng Plinko!`, 'success');
+        this.toastService.showToast(`Chúc mừng ${participantsList[winnerIdx]} đã chiến thắng Plinko!`, 'success');
       }
     };
 
