@@ -116,6 +116,74 @@
           </h2>
         </div>
 
+        <!-- Banner cảnh báo gas trên Sepolia Faucet -->
+        <div
+          *ngIf="web3Service.configuredChainId() === '421614'"
+          class="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-semibold flex items-start sm:items-center gap-3"
+        >
+          <svg
+            class="w-5 h-5 shrink-0 text-amber-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <div class="leading-relaxed">
+            Bạn đang sử dụng mạng thử nghiệm
+            <span class="font-extrabold text-amber-700 dark:text-amber-300"
+              >Arbitrum Sepolia</span
+            >. Nếu tài khoản không đủ ETH làm phí gas, bạn có thể nhận token Faucet
+            miễn phí tại
+            <a
+              href="https://faucets.chain.link/"
+              target="_blank"
+              class="underline hover:text-amber-500 font-extrabold inline-flex items-center gap-0.5 cursor-pointer"
+            >
+              Chainlink Faucet
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
+            hoặc
+            <a
+              href="https://www.alchemy.com/faucets/arbitrum-sepolia"
+              target="_blank"
+              class="underline hover:text-amber-500 font-extrabold inline-flex items-center gap-0.5 cursor-pointer"
+            >
+              Alchemy Faucet
+              <svg
+                class="w-3.5 h-3.5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>.
+          </div>
+        </div>
+
         <form (ngSubmit)="onSubmitDraw()" class="space-y-6">
           <!-- Tên sự kiện & Mô tả -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
