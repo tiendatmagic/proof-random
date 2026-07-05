@@ -572,8 +572,11 @@ export class Web3Service {
     // 7. Random Color
     else if (drawType === 7) {
       const hashHex = this.solidityKeccak256(['uint256'], [seed.toString()]);
-      // Lấy 6 ký tự cuối cùng của hash làm màu hex
-      const color = '#' + hashHex.substring(hashHex.length - 6).toUpperCase();
+      // Solidity lấy 3 byte cuối từ phải sang trái (hash[31], hash[30], hash[29])
+      const byte31 = hashHex.substring(hashHex.length - 2);
+      const byte30 = hashHex.substring(hashHex.length - 4, hashHex.length - 2);
+      const byte29 = hashHex.substring(hashHex.length - 6, hashHex.length - 4);
+      const color = ('#' + byte31 + byte30 + byte29).toUpperCase();
       return { result: color, winners: [color] };
     }
     // 8. Random Letter

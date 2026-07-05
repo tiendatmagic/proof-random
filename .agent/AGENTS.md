@@ -74,6 +74,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Cập nhật đầy đủ 15 chế độ quay (9 drawType + 6 game skin) cho bộ lọc trang History: thêm skin vào filterOptions, logic filter theo skin, badge màu tím phân biệt skin vs drawType thuần, hàm getDrawTypeName nhận thêm skin param. Đồng bộ getDrawTypeName cho cả Verify page và hiển thị skin đúng trong bảng đối soát.
 - [x] Tối ưu hóa CSS layout bảng History: cố định chiều rộng cột th/td, nới rộng giới hạn hiển thị tên phiên bốc thăm lên max-w-[280px], đồng bộ kích thước tất cả các nhãn Chế độ quay (w-[165px], h-7, inline-flex) giúp bảng hiển thị thẳng hàng tăm tắp, cân đối và chuyên nghiệp.
 - [x] Thiết lập hệ thống màu sắc badge thông minh cho 15 chế độ bốc thăm (Sky Blue cho bốc thăm số/tên, Teal cho may rủi nhị phân, Indigo cho màu sắc/chia đội, Đỏ cam cho Vietlott, Hồng neon cho Vòng quay, Vàng hổ phách cho Hộp quà, Xanh lá cho Bầu Cua...) nhằm tăng độ thẩm mỹ công nghệ cao và dễ nhận diện.
+- [x] Khắc phục lỗi xác minh (Verify) ở chế độ Màu ngẫu nhiên (Random Color): Đồng bộ lại thứ tự đọc 3 byte cuối từ phải sang trái (hash[31], hash[30], hash[29]) trong thuật toán tính màu ở client-side để khớp chính xác 100% với hàm `getRandomColor` của Smart Contract.
+
 
 
 

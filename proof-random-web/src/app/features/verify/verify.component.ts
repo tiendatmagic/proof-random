@@ -181,9 +181,11 @@ export class VerifyComponent implements OnInit {
     this.isHashChain.set(true);
 
     if (drawType === 7) {
-      // Random Color: keccak256(randomWord) → lấy 6 ký tự cuối làm HEX
       const hashHex = this.web3Service.solidityKeccak256(['uint256'], [randomWord]);
-      const color = '#' + hashHex.substring(hashHex.length - 6).toUpperCase();
+      const byte31 = hashHex.substring(hashHex.length - 2);
+      const byte30 = hashHex.substring(hashHex.length - 4, hashHex.length - 2);
+      const byte29 = hashHex.substring(hashHex.length - 6, hashHex.length - 4);
+      const color = ('#' + byte31 + byte30 + byte29).toUpperCase();
       const steps: HashStep[] = [{
         stepIndex: 1,
         label: 'Bước 1 — Băm randomWord → Mã màu HEX',
@@ -193,7 +195,7 @@ export class VerifyComponent implements OnInit {
         hashOutputFull: hashHex,
         poolSizeBefore: 0,
         indexChosen: 0,
-        valueChosen: `6 ký tự cuối hash: "${hashHex.substring(hashHex.length - 6).toUpperCase()}" → Màu: ${color}`
+        valueChosen: `3 byte cuối đảo ngược (hash[31], hash[30], hash[29]): "${(byte31 + byte30 + byte29).toUpperCase()}" → Màu: ${color}`
       }];
       this.hashSteps.set(steps);
       return;
