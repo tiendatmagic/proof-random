@@ -33,7 +33,7 @@ export class Web3Service {
   public readonly walletError = signal<string>('');
 
   // Trạng thái cấu hình Gas của dApp (mặc định, nhanh x2, tùy chỉnh)
-  public readonly gasMode = signal<'default' | 'fast' | 'custom'>('default');
+  public readonly gasMode = signal<'default' | 'fast' | 'custom'>('fast');
   public readonly gasMultiplier = signal<number>(2.0);
 
   // Cấu hình mạng mặc định và contract hiện hành
