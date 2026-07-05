@@ -6,11 +6,12 @@ import { Web3Service } from '../../core/services/web3.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { SkeletonLoaderComponent } from '../../shared/components/skeleton-loader/skeleton-loader.component';
 import { SelectComponent, SelectOption } from '../../shared/components/select/select.component';
+import { PaginationComponent } from '../../shared/components/pagination/pagination.component';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CardComponent, SkeletonLoaderComponent, SelectComponent],
+  imports: [CommonModule, FormsModule, RouterLink, CardComponent, SkeletonLoaderComponent, SelectComponent, PaginationComponent],
   templateUrl: './history.component.html'
 })
 export class HistoryComponent {

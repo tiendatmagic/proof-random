@@ -98,6 +98,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục triệt để lỗi lệch dữ liệu thống kê trên Dashboard (Tổng phiên vs Lượt quay thành công) bằng cách truy vấn getSessionsCount trực tiếp từ contract state và tự động làm mới cache sự kiện khi phát hiện dữ liệu lỗi thời.
 - [x] Khắc phục lỗi hiển thị tên chế độ quay "Quay xúc xắc" thay vì "Bầu Cua Tôm Cá" trên trang Chi tiết (Detail) bằng cách sửa đổi hàm getDrawTypeName nhận thêm tham số skin, đồng bộ hóa tại giao diện và các bộ dữ liệu xuất file.
 - [x] Triển khai thành công 4 chế độ bốc thăm mới: Plinko (Thả bóng may mắn), Slot Machine (Quay hũ), Bốc bài tây (Card Draw), và Oản tù tì (Rock-Paper-Scissors). Đồng bộ hóa hoàn hảo trên cả 4 trang Dashboard, Lịch sử, Chi tiết, Xác minh và hệ thống băm đối soát.
+- [x] Xây dựng component phân trang dùng chung `PaginationComponent` độc lập và thay thế phần phân trang cũ tại trang Lịch sử (History) bằng thiết kế hình tròn Glassmorphism với màu sắc hoạt động hồng neon cực kỳ cao cấp, giống với cafe-blockchain.
+
 
 
 
