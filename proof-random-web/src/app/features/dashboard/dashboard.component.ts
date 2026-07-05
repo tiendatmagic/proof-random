@@ -239,6 +239,20 @@ export class DashboardComponent {
         this.toastService.showToast('Số Min phải nhỏ hơn số Max!', 'error');
         return;
       }
+      if (this.numWinners > 1) {
+        const rangeSize = this.numMax - this.numMin + 1;
+        if (this.numWinners > rangeSize) {
+          this.toastService.showToast('Số lượng số cần quay không được lớn hơn tổng số trong khoảng (Max - Min + 1)!', 'error');
+          return;
+        }
+        if (rangeSize > 1000) {
+          this.toastService.showToast('Khoảng giới hạn số (Max - Min + 1) không được vượt quá 1000 khi quay nhiều số cùng lúc để tiết kiệm gas!', 'error');
+          return;
+        }
+      } else if (this.numWinners <= 0) {
+        this.toastService.showToast('Số lượng số cần quay phải lớn hơn 0!', 'error');
+        return;
+      }
     } else if (this.drawType === 2 || this.drawType === 3 || this.drawType === 9) { // Chế độ cần danh sách người
       if (participants.length === 0) {
         this.toastService.showToast('Vui lòng nhập danh sách người tham gia / món ăn!', 'error');
@@ -246,13 +260,14 @@ export class DashboardComponent {
       }
 
       const isMultiWhatToEat = (this.selectedSkin === 'WhatToEat' && this.numWinners > 1);
-      if (this.drawType === 3 || isMultiWhatToEat) { // Multi Winners hoặc WhatToEat chọn nhiều món
+      const isMultiTarot = (this.selectedSkin === 'Tarot' && this.numWinners > 1);
+      if (this.drawType === 3 || isMultiWhatToEat || isMultiTarot) { // Multi Winners hoặc WhatToEat/Tarot chọn nhiều món/lá bài
         if (this.numWinners <= 0) {
-          this.toastService.showToast('Số lượng người thắng / món ăn phải lớn hơn 0!', 'error');
+          this.toastService.showToast('Số lượng cần bốc thăm phải lớn hơn 0!', 'error');
           return;
         }
         if (this.numWinners > participants.length) {
-          this.toastService.showToast('Số lượng người thắng / món ăn không được lớn hơn tổng số lựa chọn!', 'error');
+          this.toastService.showToast('Số lượng bốc thăm không được lớn hơn tổng số lựa chọn!', 'error');
           return;
         }
       } else if (this.drawType === 9) { // Random Team
@@ -292,10 +307,27 @@ export class DashboardComponent {
         param1 = 1;
         param2 = 90;
       }
+    } else if (this.selectedSkin === 'Tarot') {
+      if (this.numWinners > 1) {
+        drawTypeToSend = 3;
+        param1 = participants.length;
+        param2 = this.numWinners;
+      } else {
+        drawTypeToSend = 2;
+        param1 = participants.length;
+        param2 = 0;
+      }
     } else {
       if (this.drawType === 1) {
-        param1 = this.numMin;
-        param2 = this.numMax;
+        if (this.numWinners > 1) {
+          drawTypeToSend = 3;
+          param1 = this.numMax - this.numMin + 1;
+          param2 = this.numWinners;
+          participants = Array.from({ length: param1 }, (_, i) => (this.numMin + i).toString());
+        } else {
+          param1 = this.numMin;
+          param2 = this.numMax;
+        }
       } else if (this.drawType === 2) {
         param1 = participants.length;
         param2 = 0;

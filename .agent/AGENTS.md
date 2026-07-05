@@ -113,7 +113,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Hỗ trợ quay số Bingo nâng cấp: Cho phép người dùng tùy chọn quay 1 bóng số (drawType = 1) hoặc quay bộ nhiều bóng số không trùng lặp (drawType = 3) cùng lúc từ 1-90 nhằm tiết kiệm gas tối đa, thiết kế giao diện dãy bóng Bingo Glassmorphism neon tuyệt đẹp khi kết quả hiển thị.
 - [x] Khắc phục lỗi reverted InvalidInput() (0xb4fa3fb3) khi thực hiện quay số Bingo với số lượng bóng > 1 (drawType = 3) bằng cách tự động điền danh sách bóng ["1", "2", ..., "90"] khớp với độ dài param1 để đáp ứng xác thực dữ liệu đầu vào của Smart Contract.
 - [x] Tối ưu hóa giao diện rút bài Tarot: Chuyển đổi màu sắc của mặt sau lá bài (Card Back) từ màu xanh đậm cố định sang màu sắc linh động, tương thích hoàn hảo cho cả Light Mode (màu Indigo sáng nhẹ nhàng) và Dark Mode (màu Indigo/Slate huyền bí), giúp giao diện không bị lệch tone màu.
-
+- [x] Tích hợp tính năng bốc thăm nhiều số ngẫu nhiên cùng lúc cho chế độ "Quay số (Random Number)": Thêm trường nhập số lượng cần quay vào cấu hình, tự động chuyển đổi logic sang drawType 3 (Multiple Winners) trên blockchain và tự động điền danh sách khoảng số để thỏa mãn xác thực on-chain. Cập nhật giao diện trang chi tiết để hiển thị đẹp mắt danh sách các số trúng giải mà không bị nhầm lẫn với bốc thăm tên người.
 
 
 

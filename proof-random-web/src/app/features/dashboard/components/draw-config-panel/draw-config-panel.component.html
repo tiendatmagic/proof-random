@@ -5,7 +5,7 @@
     class="space-y-4 animate-fade-in"
   >
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Quay ra một số ngẫu nhiên nằm trong khoảng số Min và Max của bạn.
+      Quay ra một hoặc nhiều số ngẫu nhiên nằm trong khoảng số Min và Max của bạn.
     </p>
     <div class="grid grid-cols-2 gap-4">
       <div class="space-y-1.5">
@@ -30,6 +30,20 @@
           class="form-input"
         />
       </div>
+    </div>
+    <!-- Số lượng số cần quay -->
+    <div class="space-y-1.5">
+      <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+        >Số lượng số cần quay</label
+      >
+      <input
+        type="number"
+        [ngModel]="numWinners"
+        (ngModelChange)="numWinnersChange.emit($event)"
+        min="1"
+        class="form-input"
+        placeholder="Mặc định: 1"
+      />
     </div>
   </div>
 
@@ -132,22 +146,28 @@
     </div>
 
     <!-- 2g. Tarot Config -->
-    <p
-      *ngIf="selectedSkin === 'Tarot'"
-      class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed animate-fade-in"
-    >
-      Rút bài Tarot (Tarot Card Reader): Rút ngẫu nhiên một lá bài Tarot từ bộ 22 lá bài Tarot ẩn chính để xem thông điệp của ngày hôm nay.
-    </p>
-    <div
-      *ngIf="selectedSkin === 'Tarot'"
-      class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 animate-fade-in"
-    >
-      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-        Kiểu bốc thăm
+    <div *ngIf="selectedSkin === 'Tarot'" class="space-y-4 animate-fade-in">
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+        Rút bài Tarot (Tarot Card Reader): Rút ngẫu nhiên một hoặc nhiều lá bài từ bộ 22 lá bài Tarot ẩn chính để xem thông điệp của bạn.
+      </p>
+      <div
+        class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-indigo-600 dark:text-indigo-400"
+      >
+        Bộ bài Tarot chính: 22 lá bài
       </div>
-      <div class="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-        Rút 1 lá bài định mệnh (Tarot Card)
+      <div class="space-y-1.5">
+        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+          >Số lượng lá bài cần rút</label
+        >
+        <input
+          type="number"
+          [ngModel]="numWinners"
+          (ngModelChange)="numWinnersChange.emit($event)"
+          min="1"
+          max="22"
+          class="form-input"
+          placeholder="Mặc định: 1"
+        />
       </div>
     </div>
   </div>

@@ -559,6 +559,12 @@ export class DetailComponent implements OnDestroy {
     if (this.bingoIntervalId) clearInterval(this.bingoIntervalId);
   }
 
+  public isNumberWinners(): boolean {
+    const res = this.clientResult();
+    if (!res || !res.winners || res.winners.length === 0) return false;
+    return !isNaN(Number(res.winners[0]));
+  }
+
   /**
    * Chức năng sao chép liên kết (Copy Link)
    */
@@ -2107,37 +2113,54 @@ export class DetailComponent implements OnDestroy {
 
     const details = this.sessionDetails();
     if (details && details.participants && details.result !== undefined && details.result !== null) {
-      const winnerIdx = Number(details.result);
-      const wName = details.participants[winnerIdx] || 'The Sun (Mặt Trời)';
-      
-      const allTarotList = [
-        'The Fool (Chàng Khờ)', 'The Magician (Nhà Ảo Thuật)', 'The High Priestess (Nữ Tư Tế)',
-        'The Empress (Nữ Hoàng)', 'The Emperor (Hoàng Đế)', 'The Hierophant (Giáo Hoàng)',
-        'The Lovers (Tình Nhân)', 'The Chariot (Chiến Xa)', 'Strength (Sức Mạnh)',
-        'The Hermit (Ẩn Sĩ)', 'Wheel of Fortune (Vòng Quay Số Phận)', 'Justice (Công Lý)',
-        'The Hanged Man (Kẻ Treo)', 'Death (Tử Thần)', 'Temperance (Tiết Độ)',
-        'The Devil (Ác Quỷ)', 'The Tower (Tòa Tháp)', 'The Star (Ngôi Sao)',
-        'The Moon (Mặt Trăng)', 'The Sun (Mặt Trời)', 'Judgement (Phán Xét)', 'The World (Thế Giới)'
-      ];
+      if (details.drawType === 3) {
+        // Chế độ rút nhiều lá bài Tarot
+        const indices = details.result.split(',').map(Number);
+        const cardsList = indices.map((winnerIdx: number) => {
+          const wName = details.participants[winnerIdx] || 'The Sun (Mặt Trời)';
+          return {
+            name: wName,
+            isWinner: true,
+            flipped: false,
+            selected: false,
+            desc: this.getTarotDesc(wName)
+          };
+        });
+        this.tarotCards.set(cardsList);
+      } else {
+        // Chế độ rút 1 lá bài Tarot định mệnh (Game 3 lá bài)
+        const winnerIdx = Number(details.result);
+        const wName = details.participants[winnerIdx] || 'The Sun (Mặt Trời)';
+        
+        const allTarotList = [
+          'The Fool (Chàng Khờ)', 'The Magician (Nhà Ảo Thuật)', 'The High Priestess (Nữ Tư Tế)',
+          'The Empress (Nữ Hoàng)', 'The Emperor (Hoàng Đế)', 'The Hierophant (Giáo Hoàng)',
+          'The Lovers (Tình Nhân)', 'The Chariot (Chiến Xa)', 'Strength (Sức Mạnh)',
+          'The Hermit (Ẩn Sĩ)', 'Wheel of Fortune (Vòng Quay Số Phận)', 'Justice (Công Lý)',
+          'The Hanged Man (Kẻ Treo)', 'Death (Tử Thần)', 'Temperance (Tiết Độ)',
+          'The Devil (Ác Quỷ)', 'The Tower (Tòa Tháp)', 'The Star (Ngôi Sao)',
+          'The Moon (Mặt Trăng)', 'The Sun (Mặt Trời)', 'Judgement (Phán Xét)', 'The World (Thế Giới)'
+        ];
 
-      const fakes = allTarotList.filter(c => c !== wName);
-      const fake1 = fakes[Number(BigInt(details.randomWord || 0) % BigInt(fakes.length))];
-      const fakes2 = fakes.filter(c => c !== fake1);
-      const fake2 = fakes2[Number((BigInt(details.randomWord || 0) / 2n) % BigInt(fakes2.length))];
+        const fakes = allTarotList.filter(c => c !== wName);
+        const fake1 = fakes[Number(BigInt(details.randomWord || 0) % BigInt(fakes.length))];
+        const fakes2 = fakes.filter(c => c !== fake1);
+        const fake2 = fakes2[Number((BigInt(details.randomWord || 0) / 2n) % BigInt(fakes2.length))];
 
-      const winPos = Number(BigInt(details.randomWord || 0) % 3n);
-      const cardsList = new Array(3);
-      cardsList[winPos] = { name: wName, isWinner: true, flipped: false, selected: false, desc: this.getTarotDesc(wName) };
-      
-      let fakeIdx = 0;
-      const fakeArr = [fake1, fake2];
-      for (let i = 0; i < 3; i++) {
-        if (i !== winPos) {
-          const fakeName = fakeArr[fakeIdx++];
-          cardsList[i] = { name: fakeName, isWinner: false, flipped: false, selected: false, desc: this.getTarotDesc(fakeName) };
+        const winPos = Number(BigInt(details.randomWord || 0) % 3n);
+        const cardsList = new Array(3);
+        cardsList[winPos] = { name: wName, isWinner: true, flipped: false, selected: false, desc: this.getTarotDesc(wName) };
+        
+        let fakeIdx = 0;
+        const fakeArr = [fake1, fake2];
+        for (let i = 0; i < 3; i++) {
+          if (i !== winPos) {
+            const fakeName = fakeArr[fakeIdx++];
+            cardsList[i] = { name: fakeName, isWinner: false, flipped: false, selected: false, desc: this.getTarotDesc(fakeName) };
+          }
         }
+        this.tarotCards.set(cardsList);
       }
-      this.tarotCards.set(cardsList);
     }
   }
 
@@ -2170,9 +2193,14 @@ export class DetailComponent implements OnDestroy {
       });
       this.tarotCards.set(cardsList);
 
-      const winnerCard = cardsList.find(c => c.isWinner);
-      if (winnerCard) {
-        this.toastService.showToast(`Bạn đã rút được lá bài: ${winnerCard.name}!`, 'success');
+      const details = this.sessionDetails();
+      if (details && details.drawType === 3) {
+        this.toastService.showToast(`Đã rút thành công bộ ${cardsList.length} lá bài Tarot!`, 'success');
+      } else {
+        const winnerCard = cardsList.find(c => c.isWinner);
+        if (winnerCard) {
+          this.toastService.showToast(`Bạn đã rút được lá bài: ${winnerCard.name}!`, 'success');
+        }
       }
     }, 2000);
   }
@@ -2185,9 +2213,14 @@ export class DetailComponent implements OnDestroy {
     const cardsList = this.tarotCards().map(c => ({ ...c, flipped: true }));
     this.tarotCards.set(cardsList);
 
-    const winnerCard = cardsList.find(c => c.isWinner);
-    if (winnerCard) {
-      this.toastService.showToast(`Kết quả rút bài: ${winnerCard.name}!`, 'success');
+    const details = this.sessionDetails();
+    if (details && details.drawType === 3) {
+      this.toastService.showToast(`Kết quả rút bộ ${cardsList.length} lá bài Tarot!`, 'success');
+    } else {
+      const winnerCard = cardsList.find(c => c.isWinner);
+      if (winnerCard) {
+        this.toastService.showToast(`Kết quả rút bài: ${winnerCard.name}!`, 'success');
+      }
     }
   }
 
