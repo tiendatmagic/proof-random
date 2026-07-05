@@ -5,6 +5,7 @@ import { Web3Service } from '../../core/services/web3.service';
 import { ToastService } from '../../core/services/toast.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { SkeletonLoaderComponent } from '../../shared/components/skeleton-loader/skeleton-loader.component';
+import { HashStep, DirectModResult } from '../verify/verify.component';
 
 @Component({
   selector: 'app-detail',
@@ -21,9 +22,14 @@ export class DetailComponent implements OnDestroy {
   public readonly sessionDetails = signal<any | null>(null);
   public readonly clientResult = signal<any | null>(null);
   public readonly isLoading = signal<boolean>(true);
-  
+
   // Trạng thái hiển thị popup QR
   public readonly showQrModal = signal<boolean>(false);
+
+  // Chuỗi bước hash xác minh thuật toán công khai
+  public readonly hashSteps = signal<HashStep[]>([]);
+  public readonly directModResult = signal<DirectModResult | null>(null);
+  public readonly isHashChain = signal<boolean>(false);
 
   // Lưu trữ interval để dọn dẹp (polling)
   private pollingInterval: any = null;
@@ -66,6 +72,7 @@ export class DetailComponent implements OnDestroy {
             data.participants
           );
           this.clientResult.set(res);
+          this.buildHashSteps(data); // Sinh bước hash hiển thị thuật toán công khai
           this.stopPolling(); // Dừng polling nếu đã nhận được kết quả
           this.checkAndInitSkins(data);
         } else {
@@ -79,6 +86,202 @@ export class DetailComponent implements OnDestroy {
       console.error('[Detail] Tải chi tiết lỗi:', err);
     } finally {
       this.isLoading.set(false);
+    }
+  }
+
+  /** Rút gọn hash/số thành dạng 0x1234...abcd hoặc 12345...890 */
+  public shortHash(val: string): string {
+    if (!val || val.length <= 14) return val;
+    return `${val.substring(0, 10)}...${val.substring(val.length - 6)}`;
+  }
+
+  /** Copy text vào clipboard */
+  public copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text).then(() => {
+      this.toastService.showToast('Đã sao chép!', 'success');
+    });
+  }
+
+  /**
+   * Sinh danh sách bước tính toán hash để hiển thị thuật toán công khai
+   */
+  private buildHashSteps(details: any): void {
+    this.hashSteps.set([]);
+    this.directModResult.set(null);
+    this.isHashChain.set(false);
+
+    if (!details || !details.randomWord || details.randomWord === '0') return;
+
+    const drawType = details.drawType as number;
+    const param1 = details.param1 as number;
+    const param2 = details.param2 as number;
+    const randomWord = details.randomWord as string;
+    const participants = details.participants as string[];
+    const seed = BigInt(randomWord);
+
+    if (drawType === 1) {
+      const min = BigInt(param1);
+      const max = BigInt(param2);
+      const range = max - min + 1n;
+      const mod = seed % range;
+      const result = (min + mod).toString();
+      this.directModResult.set({
+        label: 'Random Number — Tính trực tiếp từ randomWord',
+        formula: `randomWord % (max − min + 1) + min`,
+        modulo: `${randomWord} % ${range.toString()} = ${mod.toString()}`,
+        result: `Vị trí: ${mod.toString()} → Kết quả: ${result}`
+      });
+      return;
+    }
+
+    if (drawType === 2) {
+      const total = BigInt(param1);
+      const idx = seed % total;
+      const name = participants && participants[Number(idx)] ? participants[Number(idx)] : `Index: ${idx}`;
+      this.directModResult.set({
+        label: 'Random Name — Tính trực tiếp từ randomWord',
+        formula: `randomWord % tổng số người tham gia`,
+        modulo: `${randomWord} % ${param1} = ${idx.toString()}`,
+        result: `Vị trí: ${idx.toString()} → Người thắng: "${name}"`
+      });
+      return;
+    }
+
+    if (drawType === 4) {
+      const mod = seed % 2n;
+      this.directModResult.set({
+        label: 'Coin Flip — Tính trực tiếp từ randomWord',
+        formula: `randomWord % 2`,
+        modulo: `${randomWord} % 2 = ${mod.toString()}`,
+        result: `Kết quả: ${mod === 0n ? '0 → Heads (Mặt ngửa)' : '1 → Tails (Mặt sấp)'}`
+      });
+      return;
+    }
+
+    if (drawType === 5) {
+      const sides = BigInt(param1);
+      const mod = seed % sides;
+      const result = (1n + mod).toString();
+      this.directModResult.set({
+        label: `Dice Roll (${param1} mặt) — Tính trực tiếp từ randomWord`,
+        formula: `1 + (randomWord % số mặt xúc xắc)`,
+        modulo: `1 + (${randomWord} % ${param1}) = 1 + ${mod.toString()} = ${result}`,
+        result: `Kết quả: Mặt số ${result}`
+      });
+      return;
+    }
+
+    if (drawType === 6) {
+      const mod = seed % 2n;
+      this.directModResult.set({
+        label: 'Even/Odd — Tính trực tiếp từ randomWord',
+        formula: `randomWord % 2`,
+        modulo: `${randomWord} % 2 = ${mod.toString()}`,
+        result: `Kết quả: ${mod === 0n ? '0 → Even (Chẵn)' : '1 → Odd (Lẻ)'}`
+      });
+      return;
+    }
+
+    if (drawType === 8) {
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const mod = seed % 26n;
+      const letter = letters[Number(mod)];
+      this.directModResult.set({
+        label: 'Random Letter — Tính trực tiếp từ randomWord',
+        formula: `randomWord % 26 → chữ cái A-Z`,
+        modulo: `${randomWord} % 26 = ${mod.toString()}`,
+        result: `Vị trí: ${mod.toString()} → Chữ cái: "${letter}"`
+      });
+      return;
+    }
+
+    // --- Hash chain group ---
+    this.isHashChain.set(true);
+
+    if (drawType === 7) {
+      const hashHex = this.web3Service.solidityKeccak256(['uint256'], [randomWord]);
+      const color = '#' + hashHex.substring(hashHex.length - 6).toUpperCase();
+      this.hashSteps.set([{
+        stepIndex: 1,
+        label: 'Bước 1 — Băm randomWord → Mã màu HEX',
+        inputSeed: this.shortHash(randomWord),
+        inputSeedFull: randomWord,
+        hashOutput: this.shortHash(hashHex),
+        hashOutputFull: hashHex,
+        poolSizeBefore: 0,
+        indexChosen: 0,
+        valueChosen: `6 ký tự cuối hash: "${hashHex.substring(hashHex.length - 6).toUpperCase()}" → Màu: ${color}`
+      }]);
+      return;
+    }
+
+    if (drawType === 3) {
+      const k = param2;
+      const total = param1;
+      const steps: HashStep[] = [];
+      let tempRandom = seed;
+      const winnerIndices: number[] = [];
+
+      for (let i = 0; i < k; i++) {
+        const inputSeed = tempRandom.toString();
+        const hashHex = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), i.toString()]);
+        tempRandom = BigInt(hashHex);
+        let candidate = Number(tempRandom % BigInt(total));
+
+        let duplicate = winnerIndices.includes(candidate);
+        if (duplicate) {
+          let attempt = 0;
+          while (duplicate && attempt < 30) {
+            const retryHash = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), (attempt + 100).toString()]);
+            tempRandom = BigInt(retryHash);
+            candidate = Number(tempRandom % BigInt(total));
+            duplicate = winnerIndices.includes(candidate);
+            attempt++;
+          }
+        }
+        winnerIndices.push(candidate);
+        const name = participants && participants[candidate] ? `"${participants[candidate]}"` : `Index ${candidate}`;
+        steps.push({
+          stepIndex: i + 1,
+          label: `Bước ${i + 1} — Chọn người thắng thứ ${i + 1}`,
+          inputSeed: this.shortHash(inputSeed),
+          inputSeedFull: inputSeed,
+          hashOutput: this.shortHash(hashHex),
+          hashOutputFull: hashHex,
+          poolSizeBefore: total - i,
+          indexChosen: candidate,
+          valueChosen: `Vị trí ${candidate} → ${name}`
+        });
+      }
+      this.hashSteps.set(steps);
+      return;
+    }
+
+    if (drawType === 9) {
+      const total = param1;
+      const steps: HashStep[] = [];
+      let tempRandom = seed;
+      const MAX_DISPLAY = Math.min(total - 1, 10);
+
+      for (let i = total - 1; i > total - 1 - MAX_DISPLAY; i--) {
+        const inputSeed = tempRandom.toString();
+        const hashHex = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), i.toString()]);
+        tempRandom = BigInt(hashHex);
+        const swapIdx = Number(tempRandom % BigInt(i + 1));
+        steps.push({
+          stepIndex: total - i,
+          label: `Bước ${total - i} — Hoán vị Fisher-Yates (i=${i})`,
+          inputSeed: this.shortHash(inputSeed),
+          inputSeedFull: inputSeed,
+          hashOutput: this.shortHash(hashHex),
+          hashOutputFull: hashHex,
+          poolSizeBefore: i + 1,
+          indexChosen: swapIdx,
+          valueChosen: `Hoán vị vị trí ${i} ↔ ${swapIdx}`
+        });
+      }
+      this.hashSteps.set(steps);
+      return;
     }
   }
 
