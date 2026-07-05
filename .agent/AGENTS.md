@@ -81,6 +81,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục lỗi nút "Bắt đầu đối soát" làm xoay icon chiếc khiên bằng cách tách biệt icon chiếc khiên đứng yên khi bình thường và hiển thị spinner xoay chuẩn CSS khi đang thực hiện đối soát.
 - [x] Khắc phục lỗi icon bị đứt nét ở nút "BẮT ĐẦU QUAY SỐ" (Vietlott) bằng cách chuyển đổi sang path Heroicons v2 chuẩn, bổ sung hiệu ứng xoay (animate-spin) sinh động khi đang quay số và chống dẹt ngang (shrink-0).
 - [x] Tối ưu hóa hiệu năng trang Lịch sử bằng cơ chế phân trang On-chain trực tiếp qua mảng `requestIds` của Smart Contract, giúp giảm thiểu tải lượng RPC và tránh hoàn toàn lỗi Block Limit khi dữ liệu cực lớn, kết hợp cơ chế cache quét full thông minh khi người dùng thực hiện lọc/tìm kiếm.
+- [x] Loại bỏ hoàn toàn card thống kê "Nhà sáng lập (Creators)" trên giao diện Dashboard theo yêu cầu của người dùng, tối ưu hóa grid layout hiển thị 3 card còn lại thành 3 cột cân đối, dọn dẹp các biến, logic đếm người dùng duy nhất và điều chỉnh skeleton loader tương ứng.
 
 
 

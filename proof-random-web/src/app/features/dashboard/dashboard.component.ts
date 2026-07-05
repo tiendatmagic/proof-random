@@ -31,7 +31,6 @@ export class DashboardComponent {
   // Trạng thái thống kê tổng quan
   public readonly totalSessions = signal<number>(0);
   public readonly totalDraws = signal<number>(0);
-  public readonly totalUsers = signal<number>(0);
   public readonly linkBalance = signal<string>('--');
   public readonly subscriptionId = signal<string>('');
   public readonly recentDraws = signal<any[]>([]);
@@ -113,10 +112,6 @@ export class DashboardComponent {
     try {
       const draws = await this.web3Service.getAllDrawSessionsFromEvents();
       this.totalSessions.set(draws.length);
-
-      // Đếm số người dùng (creator) duy nhất
-      const uniqueCreators = new Set(draws.map(d => d.creator.toLowerCase()));
-      this.totalUsers.set(uniqueCreators.size);
 
       // Lấy 5 phiên gần nhất làm Recent Draws
       // Gọi RPC sessions để kiểm tra xem đã fulfilled chưa
