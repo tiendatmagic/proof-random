@@ -1,5 +1,5 @@
       <!-- ================= STANDARD DRAW TYPES (IF NO SKIN OR SPECIFIC MULTI SKINS) ================= -->
-      <div *ngIf="!skinType || skinType === 'Dice' || skinType === 'RandomLetter'" class="w-full flex flex-col items-center justify-center text-center">
+      <div *ngIf="!skinType || skinType === 'Dice' || skinType === 'RandomLetter' || skinType === 'CoinFlip'" class="w-full flex flex-col items-center justify-center text-center">
         <!-- 1. Random Number Display -->
         <div
           *ngIf="sessionDetails().drawType === 1 && clientResult()"
@@ -51,9 +51,9 @@
           </div>
         </div>
 
-        <!-- 3. Multiple Winners Display (Exclude Dice and Letter) -->
+        <!-- 3. Multiple Winners Display (Exclude Dice, Letter, and CoinFlip) -->
         <div
-          *ngIf="sessionDetails().drawType === 3 && skinType !== 'Dice' && skinType !== 'RandomLetter' && clientResult()"
+          *ngIf="sessionDetails().drawType === 3 && skinType !== 'Dice' && skinType !== 'RandomLetter' && skinType !== 'CoinFlip' && clientResult()"
           class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
         >
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
@@ -86,42 +86,51 @@
 
         <!-- 4. Coin Flip Display (With Animation) -->
         <div
-          *ngIf="sessionDetails().drawType === 4 && clientResult()"
-          class="space-y-6 w-full max-w-2xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+          *ngIf="(sessionDetails().drawType === 4 || skinType === 'CoinFlip') && clientResult()"
+          class="space-y-6 w-full max-w-4xl px-4 flex flex-col items-center animate-fade-in"
         >
           <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
             Kết quả lật đồng xu
           </p>
 
-          <!-- Đồng xu -->
-          <div class="relative w-36 h-36 mx-auto">
-            <div
-              [ngClass]="{ 'animate-spin': isCoinRunning() }"
-              class="w-full h-full rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] text-white shadow-xl shadow-[var(--color-primary)]/25 flex items-center justify-center select-none border-4 border-white/20"
-            >
-              <div class="flex flex-col items-center justify-center gap-1">
-                <!-- Khi đang quay: chỉ hiện emoji, không hiện text để tránh bị ngược -->
-                <span class="text-4xl">🪙</span>
-                <!-- Khi chưa bắt đầu: dấu ? -->
-                <span *ngIf="!isCoinRunning() && !coinDone()" class="text-xl font-black">?</span>
-                <!-- Khi đã dừng: hiện kết quả -->
-                <span *ngIf="coinDone()" class="text-sm font-black tracking-wider uppercase animate-fade-in">
-                  {{ tempCoinFace() === 'Heads' ? 'HEADS' : 'TAILS' }}
-                </span>
+          <!-- Danh sách đồng xu -->
+          <div class="flex flex-wrap items-center justify-center gap-6 py-4">
+            <!-- Trước khi bắt đầu quay: hiện các đồng xu rỗng hoặc ? -->
+            <ng-container *ngIf="!coinDone() && !isCoinRunning()">
+              <div
+                *ngFor="let idx of [].constructor(sessionDetails().drawType === 3 ? sessionDetails().param2 : 1)"
+                class="w-24 h-24 rounded-full bg-white/40 dark:bg-slate-950/40 border-2 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600 flex items-center justify-center text-2xl font-black shadow-sm font-mono"
+              >
+                ?
               </div>
-            </div>
-            <!-- Vành neon glow khi done -->
-            <div
-              *ngIf="coinDone()"
-              class="absolute inset-0 rounded-full ring-4 ring-[var(--color-primary)]/30 animate-pulse pointer-events-none"
-            ></div>
+            </ng-container>
+
+            <!-- Khi đang quay hoặc đã quay xong -->
+            <ng-container *ngIf="isCoinRunning() || coinDone()">
+              <div
+                *ngFor="let val of tempCoinValues(); let i = index"
+                [ngClass]="{ 'animate-spin': isCoinRunning() }"
+                class="w-24 h-24 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] text-white shadow-xl shadow-[var(--color-primary)]/25 flex items-center justify-center select-none border-4 border-white/20 transform transition-transform"
+                [style.animationDelay]="i * 150 + 'ms'"
+              >
+                <div class="flex flex-col items-center justify-center gap-0.5">
+                  <span class="text-2xl">🪙</span>
+                  <span *ngIf="!isCoinRunning()" class="text-[10px] font-black tracking-wider uppercase animate-fade-in">
+                    {{ val === 'Heads' ? 'HEADS' : 'TAILS' }}
+                  </span>
+                </div>
+              </div>
+            </ng-container>
           </div>
 
           <!-- Label kết quả sau khi dừng -->
           <div *ngIf="coinDone()" class="animate-fade-in text-center space-y-1">
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kết quả</p>
-            <p class="text-2xl font-black text-[var(--color-primary)]">
-              {{ tempCoinFace() === 'Heads' ? 'Mặt Chân dung (Heads)' : 'Mặt Số (Tails)' }}
+            <p class="text-2xl font-black text-[var(--color-primary)]" *ngIf="tempCoinValues().length === 1">
+              {{ tempCoinValues()[0] === 'Heads' ? 'Ngửa (Heads)' : 'Sấp (Tails)' }}
+            </p>
+            <p class="text-2xl font-black text-[var(--color-primary)]" *ngIf="tempCoinValues().length > 1">
+              {{ getHeadsCount() }} Ngửa (Heads) - {{ tempCoinValues().length - getHeadsCount() }} Sấp (Tails)
             </p>
           </div>
 

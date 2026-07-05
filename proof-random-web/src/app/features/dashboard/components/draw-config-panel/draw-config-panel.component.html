@@ -234,19 +234,33 @@
   <!-- 4. Coin Flip config -->
   <div *ngIf="drawType === 4" class="space-y-4 animate-fade-in">
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Lật một đồng xu ngẫu nhiên trả về mặt Chân dung (Heads) hoặc mặt Số (Tails).
+      Lật một hoặc nhiều đồng xu ngẫu nhiên trả về mặt Ngửa (Heads) hoặc mặt Sấp (Tails).
     </p>
-    <div class="flex justify-center gap-6 py-4">
+    <div class="flex justify-center gap-6 py-2">
       <div
-        class="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950/30 border-2 border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center font-extrabold text-sm text-slate-400"
+        class="w-14 h-14 rounded-full bg-slate-50 dark:bg-slate-950/30 border-2 border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center font-extrabold text-xs text-slate-400"
       >
         Heads
       </div>
       <div
-        class="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-950/30 border-2 border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center font-extrabold text-sm text-slate-400"
+        class="w-14 h-14 rounded-full bg-slate-50 dark:bg-slate-950/30 border-2 border-slate-200/50 dark:border-slate-800/50 flex items-center justify-center font-extrabold text-xs text-slate-400"
       >
         Tails
       </div>
+    </div>
+    <!-- Số lượng đồng xu cần lật -->
+    <div class="space-y-1.5">
+      <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+        >Số lượng đồng xu cần lật</label
+      >
+      <input
+        type="number"
+        [ngModel]="numWinners"
+        (ngModelChange)="numWinnersChange.emit($event)"
+        min="1"
+        class="form-input"
+        placeholder="Mặc định: 1"
+      />
     </div>
   </div>
 

@@ -238,7 +238,8 @@ export class HistoryComponent {
       Tarot:       'Rút bài Tarot',
       Bingo:       'Quay số Bingo',
       Dice:        'Quay xúc xắc',
-      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)'
+      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)',
+      CoinFlip:    'Lật đồng xu'
     };
     if (skin && skins[skin]) return skins[skin];
 
@@ -268,6 +269,9 @@ export class HistoryComponent {
       }
 
       switch (skin) {
+        case 'CoinFlip':
+          // Lật đồng xu: Xanh ngọc may mắn
+          return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';
         case 'Dice':
           // Xúc xắc: Xanh ngọc may mắn
           return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';

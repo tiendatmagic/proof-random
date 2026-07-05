@@ -345,12 +345,34 @@ export class DashboardComponent {
       } else if (this.drawType === 3) {
         param1 = participants.length;
         param2 = this.numWinners;
+      } else if (this.drawType === 4) {
+        if (this.numWinners > 1) {
+          drawTypeToSend = 3;
+          const k = this.numWinners;
+          participants = [];
+          for (let i = 1; i <= k; i++) {
+            participants.push(`Heads_${i}`);
+            participants.push(`Tails_${i}`);
+          }
+          param1 = participants.length;
+          param2 = k;
+          skinToSend = 'CoinFlip';
+        } else {
+          param1 = 0;
+          param2 = 0;
+        }
       } else if (this.drawType === 5) {
         if (this.numWinners > 1) {
           drawTypeToSend = 3;
-          param1 = this.diceSides;
-          param2 = this.numWinners;
-          participants = Array.from({ length: this.diceSides }, (_, i) => (i + 1).toString());
+          const k = this.numWinners;
+          participants = [];
+          for (let i = 1; i <= k; i++) {
+            for (let s = 1; s <= this.diceSides; s++) {
+              participants.push(`${s}_${i}`);
+            }
+          }
+          param1 = participants.length;
+          param2 = k;
           skinToSend = 'Dice';
         } else {
           param1 = this.diceSides;
@@ -439,7 +461,8 @@ export class DashboardComponent {
       Tarot:       'Rút bài Tarot',
       Bingo:       'Quay số Bingo',
       Dice:        'Quay xúc xắc',
-      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)'
+      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)',
+      CoinFlip:    'Lật đồng xu'
     };
     if (skin && skins[skin]) return skins[skin];
 
@@ -464,6 +487,8 @@ export class DashboardComponent {
     // 1. Nhóm Game Skins (Đặc biệt) -> Dùng các tông màu Neon nổi bật
     if (skin) {
       switch (skin) {
+        case 'CoinFlip':
+          return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';
         case 'Dice':
           return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';
         case 'RandomLetter':

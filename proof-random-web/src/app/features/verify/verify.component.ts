@@ -222,6 +222,8 @@ export class VerifyComponent implements OnInit {
         labelPrefix = 'Chọn chữ cái thứ';
       } else if (details.skin === 'Dice') {
         labelPrefix = 'Tung xúc xắc thứ';
+      } else if (details.skin === 'CoinFlip') {
+        labelPrefix = 'Lật đồng xu thứ';
       }
 
       for (let i = 0; i < k; i++) {
@@ -243,24 +245,29 @@ export class VerifyComponent implements OnInit {
         }
         winnerIndices.push(candidate);
 
-        const name = participants && participants[candidate] ? `"${participants[candidate]}"` : `Index ${candidate}`;
+        const rawName = participants && participants[candidate] ? participants[candidate] : `Index ${candidate}`;
+        const name = rawName.replace(/_\d+$/, '');
         
-        let valueChosenText = `Vị trí index ${candidate} → ${name}`;
+        let valueChosenText = `Vị trí index ${candidate} → "${name}"`;
         if (details.skin === 'Sequence') {
-          valueChosenText = `Hàng đợi #${i + 1} → ${name}`;
+          valueChosenText = `Hàng đợi #${i + 1} → "${name}"`;
         } else if (details.skin && details.skin.startsWith('Seating')) {
           const cols = parseInt(details.skin.split('-')[1]) || 4;
           const row = Math.floor(i / cols) + 1;
           const col = (i % cols) + 1;
-          valueChosenText = `Hàng ${row}, Cột ${col} (Bàn số ${i + 1}) → ${name}`;
+          valueChosenText = `Hàng ${row}, Cột ${col} (Bàn số ${i + 1}) → "${name}"`;
         } else if (details.skin === 'WhatToEat') {
-          valueChosenText = `Chọn món ăn #${i + 1} → ${name}`;
+          valueChosenText = `Chọn món ăn #${i + 1} → "${name}"`;
         } else if (details.skin === 'Bingo') {
           valueChosenText = `Bóng số #${i + 1} → Bóng số ${candidate + 1}`;
         } else if (details.skin === 'RandomLetter') {
-          valueChosenText = `Chữ cái #${i + 1} → ${name}`;
+          valueChosenText = `Chữ cái #${i + 1} → "${name}"`;
         } else if (details.skin === 'Dice') {
-          valueChosenText = `Xúc xắc #${i + 1} → Mặt số ${participants[candidate] || candidate + 1}`;
+          const cleanDice = String(participants[candidate] || candidate + 1).replace(/_\d+$/, '');
+          valueChosenText = `Xúc xắc #${i + 1} → Mặt số ${cleanDice}`;
+        } else if (details.skin === 'CoinFlip') {
+          const cleanCoin = String(participants[candidate] || (candidate === 0 ? 'Heads' : 'Tails')).replace(/_\d+$/, '');
+          valueChosenText = `Đồng xu #${i + 1} → Mặt ${cleanCoin}`;
         }
 
         steps.push({
@@ -411,7 +418,8 @@ export class VerifyComponent implements OnInit {
       Tarot:       'Rút bài Tarot',
       Bingo:       'Quay số Bingo',
       Dice:        'Quay xúc xắc',
-      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)'
+      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)',
+      CoinFlip:    'Lật đồng xu'
     };
     if (skin && skins[skin]) return skins[skin];
     const names: Record<number, string> = {

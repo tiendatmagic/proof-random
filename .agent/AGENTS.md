@@ -125,5 +125,14 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Triển khai hiệu ứng hoạt ảnh Lật đồng xu (Coin Flip) và Tung xúc xắc (Dice Roll) trong StandardGameComponent: nút BẮT ĐẦU + BỎ QUA, đồng xu quay 3D CSS perspective, xúc xắc animate-bounce, chốt kết quả sau 3 giây, hỗ trợ 1 và nhiều xúc xắc/chữ cái.
 - [x] Khắc phục lỗi đồng xu lật (Coin Flip) không hiển thị text kết quả do CSS 3D ẩn, đồng bộ lại layout các nút điều khiển Lật đồng xu / Tung xúc xắc theo chuẩn Racing game (luôn hiện nút, chỉ disabled khi đang lật/tung).
 - [x] Khắc phục lỗi hiển thị sai tên chế độ "Chọn nhiều người thắng" (Multiple Winners) đối với các phiên bốc thăm Chữ cái (Random Letter) hoặc Xúc xắc (Dice) có số lượng > 1 bằng cách bổ sung mapping 'Dice' và 'RandomLetter' vào danh sách skin trong hàm `getDrawTypeName` và `getDrawTypeBadgeClass` của Dashboard, Lịch sử, Chi tiết, Xác minh.
+- [x] Tích hợp ô nhập số lượng đồng xu cần lật cho chế độ "Lật đồng xu (Coin Flip)" trên bảng cấu hình Dashboard. Khi số lượng > 1, tự động chuyển sang drawType 3 với participants sinh tự động (Heads, Tails), gắn tag [Skin:CoinFlip]. Đồng thời nâng cấp giao diện, hoạt ảnh nhấp nháy, chốt kết quả và timeline băm xác minh trên trang Chi tiết và Xác minh để hỗ trợ hoàn hảo nhiều đồng xu cùng lúc.
+- [x] Sửa lỗi trắng màn hình (không hiển thị kết quả) ở trang Chi tiết đối với chế độ lật nhiều đồng xu (CoinFlip skin) bằng cách cho phép skinType là 'CoinFlip' đi vào trong div bọc ngoài cùng và loại trừ skinType === 'CoinFlip' khỏi vùng hiển thị Chọn nhiều người thắng (Multiple Winners) của file standard-game.component.html.
+- [x] Bản địa hóa các nhãn hiển thị của Lật đồng xu (Coin Flip) sang tiếng Việt: thay thế thuật ngữ dịch thô "Chân dung / Số" bằng thuật ngữ chuẩn truyền thống "Ngửa (Heads) / Sấp (Tails)" trên toàn bộ giao diện cấu hình Dashboard, kết quả hiển thị StandardGame và các Toast thông báo.
+
+
+
+
+
+
 
 

@@ -16,6 +16,7 @@ export class StandardGameComponent extends BaseGameComponent implements OnDestro
   public readonly isCoinRunning = signal<boolean>(false);
   public readonly coinDone = signal<boolean>(false);
   public readonly tempCoinFace = signal<string>('Heads');
+  public readonly tempCoinValues = signal<string[]>([]);
 
   // 2. Signals cho Dice (Xúc xắc)
   public readonly isDiceRunning = signal<boolean>(false);
@@ -51,6 +52,7 @@ export class StandardGameComponent extends BaseGameComponent implements OnDestro
     this.isCoinRunning.set(false);
     this.coinDone.set(false);
     this.tempCoinFace.set('Heads');
+    this.tempCoinValues.set([]);
 
     // Dice clean up
     if (this.diceIntervalId) clearInterval(this.diceIntervalId);
@@ -61,17 +63,37 @@ export class StandardGameComponent extends BaseGameComponent implements OnDestro
   }
 
   // ================= COIN FLIP ANIMATION =================
+  private extractCoinValues(details: any, res: any): string[] {
+    const finalWinners: string[] = res.winners || [];
+    if (finalWinners.length > 0) {
+      return finalWinners.map(w => w.replace(/_\d+$/, ''));
+    }
+    return [res.result ? res.result.replace(/_\d+$/, '') : 'Heads'];
+  }
+
+  public getHeadsCount(): number {
+    return this.tempCoinValues().filter(x => x === 'Heads').length;
+  }
+
   public startCoinFlip() {
     if (this.isCoinRunning() || this.coinDone()) return;
     this.isCoinRunning.set(true);
 
+    const details = this.sessionDetails();
     const res = this.clientResult();
-    if (!res || !res.result) return;
-    const finalFace = res.result; // 'Heads' hoặc 'Tails'
+    if (!details || !res) return;
+
+    const coinCount = (details.drawType === 3) ? (Number(details.param2) || 1) : 1;
 
     // Nhấp nháy đổi mặt đồng xu liên tục
     this.coinIntervalId = setInterval(() => {
-      this.tempCoinFace.update(face => face === 'Heads' ? 'Tails' : 'Heads');
+      const randValues = Array.from({ length: coinCount }, () =>
+        Math.random() > 0.5 ? 'Heads' : 'Tails'
+      );
+      this.tempCoinValues.set(randValues);
+      if (randValues.length === 1) {
+        this.tempCoinFace.set(randValues[0]);
+      }
     }, 100);
 
     // Dừng lại sau 3 giây và chốt kết quả
@@ -79,8 +101,17 @@ export class StandardGameComponent extends BaseGameComponent implements OnDestro
       if (this.coinIntervalId) clearInterval(this.coinIntervalId);
       this.isCoinRunning.set(false);
       this.coinDone.set(true);
-      this.tempCoinFace.set(finalFace);
-      this.toastService.showToast(`Đồng xu đã dừng! Kết quả là: ${finalFace === 'Heads' ? 'Mặt Chân dung (Heads)' : 'Mặt Số (Tails)'}!`, 'success');
+
+      const finalValues = this.extractCoinValues(details, res);
+      this.tempCoinValues.set(finalValues);
+      if (finalValues.length === 1) {
+        this.tempCoinFace.set(finalValues[0]);
+        this.toastService.showToast(`Đồng xu đã dừng! Kết quả là: ${finalValues[0] === 'Heads' ? 'Ngửa (Heads)' : 'Sấp (Tails)'}!`, 'success');
+      } else {
+        const headsCount = this.getHeadsCount();
+        const tailsCount = finalValues.length - headsCount;
+        this.toastService.showToast(`Các đồng xu đã dừng! Kết quả: ${headsCount} Ngửa (Heads) - ${tailsCount} Sấp (Tails)!`, 'success');
+      }
     }, 3000);
   }
 
@@ -90,24 +121,28 @@ export class StandardGameComponent extends BaseGameComponent implements OnDestro
     this.isCoinRunning.set(false);
     this.coinDone.set(true);
 
+    const details = this.sessionDetails();
     const res = this.clientResult();
-    if (res && res.result) {
-      this.tempCoinFace.set(res.result);
+    if (details && res) {
+      const finalValues = this.extractCoinValues(details, res);
+      this.tempCoinValues.set(finalValues);
+      if (finalValues.length === 1) {
+        this.tempCoinFace.set(finalValues[0]);
+      }
     }
   }
 
-  // ================= DICE ROLL ANIMATION =================
   private extractDiceValues(details: any, res: any): string[] {
     const finalWinners: string[] = res.winners || [];
     if (finalWinners.length > 0) {
       // Nhiều xúc xắc (drawType 3 + Dice skin): winners là danh sách mặt xúc xắc
       return finalWinners.map((w: string) => {
-        const clean = w.replace(/[^\d]/g, '');
+        const clean = w.replace(/_\d+$/, '').replace(/[^\d]/g, '');
         return clean || '1';
       });
     }
     // 1 xúc xắc (drawType 5): result là giá trị số mặt trực tiếp
-    const single = String(res.result || '1').replace(/[^\d]/g, '');
+    const single = String(res.result || '1').replace(/_\d+$/, '').replace(/[^\d]/g, '');
     return [single || '1'];
   }
 

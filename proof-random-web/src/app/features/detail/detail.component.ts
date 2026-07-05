@@ -309,6 +309,8 @@ export class DetailComponent implements OnDestroy {
         labelPrefix = 'Chọn chữ cái thứ';
       } else if (details.skin === 'Dice') {
         labelPrefix = 'Tung xúc xắc thứ';
+      } else if (details.skin === 'CoinFlip') {
+        labelPrefix = 'Lật đồng xu thứ';
       }
 
       for (let i = 0; i < k; i++) {
@@ -321,7 +323,8 @@ export class DetailComponent implements OnDestroy {
         const originalIndex = pool.splice(poolIndex, 1)[0];
         winnerIndices.push(originalIndex);
 
-        const name = participants && participants[originalIndex] ? participants[originalIndex] : `Index ${originalIndex}`;
+        const rawName = participants && participants[originalIndex] ? participants[originalIndex] : `Index ${originalIndex}`;
+        const name = rawName.replace(/_\d+$/, '');
         
         let valueChosenText = `Vị trí trong pool: ${poolIndex} (người thứ ${originalIndex}) → Trúng giải: "${name}"`;
         if (details.skin === 'Sequence') {
@@ -339,6 +342,8 @@ export class DetailComponent implements OnDestroy {
           valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Chữ cái: "${name}"`;
         } else if (details.skin === 'Dice') {
           valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Xúc xắc: Mặt số ${name}`;
+        } else if (details.skin === 'CoinFlip') {
+          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Đồng xu: Mặt ${name}`;
         }
 
         steps.push({
@@ -680,7 +685,8 @@ export class DetailComponent implements OnDestroy {
       Tarot:       'Rút bài Tarot',
       Bingo:       'Quay số Bingo',
       Dice:        'Quay xúc xắc',
-      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)'
+      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)',
+      CoinFlip:    'Lật đồng xu'
     };
     if (skin && skins[skin]) return skins[skin];
     const names: Record<number, string> = {
