@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, effect } from '@angular/core';
 import { BrowserProvider, Contract, JsonRpcProvider, formatEther, Interface, solidityPackedKeccak256 } from 'ethers';
 import { Subject } from 'rxjs';
 import { WEB3_CONFIG } from '../config/web3.config';
@@ -98,6 +98,19 @@ export class Web3Service {
   constructor() {
     this.loadGasSettings();
     this.initAppKit();
+
+    // Tự động điều chỉnh chế độ gas mặc định dựa theo mạng lưới đang hoạt động
+    effect(() => {
+      const currentChain = this.walletConnected() ? this.chainId() : this.configuredChainId();
+      if (currentChain === '42161') {
+        // Nếu là Arbitrum One Mainnet, mặc định chọn 'default' (Mặc định) để tối ưu chi phí thực tế cho người dùng
+        this.gasMode.set('default');
+      } else {
+        // Nếu là mạng khác (ví dụ Arbitrum Sepolia), khôi phục từ localStorage hoặc mặc định là 'fast' (Nhanh)
+        const savedMode = localStorage.getItem('proof_random_gas_mode') as 'default' | 'fast' | 'custom' | null;
+        this.gasMode.set(savedMode || 'fast');
+      }
+    }, { allowSignalWrites: true });
   }
 
   /**
