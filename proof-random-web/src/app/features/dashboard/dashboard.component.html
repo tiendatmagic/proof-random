@@ -738,10 +738,9 @@
               {{ item.eventName.split(' | ')[0] }}
             </td>
             <td>
-              <span
-                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-950/40 text-slate-500 border border-slate-200/20"
-              >
-                {{ getDrawTypeName(item.drawType) }}
+              <span class="inline-flex items-center justify-center w-[165px] h-7 text-xs font-bold rounded-lg border text-center"
+                [class]="getDrawTypeBadgeClass(item.drawType, item.skin)">
+                {{ getDrawTypeName(item.drawType, item.skin) }}
               </span>
             </td>
             <td class="font-mono text-xs text-slate-400">

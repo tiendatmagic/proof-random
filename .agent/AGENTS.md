@@ -86,6 +86,10 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Định cấu hình lại Grid thống kê Dashboard (Tổng số phiên bốc thăm, Lượt quay thành công, Số dư Oracle) hiển thị thành 2 cột trên mobile, trong đó card Số dư Oracle chiếm trọn 2 cột để tạo bố cục cân đối và tránh bị cắt text Sub ID.
 - [x] Đồng bộ hóa component Skeleton Loader thống kê Dashboard tương ứng với bố cục grid 2 cột mới trên mobile.
 - [x] Xây dựng bộ điều khiển tùy chỉnh cài đặt gas (Gas Settings Widget) tại chân Sidebar: Hỗ trợ 3 chế độ (Mặc định - ví tự tính, Nhanh - nhân đôi x2 phí gas, Tùy chọn - tự nhập hệ số nhân gas). Cấu hình tự động lưu trữ vào localStorage và tự động áp dụng dưới dạng Overrides (`gasLimit`, `maxFeePerGas`, `maxPriorityFeePerGas`) khi gửi transaction, giúp giảm thiểu tối đa lỗi Out-of-gas hoặc nghẽn mạng blockchain.
+- [x] Thiết kế lại bộ chọn giao diện Sáng/Tối (Theme Toggler) ở chân Sidebar: hiển thị tiêu đề và trạng thái Sáng/Tối/Tự động ở bên trái và cụm 3 nút icon tròn nhỏ (Mặt trời, Đồng hồ, Mặt trăng) dạng pill (rounded-full) có shadow-sm nổi bật bên phải, đồng bộ giao diện và màu sắc động.
+- [x] Đồng bộ hóa giao diện và màu sắc badge của bảng "5 Phiên gần đây nhất" trên Dashboard giống như bảng của trang Lịch sử (History) (hỗ trợ hiển thị tên và màu sắc động cho cả 15 chế độ/skins khác nhau).
+
+
 
 
 
