@@ -72,6 +72,10 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Áp dụng khối "Chuỗi băm xác minh theo từng bước" cho cả trang Detail page (tất cả 9 chế độ bốc thăm). Import HashStep/DirectModResult interface từ verify component, thêm buildHashSteps() vào detail.component.ts, thêm UI timeline vào detail.component.html.
 - [x] Bổ sung case Bầu Cua (BauCua skin) vào buildHashSteps(): hiển thị rõ 3 xúc xắc (d1=seed%6, d2=keccak256(seed,"1")%6, d3=keccak256(seed,"2")%6) kèm tên con vật tương ứng.
 - [x] Cập nhật đầy đủ 15 chế độ quay (9 drawType + 6 game skin) cho bộ lọc trang History: thêm skin vào filterOptions, logic filter theo skin, badge màu tím phân biệt skin vs drawType thuần, hàm getDrawTypeName nhận thêm skin param. Đồng bộ getDrawTypeName cho cả Verify page và hiển thị skin đúng trong bảng đối soát.
+- [x] Tối ưu hóa CSS layout bảng History: cố định chiều rộng cột th/td, nới rộng giới hạn hiển thị tên phiên bốc thăm lên max-w-[280px], đồng bộ kích thước tất cả các nhãn Chế độ quay (w-[165px], h-7, inline-flex) giúp bảng hiển thị thẳng hàng tăm tắp, cân đối và chuyên nghiệp.
+- [x] Thiết lập hệ thống màu sắc badge thông minh cho 15 chế độ bốc thăm (Sky Blue cho bốc thăm số/tên, Teal cho may rủi nhị phân, Indigo cho màu sắc/chia đội, Đỏ cam cho Vietlott, Hồng neon cho Vòng quay, Vàng hổ phách cho Hộp quà, Xanh lá cho Bầu Cua...) nhằm tăng độ thẩm mỹ công nghệ cao và dễ nhận diện.
+
+
 
 
 

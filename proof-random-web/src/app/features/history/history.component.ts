@@ -147,4 +147,59 @@ export class HistoryComponent {
     };
     return names[type] || 'Chưa xác định';
   }
+
+  /**
+   * Trả về danh sách class Tailwind cho badge tùy theo loại bốc thăm/skin
+   */
+  public getDrawTypeBadgeClass(type: number, skin?: string): string {
+    // 1. Nhóm Game Skins (Đặc biệt) -> Dùng các tông màu Neon nổi bật
+    if (skin) {
+      switch (skin) {
+        case 'Vietlott':
+          // Vietlott: Đỏ cam nổi bật đặc trưng
+          return 'bg-red-500/10 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-200/30 dark:border-red-800/30';
+        case 'LuckyWheel':
+          // Vòng quay: Hồng neon thương hiệu
+          return 'bg-pink-500/10 dark:bg-pink-950/20 text-pink-600 dark:text-pink-400 border-pink-200/30 dark:border-pink-800/30';
+        case 'MysteryBox':
+          // Hộp quà: Vàng hổ phách bí ẩn
+          return 'bg-amber-500/10 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-200/30 dark:border-amber-800/30';
+        case 'BauCua':
+          // Bầu cua: Xanh lá cây tự nhiên dân gian
+          return 'bg-emerald-500/10 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-200/30 dark:border-emerald-800/30';
+        case 'Racing':
+          // Đua xe: Xanh dương thể thao tốc độ
+          return 'bg-blue-500/10 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border-blue-200/30 dark:border-blue-800/30';
+        case 'ScratchCard':
+          // Vé số cào: Tím Neon quyến rũ
+          return 'bg-purple-500/10 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200/30 dark:border-purple-800/30';
+        default:
+          return 'bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200/30 dark:border-purple-800/30';
+      }
+    }
+
+    // 2. Nhóm Chế độ bốc thăm cơ bản -> Chia nhóm màu hài hòa
+    switch (type) {
+      case 1: // Random Number
+      case 2: // Random Name
+      case 3: // Multiple Winners
+        // Các trò chơi chọn số / chọn người: Xanh dương công nghệ sạch sẽ
+        return 'bg-sky-500/10 dark:bg-sky-950/20 text-sky-600 dark:text-sky-400 border-sky-200/30 dark:border-sky-800/30';
+      
+      case 4: // Coin Flip
+      case 5: // Dice Roll
+      case 6: // Even/Odd
+        // Các trò chơi may rủi nhị phân / súc sắc: Xanh ngọc may mắn
+        return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';
+      
+      case 7: // Random Color
+      case 8: // Random Letter
+      case 9: // Random Team
+        // Màu sắc, Chữ cái, Chia đội: Tím Indigo sáng tạo
+        return 'bg-indigo-500/10 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border-indigo-200/30 dark:border-indigo-800/30';
+      
+      default:
+        return 'bg-slate-100 dark:bg-slate-950/40 text-slate-500 border-slate-200/20';
+    }
+  }
 }

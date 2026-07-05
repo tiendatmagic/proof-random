@@ -74,12 +74,12 @@
         <table class="app-table">
           <thead>
             <tr>
-              <th>Mã bốc thăm (ID)</th>
-              <th>Tên phiên bốc thăm</th>
-              <th>Chế độ quay</th>
-              <th>Người tạo (Creator)</th>
-              <th>Tx Hash / Block</th>
-              <th>Thao tác</th>
+              <th class="w-[15%]">Mã bốc thăm (ID)</th>
+              <th class="w-[28%]">Tên phiên bốc thăm</th>
+              <th class="w-[22%]">Chế độ quay</th>
+              <th class="w-[15%]">Người tạo (Creator)</th>
+              <th class="w-[12%]">Tx Hash / Block</th>
+              <th class="w-[8%]">Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -89,7 +89,7 @@
                 {{ item.requestId.substring(0,8) }}...{{ item.requestId.substring(item.requestId.length-6) }}
               </td>
               <!-- Tên & Mô tả -->
-              <td class="max-w-[200px] truncate">
+              <td class="max-w-[280px] truncate">
                 <span class="font-extrabold text-slate-800 dark:text-white block">{{ item.eventName.split(' | ')[0] }}</span>
                 <span class="text-[10px] text-slate-400 block font-semibold truncate mt-0.5" *ngIf="item.eventName.split(' | ')[1]">
                   {{ item.eventName.split(' | ')[1] }}
@@ -97,10 +97,8 @@
               </td>
               <!-- Loại quay -->
               <td>
-                <span class="px-2.5 py-1 rounded-lg text-xs font-bold border"
-                  [class]="item.skin
-                    ? 'bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200/30 dark:border-purple-800/30'
-                    : 'bg-slate-100 dark:bg-slate-950/40 text-slate-500 border-slate-200/20'">
+                <span class="inline-flex items-center justify-center w-[165px] h-7 text-xs font-bold rounded-lg border text-center"
+                  [class]="getDrawTypeBadgeClass(item.drawType, item.skin)">
                   {{ getDrawTypeName(item.drawType, item.skin) }}
                 </span>
               </td>
