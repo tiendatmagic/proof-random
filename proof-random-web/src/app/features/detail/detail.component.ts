@@ -479,7 +479,7 @@ export class DetailComponent implements OnDestroy {
     if (!details || !result) return;
 
     const eventName = details.eventName.split(' | ')[0];
-    const typeName = this.getDrawTypeName(details.drawType);
+    const typeName = this.getDrawTypeName(details.drawType, details.skin);
     let resultText = `🎉 [ProofRandom] Kết quả bốc thăm: "${eventName}"\n`;
     resultText += `📌 Chế độ: ${typeName}\n`;
 
@@ -553,7 +553,7 @@ export class DetailComponent implements OnDestroy {
       eventName: details.eventName.split(' | ')[0],
       description: details.eventName.split(' | ')[1] || '',
       drawType: details.drawType,
-      drawTypeName: this.getDrawTypeName(details.drawType),
+      drawTypeName: this.getDrawTypeName(details.drawType, details.skin),
       creator: details.creator,
       param1: details.param1,
       param2: details.param2,
@@ -581,7 +581,16 @@ export class DetailComponent implements OnDestroy {
   /**
    * Helper hiển thị tên loại bốc thăm
    */
-  public getDrawTypeName(type: number): string {
+  public getDrawTypeName(type: number, skin?: string): string {
+    const skins: Record<string, string> = {
+      LuckyWheel:  'Vòng quay may mắn',
+      Racing:      'Đua xe ngẫu nhiên',
+      MysteryBox:  'Hộp quà bí ẩn',
+      BauCua:      'Bầu Cua Tôm Cá',
+      ScratchCard: 'Vé số cào',
+      Vietlott:    'Xổ số Vietlott',
+    };
+    if (skin && skins[skin]) return skins[skin];
     const names: Record<number, string> = {
       1: "Quay số ngẫu nhiên",
       2: "Chọn 1 tên ngẫu nhiên",

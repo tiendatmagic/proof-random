@@ -122,7 +122,7 @@
             <span
               class="px-2.5 py-0.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[var(--color-primary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/15"
             >
-              {{ getDrawTypeName(sessionDetails().drawType) }}
+              {{ getDrawTypeName(sessionDetails().drawType, sessionDetails().skin) }}
             </span>
             <span class="text-xs font-bold text-slate-400">
               ID: #{{ sessionDetails().requestId.substring(0, 8) }}
