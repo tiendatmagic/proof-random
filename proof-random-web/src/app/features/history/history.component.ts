@@ -23,6 +23,7 @@ export class HistoryComponent {
   // Cấu hình các tùy chọn lọc loại bốc thăm cho Custom Select
   public readonly filterOptions: SelectOption[] = [
     { value: 0, label: 'Tất cả chế độ' },
+    // --- 9 Chế độ bốc thăm cơ bản (drawType) ---
     { value: 1,  label: 'Quay số ngẫu nhiên (Random Number)' },
     { value: 2,  label: 'Chọn 1 tên ngẫu nhiên (Random Name)' },
     { value: 3,  label: 'Nhiều người thắng (Multiple Winners)' },
@@ -32,22 +33,26 @@ export class HistoryComponent {
     { value: 7,  label: 'Màu sắc ngẫu nhiên (Random Color)' },
     { value: 8,  label: 'Chữ cái ngẫu nhiên (Random Letter)' },
     { value: 9,  label: 'Chia đội ngẫu nhiên (Random Team)' },
-    // --- Game Skins ---
-    { value: 'LuckyWheel',   label: 'Vòng quay may mắn (Lucky Wheel)' },
-    { value: 'Racing',       label: 'Đua xe ngẫu nhiên (Random Racing)' },
-    { value: 'MysteryBox',   label: 'Hộp quà bí ẩn (Mystery Box)' },
-    { value: 'BauCua',       label: 'Bầu Cua Tôm Cá (Gourd-Crab-Fish)' },
-    { value: 'ScratchCard',  label: 'Vé số cào (Scratch Card)' },
-    { value: 'Vietlott',     label: 'Xổ số Vietlott (Power/Mega/Keno)' },
-    { value: 'Plinko',       label: 'Thả bóng Plinko (Plinko Board)' },
-    { value: 'SlotMachine',  label: 'Quay Slot Machine (Slot Reels)' },
-    { value: 'CardDraw',     label: 'Bốc bài tây (Card Draw)' },
-    { value: 'OanTuTi',      label: 'Oản tù tì (Rock Paper Scissors)' },
-    { value: 'Sequence',     label: 'Thứ tự ngẫu nhiên (Random Sequence)' },
-    { value: 'Seating',      label: 'Sơ đồ chỗ ngồi (Seating Chart)' },
-    { value: 'WhatToEat',    label: 'Hôm nay ăn gì? (What to Eat Picker)' },
-    { value: 'Tarot',        label: 'Rút bài Tarot (Tarot Card Reader)' },
-    { value: 'Bingo',        label: 'Quay số Bingo (Bingo Caller)' }
+    // --- Game Skins (drawType 1 hoặc 2 có skin) ---
+    { value: 'RandomNumber', label: '🎲 Quay số nhiều lần (RandomNumber skin)' },
+    { value: 'LuckyWheel',   label: '🎡 Vòng quay may mắn (Lucky Wheel)' },
+    { value: 'Racing',       label: '🏎️ Đua xe ngẫu nhiên (Random Racing)' },
+    { value: 'MysteryBox',   label: '🎁 Hộp quà bí ẩn (Mystery Box)' },
+    { value: 'BauCua',       label: '🦀 Bầu Cua Tôm Cá (Gourd-Crab-Fish)' },
+    { value: 'ScratchCard',  label: '🎟️ Vé số cào (Scratch Card)' },
+    { value: 'Vietlott',     label: '🍀 Xổ số Vietlott (Power/Mega/Keno)' },
+    { value: 'Plinko',       label: '🎳 Thả bóng Plinko (Plinko Board)' },
+    { value: 'SlotMachine',  label: '🎰 Quay Slot Machine (Slot Reels)' },
+    { value: 'CardDraw',     label: '🃏 Bốc bài tây (Card Draw)' },
+    { value: 'OanTuTi',      label: '✊ Oản tù tì (Rock Paper Scissors)' },
+    { value: 'Sequence',     label: '🔢 Thứ tự ngẫu nhiên (Random Sequence)' },
+    { value: 'Seating',      label: '🪑 Sơ đồ chỗ ngồi (Seating Chart)' },
+    { value: 'WhatToEat',    label: '🍜 Hôm nay ăn gì? (What to Eat Picker)' },
+    { value: 'Tarot',        label: '🔮 Rút bài Tarot (Tarot Card Reader)' },
+    { value: 'Bingo',        label: '📢 Quay số Bingo (Bingo Caller)' },
+    { value: 'Dice',         label: '🎲 Xúc xắc nhiều lần (Dice skin)' },
+    { value: 'CoinFlip',     label: '🪙 Đồng xu nhiều lần (CoinFlip skin)' },
+    { value: 'RandomLetter', label: '🔤 Chữ cái nhiều lần (RandomLetter skin)' }
   ];
 
   // Danh sách thô từ Event logs hoặc danh sách phân trang từ blockchain
@@ -96,8 +101,14 @@ export class HistoryComponent {
     const type = this.filterType();
     if (type !== 0) {
       if (typeof type === 'string') {
-        result = result.filter(d => d.skin === type);
+        // Với Seating, RandomNumber dùng startsWith vì skin có thể là 'Seating-4' hoặc 'RandomNumber-10'
+        if (type === 'Seating' || type === 'RandomNumber') {
+          result = result.filter(d => d.skin && d.skin.startsWith(type));
+        } else {
+          result = result.filter(d => d.skin === type);
+        }
       } else {
+        // DrawType thuần (không có skin game)
         result = result.filter(d => d.drawType === type && !d.skin);
       }
     }

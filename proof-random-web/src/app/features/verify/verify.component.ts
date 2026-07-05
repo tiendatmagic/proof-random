@@ -96,7 +96,41 @@ export class VerifyComponent implements OnInit {
 
     // --- NHÓM 1: Chỉ dùng mod trực tiếp, không hash chain ---
     if (drawType === 1) {
-      // Random Number: min + (randomWord % (max - min + 1))
+      if (details.skin === 'Vietlott') {
+        this.directModResult.set({
+          label: 'Xổ số Vietlott — Tính số kiểm tra (On-Chain)',
+          formula: `randomWord % 80 + 1`,
+          modulo: `${randomWord} % 80 = ${Number(seed % 80n)}`,
+          result: `Số kiểm tra: ${Number(seed % 80n) + 1}`
+        });
+        return;
+      }
+
+      if (details.skin === 'OanTuTi') {
+        const hands = ['Kéo', 'Búa', 'Bao'];
+        const playerMod = Number(seed % 3n);
+        const cpuMod = Number((seed / 3n) % 3n);
+        const playerHand = hands[playerMod];
+        const cpuHandVal = hands[cpuMod];
+        
+        let stepResultText = '';
+        if (playerMod === cpuMod) {
+          stepResultText = `Người chơi (${playerHand}) HÒA Máy (${cpuHandVal})`;
+        } else if ((playerMod === 0 && cpuMod === 2) || (playerMod === 1 && cpuMod === 0) || (playerMod === 2 && cpuMod === 1)) {
+          stepResultText = `Người chơi (${playerHand}) CHIẾN THẮNG Máy (${cpuHandVal})`;
+        } else {
+          stepResultText = `Máy (${cpuHandVal}) CHIẾN THẮNG Người chơi (${playerHand})`;
+        }
+
+        this.directModResult.set({
+          label: 'Oản tù tì (OanTuTi) — Tính trực tiếp từ randomWord',
+          formula: `Player = randomWord % 3; CPU = (randomWord / 3) % 3`,
+          modulo: `Player = ${randomWord} % 3 = ${playerMod} (${playerHand}); CPU = (${randomWord} / 3) % 3 = ${cpuMod} (${cpuHandVal})`,
+          result: stepResultText
+        });
+        return;
+      }
+
       const min = BigInt(param1);
       const max = BigInt(param2);
       const range = max - min + 1n;
@@ -112,12 +146,24 @@ export class VerifyComponent implements OnInit {
     }
 
     if (drawType === 2) {
-      // Random Name: randomWord % total
       const total = BigInt(param1);
       const idx = seed % total;
       const name = participants && participants[Number(idx)] ? participants[Number(idx)] : `Index: ${idx}`;
+      
+      const skinsWithStep: Record<string, string> = {
+        Plinko: 'Thả bóng Plinko',
+        SlotMachine: 'Slot Machine',
+        CardDraw: 'Bốc bài tây',
+        LuckyWheel: 'Vòng quay may mắn',
+        Racing: 'Đua xe ngẫu nhiên',
+        MysteryBox: 'Hộp quà bí ẩn',
+        WhatToEat: 'Hôm nay ăn gì?'
+      };
+
+      const prefix = details.skin && skinsWithStep[details.skin] ? `${skinsWithStep[details.skin]} — ` : 'Random Name — ';
+      
       this.directModResult.set({
-        label: 'Random Name — Tính trực tiếp từ randomWord',
+        label: `${prefix}Tính trực tiếp từ randomWord`,
         formula: `randomWord % tổng số người tham gia`,
         modulo: `${randomWord} % ${param1} = ${idx.toString()}`,
         result: `Vị trí: ${idx.toString()} → Người thắng: "${name}"`
@@ -126,7 +172,6 @@ export class VerifyComponent implements OnInit {
     }
 
     if (drawType === 4) {
-      // Coin Flip: randomWord % 2
       const mod = seed % 2n;
       this.directModResult.set({
         label: 'Coin Flip — Tính trực tiếp từ randomWord',
@@ -138,7 +183,6 @@ export class VerifyComponent implements OnInit {
     }
 
     if (drawType === 5) {
-      // Dice: 1 + (randomWord % sides)
       const sides = BigInt(param1);
       const mod = seed % sides;
       const result = (1n + mod).toString();
@@ -152,7 +196,6 @@ export class VerifyComponent implements OnInit {
     }
 
     if (drawType === 6) {
-      // Even/Odd: randomWord % 2
       const mod = seed % 2n;
       this.directModResult.set({
         label: 'Even/Odd — Tính trực tiếp từ randomWord',
@@ -164,7 +207,6 @@ export class VerifyComponent implements OnInit {
     }
 
     if (drawType === 8) {
-      // Random Letter: randomWord % 26
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const mod = seed % 26n;
       const letter = letters[Number(mod)];
@@ -202,7 +244,6 @@ export class VerifyComponent implements OnInit {
     }
 
     if (drawType === 3) {
-      // Multiple Winners: K bước hash, mỗi bước chọn 1 người
       const k = param2;
       const total = param1;
       const steps: HashStep[] = [];
@@ -287,7 +328,6 @@ export class VerifyComponent implements OnInit {
     }
 
     if (drawType === 9) {
-      // Random Team: Fisher-Yates shuffle — hiển thị tối đa 10 bước đầu
       const total = param1;
       const steps: HashStep[] = [];
       let tempRandom = seed;
@@ -310,6 +350,57 @@ export class VerifyComponent implements OnInit {
           valueChosen: `Hoán vị vị trí ${i} ↔ ${swapIdx}`
         });
       }
+      this.hashSteps.set(steps);
+      return;
+    }
+
+    // --- Skin: Bầu Cua Tôm Cá ---
+    if (details.skin === 'BauCua') {
+      this.isHashChain.set(true);
+      const bauCuaNames = ['Bầu', 'Cua', 'Tôm', 'Cá', 'Gà', 'Nai'];
+      const steps: HashStep[] = [];
+
+      const d1 = Number(seed % 6n);
+      steps.push({
+        stepIndex: 1,
+        label: 'Xúc xắc 1 — Tính trực tiếp từ randomWord',
+        inputSeed: this.shortHash(randomWord),
+        inputSeedFull: randomWord,
+        hashOutput: 'mod trực tiếp',
+        hashOutputFull: randomWord,
+        poolSizeBefore: 6,
+        indexChosen: d1,
+        valueChosen: `${randomWord} % 6 = ${d1} → ${bauCuaNames[d1]}`
+      });
+
+      const hash2 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '1']);
+      const d2 = Number(BigInt(hash2) % 6n);
+      steps.push({
+        stepIndex: 2,
+        label: 'Xúc xắc 2 — Băm với nonce "1"',
+        inputSeed: this.shortHash(randomWord),
+        inputSeedFull: randomWord,
+        hashOutput: this.shortHash(hash2),
+        hashOutputFull: hash2,
+        poolSizeBefore: 6,
+        indexChosen: d2,
+        valueChosen: `keccak256(seed, "1") % 6 = ${d2} → ${bauCuaNames[d2]}`
+      });
+
+      const hash3 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '2']);
+      const d3 = Number(BigInt(hash3) % 6n);
+      steps.push({
+        stepIndex: 3,
+        label: 'Xúc xắc 3 — Băm với nonce "2"',
+        inputSeed: this.shortHash(randomWord),
+        inputSeedFull: randomWord,
+        hashOutput: this.shortHash(hash3),
+        hashOutputFull: hash3,
+        poolSizeBefore: 6,
+        indexChosen: d3,
+        valueChosen: `keccak256(seed, "2") % 6 = ${d3} → ${bauCuaNames[d3]}`
+      });
+
       this.hashSteps.set(steps);
       return;
     }

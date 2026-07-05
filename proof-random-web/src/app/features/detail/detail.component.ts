@@ -151,6 +151,88 @@ export class DetailComponent implements OnDestroy {
     const seed = BigInt(randomWord);
 
     if (drawType === 1) {
+      if (details.skin === 'Vietlott') {
+        const type = this.selectedVietlottType();
+        this.isHashChain.set(true);
+        const steps: HashStep[] = [];
+        let currentSeed = randomWord;
+
+        if (type === 'Mega645') {
+          const pool = Array.from({ length: 45 }, (_, i) => i + 1);
+          for (let i = 0; i < 6; i++) {
+            const hash = this.web3Service.solidityKeccak256(['uint256', 'string'], [currentSeed, `Mega645_${i}`]);
+            const randIdx = Number(BigInt(hash) % BigInt(pool.length));
+            const num = pool.splice(randIdx, 1)[0];
+            steps.push({
+              stepIndex: i + 1,
+              label: `Số thứ ${i + 1} — Băm với tag "Mega645_${i}"`,
+              inputSeed: this.shortHash(currentSeed),
+              inputSeedFull: currentSeed,
+              hashOutput: this.shortHash(hash),
+              hashOutputFull: hash,
+              poolSizeBefore: pool.length + 1,
+              indexChosen: randIdx,
+              valueChosen: `keccak256(seed, "Mega645_${i}") % ${pool.length + 1} = index ${randIdx} → Số ${num}`
+            });
+            currentSeed = hash;
+          }
+        } else if (type === 'Power655') {
+          const pool = Array.from({ length: 55 }, (_, i) => i + 1);
+          for (let i = 0; i < 6; i++) {
+            const hash = this.web3Service.solidityKeccak256(['uint256', 'string'], [currentSeed, `Power655_${i}`]);
+            const randIdx = Number(BigInt(hash) % BigInt(pool.length));
+            const num = pool.splice(randIdx, 1)[0];
+            steps.push({
+              stepIndex: i + 1,
+              label: `Số thứ ${i + 1} — Băm với tag "Power655_${i}"`,
+              inputSeed: this.shortHash(currentSeed),
+              inputSeedFull: currentSeed,
+              hashOutput: this.shortHash(hash),
+              hashOutputFull: hash,
+              poolSizeBefore: pool.length + 1,
+              indexChosen: randIdx,
+              valueChosen: `keccak256(seed, "Power655_${i}") % ${pool.length + 1} = index ${randIdx} → Số ${num}`
+            });
+            currentSeed = hash;
+          }
+          const bonusHash = this.web3Service.solidityKeccak256(['uint256', 'string'], [currentSeed, 'Power655_Bonus']);
+          const bonusIdx = Number(BigInt(bonusHash) % BigInt(pool.length));
+          const bonus = pool[bonusIdx];
+          steps.push({
+            stepIndex: 7,
+            label: 'Số Đặc Biệt (Bonus) — Băm với tag "Power655_Bonus"',
+            inputSeed: this.shortHash(currentSeed),
+            inputSeedFull: currentSeed,
+            hashOutput: this.shortHash(bonusHash),
+            hashOutputFull: bonusHash,
+            poolSizeBefore: pool.length,
+            indexChosen: bonusIdx,
+            valueChosen: `keccak256(seed, "Power655_Bonus") % ${pool.length} = index ${bonusIdx} → Số ${bonus}`
+          });
+        } else { // Keno
+          const pool = Array.from({ length: 80 }, (_, i) => i + 1);
+          for (let i = 0; i < 20; i++) {
+            const hash = this.web3Service.solidityKeccak256(['uint256', 'string'], [currentSeed, `Keno_${i}`]);
+            const randIdx = Number(BigInt(hash) % BigInt(pool.length));
+            const num = pool.splice(randIdx, 1)[0];
+            steps.push({
+              stepIndex: i + 1,
+              label: `Số thứ ${i + 1} — Băm với tag "Keno_${i}"`,
+              inputSeed: this.shortHash(currentSeed),
+              inputSeedFull: currentSeed,
+              hashOutput: this.shortHash(hash),
+              hashOutputFull: hash,
+              poolSizeBefore: pool.length + 1,
+              indexChosen: randIdx,
+              valueChosen: `keccak256(seed, "Keno_${i}") % ${pool.length + 1} = index ${randIdx} → Số ${num}`
+            });
+            currentSeed = hash;
+          }
+        }
+        this.hashSteps.set(steps);
+        return;
+      }
+
       const min = BigInt(param1);
       const max = BigInt(param2);
       const range = max - min + 1n;
@@ -294,13 +376,11 @@ export class DetailComponent implements OnDestroy {
       let tempRandom = seed;
       const winnerIndices: number[] = [];
 
-      const pool = Array.from({ length: total }, (_, i) => i);
-
       let labelPrefix = 'Chọn người thắng thứ';
       if (details.skin === 'Sequence') {
-        labelPrefix = 'Xếp hạng vị trí thứ';
+        labelPrefix = 'Xếp vị trí thứ';
       } else if (details.skin && details.skin.startsWith('Seating')) {
-        labelPrefix = 'Xếp vào chỗ ngồi thứ';
+        labelPrefix = 'Xếp vào vị trí ghế thứ';
       } else if (details.skin === 'WhatToEat') {
         labelPrefix = 'Chọn món ăn thứ';
       } else if (details.skin === 'Bingo') {
@@ -314,88 +394,87 @@ export class DetailComponent implements OnDestroy {
       }
 
       for (let i = 0; i < k; i++) {
-        const hashHex = this.web3Service.solidityKeccak256(
-          ['uint256', 'uint256'],
-          [tempRandom.toString(), BigInt(i).toString()]
-        );
-        const randVal = BigInt(hashHex);
-        const poolIndex = Number(randVal % BigInt(pool.length));
-        const originalIndex = pool.splice(poolIndex, 1)[0];
-        winnerIndices.push(originalIndex);
+        const inputSeed = tempRandom.toString();
+        const hashHex = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), i.toString()]);
+        tempRandom = BigInt(hashHex);
+        let candidate = Number(tempRandom % BigInt(total));
 
-        const rawName = participants && participants[originalIndex] ? participants[originalIndex] : `Index ${originalIndex}`;
+        let duplicate = winnerIndices.includes(candidate);
+        if (duplicate) {
+          let attempt = 0;
+          while (duplicate && attempt < 30) {
+            const retryHash = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), (attempt + 100).toString()]);
+            tempRandom = BigInt(retryHash);
+            candidate = Number(tempRandom % BigInt(total));
+            duplicate = winnerIndices.includes(candidate);
+            attempt++;
+          }
+        }
+        winnerIndices.push(candidate);
+
+        const rawName = participants && participants[candidate] ? participants[candidate] : `Index ${candidate}`;
         const name = rawName.replace(/_\d+$/, '');
         
-        let valueChosenText = `Vị trí trong pool: ${poolIndex} (người thứ ${originalIndex}) → Trúng giải: "${name}"`;
+        let valueChosenText = `Vị trí index ${candidate} → "${name}"`;
         if (details.skin === 'Sequence') {
-          valueChosenText = `Chọn từ pool vị trí ${poolIndex} (người thứ ${originalIndex}) → Xếp hạng #${i + 1}: "${name}"`;
+          valueChosenText = `Hàng đợi #${i + 1} → "${name}"`;
         } else if (details.skin && details.skin.startsWith('Seating')) {
           const cols = parseInt(details.skin.split('-')[1]) || 4;
           const row = Math.floor(i / cols) + 1;
           const col = (i % cols) + 1;
-          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Xếp vào Hàng ${row}, Cột ${col} (Bàn ${i + 1}): "${name}"`;
+          valueChosenText = `Hàng ${row}, Cột ${col} (Bàn số ${i + 1}) → "${name}"`;
         } else if (details.skin === 'WhatToEat') {
-          valueChosenText = `Chọn từ pool vị trí ${poolIndex} (món thứ ${originalIndex}) → Món ăn: "${name}"`;
+          valueChosenText = `Chọn món ăn #${i + 1} → "${name}"`;
         } else if (details.skin === 'Bingo') {
-          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Bóng số: ${originalIndex + 1}`;
+          valueChosenText = `Bóng số #${i + 1} → Bóng số ${candidate + 1}`;
         } else if (details.skin === 'RandomLetter') {
-          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Chữ cái: "${name}"`;
+          valueChosenText = `Chữ cái #${i + 1} → "${name}"`;
         } else if (details.skin === 'Dice') {
-          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Xúc xắc: Mặt số ${name}`;
+          const cleanDice = String(participants[candidate] || candidate + 1).replace(/_\d+$/, '');
+          valueChosenText = `Xúc xắc #${i + 1} → Mặt số ${cleanDice}`;
         } else if (details.skin === 'CoinFlip') {
-          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Đồng xu: Mặt ${name}`;
+          const cleanCoin = String(participants[candidate] || (candidate === 0 ? 'Heads' : 'Tails')).replace(/_\d+$/, '');
+          valueChosenText = `Đồng xu #${i + 1} → Mặt ${cleanCoin}`;
         }
 
         steps.push({
           stepIndex: i + 1,
-          label: `Lượt ${i + 1} — ${labelPrefix} ${i + 1}`,
-          inputSeed: this.shortHash(tempRandom.toString()),
-          inputSeedFull: tempRandom.toString(),
+          label: `Bước ${i + 1} — ${labelPrefix} ${i + 1}`,
+          inputSeed: this.shortHash(inputSeed),
+          inputSeedFull: inputSeed,
           hashOutput: this.shortHash(hashHex),
           hashOutputFull: hashHex,
-          poolSizeBefore: pool.length + 1,
-          indexChosen: poolIndex,
+          poolSizeBefore: total - i,
+          indexChosen: candidate,
           valueChosen: valueChosenText
         });
-
-        tempRandom = randVal;
       }
       this.hashSteps.set(steps);
       return;
     }
 
     if (drawType === 9) {
-      const numTeams = param2;
       const total = param1;
       const steps: HashStep[] = [];
       let tempRandom = seed;
+      const MAX_DISPLAY = Math.min(total - 1, 10);
 
-      const pool = Array.from({ length: total }, (_, i) => i);
-
-      for (let i = 0; i < total; i++) {
-        const hashHex = this.web3Service.solidityKeccak256(
-          ['uint256', 'uint256'],
-          [tempRandom.toString(), BigInt(i).toString()]
-        );
-        const randVal = BigInt(hashHex);
-        const poolIndex = Number(randVal % BigInt(pool.length));
-        const memberIndex = pool.splice(poolIndex, 1)[0];
-        const assignedTeam = (i % numTeams) + 1;
-
-        const name = participants && participants[memberIndex] ? participants[memberIndex] : `Index ${memberIndex}`;
+      for (let i = total - 1; i > total - 1 - MAX_DISPLAY; i--) {
+        const inputSeed = tempRandom.toString();
+        const hashHex = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), i.toString()]);
+        tempRandom = BigInt(hashHex);
+        const swapIdx = Number(tempRandom % BigInt(i + 1));
         steps.push({
-          stepIndex: i + 1,
-          label: `Bước ${i + 1} — Chia thành viên thứ ${i + 1}`,
-          inputSeed: this.shortHash(tempRandom.toString()),
-          inputSeedFull: tempRandom.toString(),
+          stepIndex: total - i,
+          label: `Bước ${total - i} — Hoán vị Fisher-Yates (i=${i})`,
+          inputSeed: this.shortHash(inputSeed),
+          inputSeedFull: inputSeed,
           hashOutput: this.shortHash(hashHex),
           hashOutputFull: hashHex,
-          poolSizeBefore: pool.length + 1,
-          indexChosen: poolIndex,
-          valueChosen: `Chọn thành viên: "${name}" (từ pool vị trí ${poolIndex}) → Đội ${assignedTeam}`
+          poolSizeBefore: i + 1,
+          indexChosen: swapIdx,
+          valueChosen: `Hoán vị vị trí ${i} ↔ ${swapIdx}`
         });
-
-        tempRandom = randVal;
       }
       this.hashSteps.set(steps);
       return;
