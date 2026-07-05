@@ -13,11 +13,11 @@ import { DrawConfigPanelComponent } from './components/draw-config-panel/draw-co
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
-    RouterLink, 
-    CardComponent, 
-    SkeletonLoaderComponent, 
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    CardComponent,
+    SkeletonLoaderComponent,
     CheckboxComponent,
     DrawConfigPanelComponent
   ],
@@ -42,7 +42,7 @@ export class DashboardComponent {
   public participantsText = '';
   public drawType = 2; // Mặc định: Random Name
   public selectedSkin = ''; // '', 'LuckyWheel', 'Racing', 'MysteryBox', 'BauCua', 'ScratchCard', 'Vietlott', 'Plinko', 'SlotMachine', 'CardDraw', 'OanTuTi'
-  
+
   // Tùy chọn tiền xử lý danh sách
   public optRemoveDuplicates = true;
   public optTrimSpaces = true;
@@ -61,7 +61,7 @@ export class DashboardComponent {
 
   constructor() {
     this.initDefaultEventName();
-    
+
     // Tự động tải thống kê khi cấu hình mạng thay đổi hoặc khi ví kết nối
     effect(() => {
       this.loadBlockchainStats();
@@ -74,7 +74,7 @@ export class DashboardComponent {
   public selectMode(type: number, skin: string = '') {
     this.drawType = type;
     this.selectedSkin = skin;
-    
+
     if (skin === 'BauCua') {
       this.diceSides = 6;
     } else if (skin === 'ScratchCard') {
@@ -156,7 +156,7 @@ export class DashboardComponent {
       const text = e.target.result;
       // Chia dòng bằng ký tự xuống dòng
       const lines = text.split(/\r?\n/);
-      
+
       // Lọc các giá trị trong CSV (bỏ ký tự bao quanh, khoảng trắng)
       const cleanLines = lines.map((l: string) => {
         // Tách theo dấu phẩy hoặc chấm phẩy nếu có cấu trúc cột, lấy cột đầu
@@ -219,7 +219,7 @@ export class DashboardComponent {
     }
 
     let participants = this.getProcessedParticipants();
-    
+
     // Tự động gán số người thắng bằng tổng số người tham gia đối với chế độ Hàng đợi và Sơ đồ chỗ ngồi
     if (this.selectedSkin === 'Sequence' || this.selectedSkin.startsWith('Seating')) {
       this.numWinners = participants.length;
@@ -244,7 +244,7 @@ export class DashboardComponent {
         this.toastService.showToast('Vui lòng nhập danh sách người tham gia / món ăn!', 'error');
         return;
       }
-      
+
       const isMultiWhatToEat = (this.selectedSkin === 'WhatToEat' && this.numWinners > 1);
       if (this.drawType === 3 || isMultiWhatToEat) { // Multi Winners hoặc WhatToEat chọn nhiều món
         if (this.numWinners <= 0) {
@@ -316,7 +316,7 @@ export class DashboardComponent {
     if (this.selectedSkin) {
       eventNameToSend = `[Skin:${this.selectedSkin}] ${eventNameToSend}`;
     }
-    const fullEventName = this.description.trim() 
+    const fullEventName = this.description.trim()
       ? `${eventNameToSend} | ${this.description.trim()}`
       : eventNameToSend;
 
@@ -335,7 +335,7 @@ export class DashboardComponent {
 
       this.toastService.showToast('Gửi yêu cầu bốc thăm thành công!', 'success');
       this.isPendingTx.set(false);
-      
+
       // Xóa cache Dashboard Stats của chain hiện tại để khi quay lại Dashboard số liệu được cập nhật mới nhất
       this.web3Service.clearDashboardStatsCache(this.web3Service.configuredChainId().toString());
 
@@ -359,23 +359,23 @@ export class DashboardComponent {
    */
   public getDrawTypeName(type: number, skin?: string): string {
     if (skin && skin.startsWith('Seating')) return 'Sơ đồ chỗ ngồi';
-    
+
     // Game skins ưu tiên hiển thị trước
     const skins: Record<string, string> = {
-      LuckyWheel:  'Vòng quay may mắn',
-      Racing:      'Đua xe ngẫu nhiên',
-      MysteryBox:  'Hộp quà bí ẩn',
-      BauCua:      'Bầu Cua Tôm Cá',
+      LuckyWheel: 'Vòng quay may mắn',
+      Racing: 'Đua xe ngẫu nhiên',
+      MysteryBox: 'Hộp quà bí ẩn',
+      BauCua: 'Bầu Cua Tôm Cá',
       ScratchCard: 'Vé số cào',
-      Vietlott:    'Xổ số Vietlott',
-      Plinko:      'Thả bóng Plinko',
+      Vietlott: 'Xổ số Vietlott',
+      Plinko: 'Thả bóng Plinko',
       SlotMachine: 'Quay Slot Machine',
-      CardDraw:    'Bốc bài tây',
-      OanTuTi:     'Oản tù tì',
-      Sequence:    'Thứ tự ngẫu nhiên',
-      WhatToEat:   'Hôm nay ăn gì?',
-      Tarot:       'Rút bài Tarot',
-      Bingo:       'Quay số Bingo'
+      CardDraw: 'Bốc bài tây',
+      OanTuTi: 'Oản tù tì',
+      Sequence: 'Thứ tự ngẫu nhiên',
+      WhatToEat: 'Hôm nay ăn gì?',
+      Tarot: 'Rút bài Tarot',
+      Bingo: 'Quay số Bingo'
     };
     if (skin && skins[skin]) return skins[skin];
 
@@ -442,19 +442,19 @@ export class DashboardComponent {
       case 3: // Multiple Winners
         // Các trò chơi chọn số / chọn người: Xanh dương công nghệ sạch sẽ
         return 'bg-sky-500/10 dark:bg-sky-950/20 text-sky-600 dark:text-sky-400 border-sky-200/30 dark:border-sky-800/30';
-      
+
       case 4: // Coin Flip
       case 5: // Dice Roll
       case 6: // Even/Odd
         // Các trò chơi may rủi nhị phân / súc sắc: Xanh ngọc may mắn
         return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';
-      
+
       case 7: // Random Color
       case 8: // Random Letter
       case 9: // Random Team
         // Màu sắc, Chữ cái, Chia đội: Tím Indigo sáng tạo
         return 'bg-indigo-500/10 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border-indigo-200/30 dark:border-indigo-800/30';
-      
+
       default:
         return 'bg-slate-500/10 dark:bg-slate-950/20 text-slate-600 dark:text-slate-400 border-slate-200/30 dark:border-slate-800/30';
     }
