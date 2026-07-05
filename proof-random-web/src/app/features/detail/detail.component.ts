@@ -1658,18 +1658,11 @@ export class DetailComponent implements OnDestroy {
     const details = this.sessionDetails();
     if (!details || !details.randomWord) return;
 
-    let shakeCount = 0;
-    const hands = ['rock', 'paper', 'scissors'];
-    
-    const interval = setInterval(() => {
-      this.playerHand.set(hands[shakeCount % 3]);
-      this.cpuHand.set(hands[(shakeCount + 1) % 3]);
-      shakeCount++;
-    }, 150);
+    // Trong lúc lắc tay (2 giây), cả hai bên giữ hình nắm đấm (rock)
+    this.playerHand.set('rock');
+    this.cpuHand.set('rock');
 
     this.oanTuTiTimeoutId = setTimeout(() => {
-      clearInterval(interval);
-      
       const mod = Number(BigInt(details.randomWord) % 3n);
       const handsValue = ['scissors', 'rock', 'paper']; // 0 = Kéo, 1 = Búa, 2 = Bao
       const handsVN = ['Kéo', 'Búa', 'Bao'];

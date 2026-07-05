@@ -1173,19 +1173,33 @@
             
             <div
               [ngClass]="{
-                'animate-[bounce_0.15s_infinite]': isOanTuTiRunning()
+                'animate-[bounce_0.15s_infinite]': isOanTuTiRunning(),
+                'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)] dark:shadow-[0_0_20px_rgba(16,185,129,0.2)] bg-emerald-500/5': oanTuTiDone(),
+                'border-[var(--color-primary)]/40 shadow-sm': isOanTuTiRunning(),
+                'border-slate-200/50 dark:border-slate-800/50': !isOanTuTiRunning() && !oanTuTiDone()
               }"
-              class="w-20 h-20 bg-white dark:bg-slate-900 border-2 border-[var(--color-primary)]/30 rounded-2xl flex items-center justify-center shadow-md relative"
+              class="w-20 h-20 bg-white dark:bg-slate-900 border-2 rounded-2xl flex items-center justify-center relative transition-all duration-300"
             >
-              <svg *ngIf="playerHand() === 'rock'" class="w-10 h-10 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <!-- Ban đầu: Ẩn hình, hiển thị dấu hỏi -->
+              <span *ngIf="!isOanTuTiRunning() && !oanTuTiDone()" class="text-4xl font-extrabold text-slate-300 dark:text-slate-600 select-none">?</span>
+
+              <!-- Đang lắc: Hiển thị nắm đấm -->
+              <svg *ngIf="isOanTuTiRunning()" class="w-10 h-10 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3zm-6.5 0c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3zm6.5-6.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v9.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V4.5zM4 14.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3z" />
               </svg>
-              <svg *ngIf="playerHand() === 'paper'" class="w-10 h-10 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1" />
-              </svg>
-              <svg *ngIf="playerHand() === 'scissors'" class="w-10 h-10 text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+
+              <!-- Đã có kết quả -->
+              <ng-container *ngIf="oanTuTiDone()">
+                <svg *ngIf="playerHand() === 'rock'" class="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3zm-6.5 0c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3zm6.5-6.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v9.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V4.5zM4 14.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3z" />
+                </svg>
+                <svg *ngIf="playerHand() === 'paper'" class="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1" />
+                </svg>
+                <svg *ngIf="playerHand() === 'scissors'" class="w-10 h-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </ng-container>
             </div>
           </div>
 
@@ -1197,19 +1211,33 @@
             
             <div
               [ngClass]="{
-                'animate-[bounce_0.15s_infinite]': isOanTuTiRunning()
+                'animate-[bounce_0.15s_infinite]': isOanTuTiRunning(),
+                'border-rose-500/50 dark:border-rose-500/30 shadow-[0_0_10px_rgba(244,63,94,0.15)] bg-rose-500/5': oanTuTiDone(),
+                'border-slate-300/40 shadow-sm': isOanTuTiRunning(),
+                'border-slate-200/50 dark:border-slate-800/50': !isOanTuTiRunning() && !oanTuTiDone()
               }"
-              class="w-20 h-20 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-center shadow-md relative"
+              class="w-20 h-20 bg-white dark:bg-slate-900 border-2 rounded-2xl flex items-center justify-center relative transition-all duration-300"
             >
-              <svg *ngIf="cpuHand() === 'rock'" class="w-10 h-10 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <!-- Ban đầu: Ẩn hình, hiển thị dấu hỏi -->
+              <span *ngIf="!isOanTuTiRunning() && !oanTuTiDone()" class="text-4xl font-extrabold text-slate-300 dark:text-slate-600 select-none">?</span>
+
+              <!-- Đang lắc: Hiển thị nắm đấm -->
+              <svg *ngIf="isOanTuTiRunning()" class="w-10 h-10 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3zm-6.5 0c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3zm6.5-6.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v9.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V4.5zM4 14.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3z" />
               </svg>
-              <svg *ngIf="cpuHand() === 'paper'" class="w-10 h-10 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1" />
-              </svg>
-              <svg *ngIf="cpuHand() === 'scissors'" class="w-10 h-10 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+
+              <!-- Đã có kết quả -->
+              <ng-container *ngIf="oanTuTiDone()">
+                <svg *ngIf="cpuHand() === 'rock'" class="w-10 h-10 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3zm-6.5 0c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3zm6.5-6.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v9.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5V4.5zM4 14.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v3c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-3z" />
+                </svg>
+                <svg *ngIf="cpuHand() === 'paper'" class="w-10 h-10 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1" />
+                </svg>
+                <svg *ngIf="cpuHand() === 'scissors'" class="w-10 h-10 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </ng-container>
             </div>
           </div>
         </div>
@@ -1222,7 +1250,7 @@
           >
             <span>{{ isOanTuTiRunning() ? 'ĐANG ĐẤU...' : 'OẢN TÙ TÌ RA CÁI NÀY!' }}</span>
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </button>
           <button

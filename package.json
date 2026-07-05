@@ -7,7 +7,8 @@
     "test": "npx hardhat test",
     "deploy:sepolia": "npx hardhat run scripts/deploy.ts --network arbitrumSepolia",
     "deploy:mainnet": "npx hardhat run scripts/deploy.ts --network arbitrum",
-    "start": "npm --prefix proof-random-web run start"
+    "start": "npm --prefix proof-random-web run start",
+    "build": "npm --prefix proof-random-web run build"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
