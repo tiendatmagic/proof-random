@@ -60,6 +60,17 @@ export class Web3Service {
       : WEB3_CONFIG.explorers.arbitrumSepolia;
   });
 
+  // Getters lấy cache lịch sử bốc thăm phục vụ cho components
+  public get historyCacheDraws(): any[] {
+    const chainId = this.configuredChainId().toString();
+    return this._allDrawsCache[chainId] || [];
+  }
+
+  public get historyHasFullScan(): boolean {
+    const chainId = this.configuredChainId().toString();
+    return !!this._hasFullScan[chainId];
+  }
+
   // Địa chỉ ví rút gọn (0x1234...abcd)
   public readonly shortAddress = computed(() => {
     const addr = this.currentAccount();
@@ -95,6 +106,13 @@ export class Web3Service {
   private provider: BrowserProvider | null = null;
   private modal: any = null;
 
+  // Cache lưu trữ lịch sử bốc thăm đã quét theo chainId
+  private _allDrawsCache: Record<string, any[]> = {};
+  private _hasFullScan: Record<string, boolean> = {};
+
+  // Cache chi tiết phiên bốc thăm theo chainId và requestId
+  private _drawSessionDetailsCache: Record<string, Record<string, any>> = {};
+
   constructor() {
     this.loadGasSettings();
     this.initAppKit();
@@ -111,6 +129,12 @@ export class Web3Service {
         this.gasMode.set(savedMode || 'fast');
       }
     }, { allowSignalWrites: true });
+
+    // Tự động nạp cache từ sessionStorage khi configuredChainId thay đổi
+    effect(() => {
+      this.configuredChainId();
+      this.loadCacheFromSessionStorage();
+    });
   }
 
   /**
@@ -127,6 +151,75 @@ export class Web3Service {
       console.warn('[Web3] Không thể đọc cài đặt gas từ localStorage:', e);
     }
   }
+
+  /**
+   * Lưu cache hiện tại vào sessionStorage
+   */
+  private saveCacheToSessionStorage() {
+    if (typeof window === 'undefined') return;
+    try {
+      const chainId = this.configuredChainId().toString();
+      sessionStorage.setItem(`proof_random_history_cache_${chainId}`, JSON.stringify(this._allDrawsCache[chainId] || []));
+      sessionStorage.setItem(`proof_random_has_full_scan_${chainId}`, JSON.stringify(!!this._hasFullScan[chainId]));
+      sessionStorage.setItem(`proof_random_session_details_${chainId}`, JSON.stringify(this._drawSessionDetailsCache[chainId] || {}));
+    } catch (e) {
+      console.warn('[Web3] Không thể ghi cache vào sessionStorage:', e);
+    }
+  }
+
+  /**
+   * Tải cache từ sessionStorage
+   */
+  private loadCacheFromSessionStorage() {
+    if (typeof window === 'undefined') return;
+    try {
+      const chainId = this.configuredChainId().toString();
+      
+      const drawsStr = sessionStorage.getItem(`proof_random_history_cache_${chainId}`);
+      if (drawsStr) {
+        this._allDrawsCache[chainId] = JSON.parse(drawsStr);
+      } else {
+        this._allDrawsCache[chainId] = [];
+      }
+      
+      const fullScanStr = sessionStorage.getItem(`proof_random_has_full_scan_${chainId}`);
+      if (fullScanStr) {
+        this._hasFullScan[chainId] = JSON.parse(fullScanStr);
+      } else {
+        this._hasFullScan[chainId] = false;
+      }
+
+      const detailsStr = sessionStorage.getItem(`proof_random_session_details_${chainId}`);
+      if (detailsStr) {
+        this._drawSessionDetailsCache[chainId] = JSON.parse(detailsStr);
+      } else {
+        this._drawSessionDetailsCache[chainId] = {};
+      }
+    } catch (e) {
+      console.warn('[Web3] Không thể đọc cache từ sessionStorage:', e);
+    }
+  }
+
+  /**
+   * Xóa toàn bộ bộ nhớ cache lịch sử bốc thăm của mạng hiện hành
+   */
+  public clearHistoryCache() {
+    const chainId = this.configuredChainId().toString();
+    this._allDrawsCache[chainId] = [];
+    this._hasFullScan[chainId] = false;
+    this._drawSessionDetailsCache[chainId] = {};
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.removeItem(`proof_random_history_cache_${chainId}`);
+        sessionStorage.removeItem(`proof_random_has_full_scan_${chainId}`);
+        sessionStorage.removeItem(`proof_random_session_details_${chainId}`);
+      } catch (e) {
+        console.warn('[Web3] Lỗi khi xóa cache sessionStorage:', e);
+      }
+    }
+    console.log(`[Web3] Đã xóa cache lịch sử của mạng ${chainId}`);
+  }
+
 
   /**
    * Thay đổi chế độ gas
@@ -569,12 +662,32 @@ export class Web3Service {
   }
 
   /**
-   * Quét sự kiện DrawCreated để khôi phục lịch sử bốc thăm và danh sách người tham gia
+   * Quét sự kiện DrawCreated để khôi phục lịch sử bốc thăm và danh sách người tham gia (có sử dụng Cache)
    */
-  public async getAllDrawSessionsFromEvents(): Promise<any[]> {
+  public async getAllDrawSessionsFromEvents(forceRefresh = false): Promise<any[]> {
     try {
+      const chainId = this.configuredChainId().toString();
+      
+      // Khởi tạo cache nếu chưa có
+      if (!this._allDrawsCache[chainId]) {
+        this._allDrawsCache[chainId] = [];
+        this._hasFullScan[chainId] = false;
+        this._drawSessionDetailsCache[chainId] = {};
+      }
+
+      // Khôi phục từ sessionStorage nếu cache trong RAM trống
+      if (this._allDrawsCache[chainId].length === 0 && !this._hasFullScan[chainId]) {
+        this.loadCacheFromSessionStorage();
+      }
+
+      // Trả về cache nếu đã quét full và không yêu cầu làm mới
+      if (this._hasFullScan[chainId] && !forceRefresh) {
+        console.log(`[Web3] Sử dụng cache sự kiện cho mạng ${chainId} (${this._allDrawsCache[chainId].length} phiên)`);
+        return this._allDrawsCache[chainId];
+      }
+
+      console.log(`[Web3] Quét toàn bộ sự kiện DrawCreated cho mạng ${chainId}...`);
       const contract = this.getContract(false);
-      // Quét từ khối 0 (hoặc khối deploy thực tế của bạn để tăng hiệu năng)
       const filter = contract['filters']['DrawCreated']();
       const events = await contract.queryFilter(filter, 0, 'latest');
       
@@ -582,8 +695,11 @@ export class Web3Service {
       for (const event of events) {
         const args = (event as any).args;
         const parsed = this.parseEventNameAndSkin(args.eventName);
+        const reqIdStr = args.requestId.toString();
+        const cachedDetail = this._drawSessionDetailsCache[chainId]?.[reqIdStr];
+        
         draws.push({
-          requestId: args.requestId.toString(),
+          requestId: reqIdStr,
           creator: args.creator,
           eventName: parsed.eventName,
           skin: parsed.skin,
@@ -592,22 +708,55 @@ export class Web3Service {
           param1: Number(args.param1),
           param2: Number(args.param2),
           txHash: event.transactionHash,
-          blockNumber: event.blockNumber
+          blockNumber: event.blockNumber,
+          // Đồng bộ các trường kết quả nếu có cache chi tiết
+          fulfilled: cachedDetail ? cachedDetail.fulfilled : false,
+          randomWord: cachedDetail ? cachedDetail.randomWord : '0',
+          result: cachedDetail ? cachedDetail.result : []
         });
       }
-      // Trả về danh sách xếp theo thứ tự mới nhất lên đầu
-      return draws.reverse();
+
+      const reversedDraws = draws.reverse();
+      this._allDrawsCache[chainId] = reversedDraws;
+      this._hasFullScan[chainId] = true;
+      
+      // Đồng bộ thông tin thô vào cache chi tiết
+      for (const draw of reversedDraws) {
+        const reqId = draw.requestId;
+        if (!this._drawSessionDetailsCache[chainId][reqId]) {
+          this._drawSessionDetailsCache[chainId][reqId] = { ...draw };
+        }
+      }
+
+      this.saveCacheToSessionStorage();
+      return reversedDraws;
     } catch (err) {
       console.error('[Web3] Lấy danh sách draw từ event logs lỗi:', err);
-      return [];
+      const chainId = this.configuredChainId().toString();
+      return this._allDrawsCache[chainId] || [];
     }
   }
 
   /**
-   * Lấy chi tiết phiên bốc thăm bao gồm cả mảng người tham gia và Tx Hash
+   * Lấy chi tiết phiên bốc thăm bao gồm cả mảng người tham gia và Tx Hash (có sử dụng Cache)
    */
-  public async getDrawSessionDetails(requestId: string): Promise<any> {
+  public async getDrawSessionDetails(requestId: string, forceRefresh = false): Promise<any> {
     try {
+      const chainId = this.configuredChainId().toString();
+      if (!this._drawSessionDetailsCache[chainId]) {
+        this._drawSessionDetailsCache[chainId] = {};
+      }
+
+      // Khôi phục từ sessionStorage nếu cache RAM trống
+      if (Object.keys(this._drawSessionDetailsCache[chainId]).length === 0) {
+        this.loadCacheFromSessionStorage();
+      }
+
+      const cached = this._drawSessionDetailsCache[chainId][requestId];
+      if (cached && cached.fulfilled && !forceRefresh) {
+        return cached;
+      }
+
       const sessionData = await this.getDrawSession(requestId);
       if (!sessionData) return null;
 
@@ -628,17 +777,42 @@ export class Web3Service {
         blockNumber = ev.blockNumber;
       }
 
-      return {
+      const detailedData = {
         ...sessionData,
         participants,
         txHash,
         blockNumber
       };
+
+      // Cập nhật cache chi tiết
+      this._drawSessionDetailsCache[chainId][requestId] = detailedData;
+      
+      // Nếu sự kiện quét full đã có, cập nhật lại phần tử tương ứng trong mảng cache full
+      if (this._allDrawsCache[chainId]) {
+        const idx = this._allDrawsCache[chainId].findIndex(d => d.requestId === requestId);
+        if (idx !== -1) {
+          this._allDrawsCache[chainId][idx] = {
+            ...this._allDrawsCache[chainId][idx],
+            fulfilled: detailedData.fulfilled,
+            randomWord: detailedData.randomWord,
+            result: detailedData.result
+          };
+        }
+      }
+
+      this.saveCacheToSessionStorage();
+      return detailedData;
     } catch (err) {
       console.error('[Web3] Lấy chi tiết bốc thăm lỗi:', err);
+      const chainId = this.configuredChainId().toString();
+      const cached = this._drawSessionDetailsCache[chainId]?.[requestId];
+      if (cached) {
+        return cached;
+      }
       return null;
     }
   }
+
 
   /**
    * Tính toán kết quả bốc thăm deterministic trên Client-side dựa trên randomWord (giống hệt Smart Contract)

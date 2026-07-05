@@ -395,7 +395,7 @@ export class DetailComponent implements OnDestroy {
     console.log('[Web3] Đang đợi kết quả Chainlink VRF. Bắt đầu polling...');
     this.pollingInterval = setInterval(async () => {
       const id = this.requestId();
-      const data = await this.web3Service.getDrawSessionDetails(id);
+      const data = await this.web3Service.getDrawSessionDetails(id, true);
       
       if (data) {
         this.sessionDetails.set(data);

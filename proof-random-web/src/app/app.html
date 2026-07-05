@@ -395,7 +395,7 @@
           <span
             class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
           >
-            Tốc độ giao dịch (Gas)
+            Tốc độ giao dịch
           </span>
           <span
             *ngIf="web3Service.gasMode() !== 'default'"
@@ -475,7 +475,9 @@
       </div>
 
       <!-- Theme Selection Widget -->
-      <div class="flex items-center justify-between py-2.5 border-t border-slate-100/50 dark:border-slate-800/30 pt-4">
+      <div
+        class="flex items-center justify-between py-2.5 border-t border-slate-100/50 dark:border-slate-800/30 pt-4"
+      >
         <!-- Label và Trạng thái bên trái -->
         <div class="flex flex-col gap-0.5">
           <span class="text-sm font-bold text-slate-800 dark:text-slate-200">Giao diện</span>
@@ -484,10 +486,16 @@
             [ngClass]="{
               'text-amber-500': themeService.themeMode() === 'light',
               'text-indigo-500 dark:text-indigo-400': themeService.themeMode() === 'auto',
-              'text-purple-500 dark:text-purple-400': themeService.themeMode() === 'dark'
+              'text-purple-500 dark:text-purple-400': themeService.themeMode() === 'dark',
             }"
           >
-            {{ themeService.themeMode() === 'light' ? 'Sáng' : (themeService.themeMode() === 'dark' ? 'Tối' : 'Tự động') }}
+            {{
+              themeService.themeMode() === 'light'
+                ? 'Sáng'
+                : themeService.themeMode() === 'dark'
+                  ? 'Tối'
+                  : 'Tự động'
+            }}
           </span>
         </div>
 
@@ -502,7 +510,7 @@
               'bg-white dark:bg-slate-900 text-amber-500 shadow-sm scale-100':
                 themeService.themeMode() === 'light',
               'text-slate-400 dark:text-slate-600 hover:text-slate-650 dark:hover:text-slate-300':
-                themeService.themeMode() !== 'light'
+                themeService.themeMode() !== 'light',
             }"
             class="w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
             title="Giao diện Sáng"
@@ -525,7 +533,7 @@
               'bg-white dark:bg-slate-900 text-indigo-500 dark:text-indigo-400 shadow-sm scale-100':
                 themeService.themeMode() === 'auto',
               'text-slate-400 dark:text-slate-600 hover:text-slate-650 dark:hover:text-slate-300':
-                themeService.themeMode() !== 'auto'
+                themeService.themeMode() !== 'auto',
             }"
             class="w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
             title="Giao diện Tự động"
@@ -548,7 +556,7 @@
               'bg-white dark:bg-slate-900 text-purple-500 dark:text-purple-400 shadow-sm scale-100':
                 themeService.themeMode() === 'dark',
               'text-slate-400 dark:text-slate-600 hover:text-slate-650 dark:hover:text-slate-300':
-                themeService.themeMode() !== 'dark'
+                themeService.themeMode() !== 'dark',
             }"
             class="w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer"
             title="Giao diện Tối"

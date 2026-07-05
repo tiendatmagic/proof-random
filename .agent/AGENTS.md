@@ -90,6 +90,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Đồng bộ hóa giao diện và màu sắc badge của bảng "5 Phiên gần đây nhất" trên Dashboard giống như bảng của trang Lịch sử (History) (hỗ trợ hiển thị tên và màu sắc động cho cả 15 chế độ/skins khác nhau).
 - [x] Thiết lập chế độ gas mặc định là "Mặc định" (default) khi dApp chạy trên mạng Arbitrum One Mainnet (chain ID 42161) và khôi phục cài đặt hoặc chuyển về "Nhanh" (fast) đối với các mạng thử nghiệm.
 - [x] Tích hợp bộ đếm thời gian (waitingTime) hiển thị số giây chờ Chainlink VRF thực tế chạy động trên trang Chi tiết (Detail) thay thế cho văn bản tĩnh.
+- [x] Thiết lập hệ thống lưu cache thông minh client-side (RAM Web3Service kết hợp sessionStorage chia theo chainId) cho trang Lịch sử (History) và Chi tiết (Detail), giúp chuyển đổi trang mượt mà tức thì (Instant Load UX) và giảm tải 90% RPC Node request.
 
 
 

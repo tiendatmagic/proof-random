@@ -51,9 +51,13 @@ export class HistoryComponent {
   public readonly currentPage = signal(1);
   public readonly pageSize = 10;
 
-  // Cache lưu trữ toàn bộ dữ liệu khi quét full để phục vụ lọc nhanh
-  private allDrawsCache: any[] = [];
-  private hasFullScan = false;
+  // Trỏ trực tiếp tới cache của Web3Service để duy trì cache xuyên suốt route
+  public get allDrawsCache(): any[] {
+    return this.web3Service.historyCacheDraws;
+  }
+  public get hasFullScan(): boolean {
+    return this.web3Service.historyHasFullScan;
+  }
 
   // Tổng số lượng phiên trên blockchain (dùng cho phân trang on-chain)
   public readonly totalOnChainDraws = signal<number>(0);
@@ -129,14 +133,10 @@ export class HistoryComponent {
     this.isLoading.set(true);
     try {
       if (this.isFiltering()) {
-        if (!this.hasFullScan) {
-          // Nếu chưa quét full, quét toàn bộ sự kiện từ blockchain
-          const draws = await this.web3Service.getAllDrawSessionsFromEvents();
-          this.allDrawsCache = draws;
-          this.hasFullScan = true;
-        }
+        // Tải danh sách đã quét từ event logs (đã tự động có cache trong Web3Service)
+        const draws = await this.web3Service.getAllDrawSessionsFromEvents(false);
         // Cập nhật rawDraws ảo để kích hoạt computed filteredDraws chạy lại
-        this.rawDraws.set([...this.allDrawsCache]);
+        this.rawDraws.set([...draws]);
       } else {
         // Chế độ mặc định: tải đúng 10 phiên thuộc trang hiện tại trực tiếp từ Blockchain
         const result = await this.web3Service.getDrawSessionsPaginated(this.currentPage(), this.pageSize);
@@ -154,8 +154,7 @@ export class HistoryComponent {
    * Nút làm mới dữ liệu: xóa bộ nhớ cache và tải lại từ đầu
    */
   public async loadAllHistory() {
-    this.hasFullScan = false;
-    this.allDrawsCache = [];
+    this.web3Service.clearHistoryCache();
     this.currentPage.set(1);
     await this.loadHistory();
   }
