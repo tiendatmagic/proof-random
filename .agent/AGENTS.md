@@ -77,6 +77,10 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục lỗi xác minh (Verify) ở chế độ Màu ngẫu nhiên (Random Color): Đồng bộ lại thứ tự đọc 3 byte cuối từ phải sang trái (hash[31], hash[30], hash[29]) trong thuật toán tính màu ở client-side để khớp chính xác 100% với hàm `getRandomColor` của Smart Contract.
 - [x] Tạo và cấu hình các tệp `netlify.toml` tại thư mục gốc và thư mục frontend (`proof-random-web`) hỗ trợ build tự động và redirect routing SPA trên Netlify.
 - [x] Cập nhật các file `.gitignore` tại thư mục gốc và thư mục frontend để bỏ qua thư mục cache tạm `.netlify/` của Netlify.
+- [x] Khắc phục triệt để lỗi Connection declined (previous request is still active) của WalletConnect AppKit bằng cách chuyển đổi cập nhật số dư qua JsonRpcProvider công cộng và thiết lập khoảng trễ setTimeout khi lắng nghe các sự kiện tài khoản/mạng lưới.
+- [x] Khắc phục lỗi nút "Bắt đầu đối soát" làm xoay icon chiếc khiên bằng cách tách biệt icon chiếc khiên đứng yên khi bình thường và hiển thị spinner xoay chuẩn CSS khi đang thực hiện đối soát.
+
+
 
 
 

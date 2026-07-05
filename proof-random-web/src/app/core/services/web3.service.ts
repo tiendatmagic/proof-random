@@ -109,7 +109,7 @@ export class Web3Service {
         adapters: [ethersAdapter],
         networks: [arbitrum, arbitrumSepolia],
         defaultNetwork: arbitrum,
-        allowUnsupportedChain: false,
+        allowUnsupportedChain: true,
         themeMode: 'dark',
         themeVariables: {
           '--w3m-accent': '#ff00dd',
@@ -131,14 +131,18 @@ export class Web3Service {
       });
 
       // Lắng nghe thay đổi tài khoản từ AppKit
-      this.modal.subscribeAccount(async (accountState: any) => {
+      this.modal.subscribeAccount((accountState: any) => {
         const address = accountState.address;
         const isConnected = accountState.isConnected;
 
         if (isConnected && address) {
           this.currentAccount.set(address);
           this.walletConnected.set(true);
-          await this.updateBalanceAndStatus(address);
+          
+          // Sử dụng setTimeout để tránh xung đột RPC và nghẽn luồng trong quá trình bắt tay kết nối ví
+          setTimeout(() => {
+            this.updateBalanceAndStatus(address);
+          }, 150);
         } else {
           this.walletConnected.set(false);
           this.currentAccount.set('');
@@ -156,6 +160,14 @@ export class Web3Service {
           if (cleanChainId === '42161' || cleanChainId === '421614') {
             this.configuredChainId.set(cleanChainId);
           }
+          
+          // Khi đổi chain, cập nhật lại số dư ví sau một khoảng trễ nhỏ
+          const currentAddr = this.currentAccount();
+          if (currentAddr) {
+            setTimeout(() => {
+              this.updateBalanceAndStatus(currentAddr);
+            }, 250);
+          }
         }
       });
 
@@ -169,10 +181,13 @@ export class Web3Service {
    */
   private async updateBalanceAndStatus(address: string) {
     try {
-      if (typeof window === 'undefined' || !(window as any).ethereum) return;
+      if (typeof window === 'undefined') return;
       
-      this.provider = new BrowserProvider((window as any).ethereum);
-      const balanceBigInt = await this.provider.getBalance(address);
+      // Sử dụng JsonRpcProvider công cộng thay vì truy vấn qua ví đối với tác vụ đọc số dư
+      // Điều này loại bỏ hoàn toàn các xung đột RPC (previous request is still active) khi kết nối ví
+      const rpc = this.rpcUrl();
+      const tempProvider = new JsonRpcProvider(rpc);
+      const balanceBigInt = await tempProvider.getBalance(address);
       const balance = formatEther(balanceBigInt);
       this.walletBalance.set(parseFloat(balance).toFixed(4));
     } catch (err) {
@@ -248,11 +263,22 @@ export class Web3Service {
     if (!address || address === '0x0000000000000000000000000000000000000000') {
       throw new Error('Địa chỉ Smart Contract chưa được cấu hình.');
     }
-    if (!this.walletConnected() || typeof window === 'undefined' || !(window as any).ethereum) {
+    if (!this.walletConnected()) {
       throw new Error('Vui lòng kết nối ví điện tử trước khi thực hiện.');
     }
-    const browserProvider = new BrowserProvider((window as any).ethereum);
-    // ethers v6: getSigner() là async
+    
+    // Ưu tiên sử dụng provider thực tế của WalletConnect AppKit nếu khả dụng
+    const walletProvider = this.modal?.getWalletProvider();
+    if (!walletProvider) {
+      if (typeof window !== 'undefined' && (window as any).ethereum) {
+        const browserProvider = new BrowserProvider((window as any).ethereum);
+        const signer = await browserProvider.getSigner();
+        return new Contract(address, PROOF_RANDOM_ABI, signer);
+      }
+      throw new Error('Không thể tìm thấy provider của ví.');
+    }
+    
+    const browserProvider = new BrowserProvider(walletProvider);
     const signer = await browserProvider.getSigner();
     return new Contract(address, PROOF_RANDOM_ABI, signer);
   }
