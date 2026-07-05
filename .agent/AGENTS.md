@@ -95,6 +95,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục lỗi nút "Kết nối" ví trên mobile bị đổi màu nền thành trắng (làm ẩn chữ khi hover) bằng cách định nghĩa đầy đủ biến CSS `--color-primary-hover` trong `styles.css`.
 - [x] Đồng bộ hóa logo hiển thị trên WalletConnect AppKit bằng cách chép đè logo trong suốt chính thức của DApp từ `public/logo.png` sang `public/assets/logo.png`.
 - [x] Bổ sung banner thông báo và liên kết Faucet (Chainlink Faucet & Alchemy Faucet) tại trang chủ (Dashboard) khi người dùng truy cập mạng thử nghiệm Arbitrum Sepolia.
+- [x] Khắc phục triệt để lỗi lệch dữ liệu thống kê trên Dashboard (Tổng phiên vs Lượt quay thành công) bằng cách truy vấn getSessionsCount trực tiếp từ contract state và tự động làm mới cache sự kiện khi phát hiện dữ liệu lỗi thời.
 
 
 
