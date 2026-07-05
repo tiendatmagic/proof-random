@@ -669,6 +669,9 @@ export class DetailComponent implements OnDestroy {
    * Helper hiển thị tên loại bốc thăm
    */
   public getDrawTypeName(type: number, skin?: string): string {
+    if (skin && skin.startsWith('RandomNumber')) return 'Quay số ngẫu nhiên';
+    if (type === 3 && this.isNumberWinners()) return 'Quay số ngẫu nhiên';
+
     const skins: Record<string, string> = {
       LuckyWheel:  'Vòng quay may mắn',
       Racing:      'Đua xe ngẫu nhiên',

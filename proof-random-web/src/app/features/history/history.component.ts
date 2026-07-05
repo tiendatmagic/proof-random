@@ -215,10 +215,23 @@ export class HistoryComponent {
     });
   }
 
+  private isNumberWinners(type: number, skin?: string, result?: any): boolean {
+    if (type === 3) {
+      if (skin && skin.startsWith('RandomNumber')) return true;
+      if (result && typeof result === 'string') {
+        const clean = result.trim();
+        if (clean && /^\d+(,\d+)*$/.test(clean)) return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Helper hiển thị tên loại bốc thăm
    */
-  public getDrawTypeName(type: number, skin?: string): string {
+  public getDrawTypeName(type: number, skin?: string, result?: any): string {
+    if (skin && skin.startsWith('RandomNumber')) return 'Quay số ngẫu nhiên';
+    if (this.isNumberWinners(type, skin, result)) return 'Quay số ngẫu nhiên';
     if (skin && skin.startsWith('Seating')) return 'Sơ đồ chỗ ngồi';
 
     // Game skins ưu tiên hiển thị trước
@@ -260,9 +273,12 @@ export class HistoryComponent {
   /**
    * Trả về danh sách class Tailwind cho badge tùy theo loại bốc thăm/skin
    */
-  public getDrawTypeBadgeClass(type: number, skin?: string): string {
+  public getDrawTypeBadgeClass(type: number, skin?: string, result?: any): string {
     // 1. Nhóm Game Skins (Đặc biệt) -> Dùng các tông màu Neon nổi bật
     if (skin) {
+      if (skin.startsWith('RandomNumber')) {
+        return 'bg-sky-500/10 dark:bg-sky-950/20 text-sky-600 dark:text-sky-400 border-sky-200/30 dark:border-sky-800/30';
+      }
       if (skin.startsWith('Seating')) {
         // Sơ đồ chỗ ngồi: Xanh ngọc (Teal)
         return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';
@@ -317,6 +333,10 @@ export class HistoryComponent {
         default:
           return 'bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200/30 dark:border-purple-800/30';
       }
+    }
+
+    if (this.isNumberWinners(type, skin, result)) {
+      return 'bg-sky-500/10 dark:bg-sky-950/20 text-sky-600 dark:text-sky-400 border-sky-200/30 dark:border-sky-800/30';
     }
 
     // 2. Nhóm Chế độ bốc thăm cơ bản -> Chia nhóm màu hài hòa

@@ -394,12 +394,20 @@ export class VerifyComponent implements OnInit {
     }
   }
 
+  public isNumberWinners(): boolean {
+    const res = this.clientResult();
+    if (!res || !res.winners || res.winners.length === 0) return false;
+    return !isNaN(Number(res.winners[0]));
+  }
+
   public get skinType(): string {
     const details = this.sessionDetails();
     return details && details.skin ? details.skin : '';
   }
 
   public getDrawTypeName(type: number, skin?: string): string {
+    if (skin && skin.startsWith('RandomNumber')) return 'Quay số ngẫu nhiên';
+    if (type === 3 && this.isNumberWinners()) return 'Quay số ngẫu nhiên';
     if (skin && skin.startsWith('Seating')) return 'Sơ đồ chỗ ngồi';
 
     const skins: Record<string, string> = {

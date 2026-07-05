@@ -239,14 +239,14 @@ export class DashboardComponent {
         this.toastService.showToast('Số Min phải nhỏ hơn số Max!', 'error');
         return;
       }
+      if (this.numMax > 100) {
+        this.toastService.showToast('Số tối đa (Max) không được vượt quá 100!', 'error');
+        return;
+      }
       if (this.numWinners > 1) {
         const rangeSize = this.numMax - this.numMin + 1;
         if (this.numWinners > rangeSize) {
           this.toastService.showToast('Số lượng số cần quay không được lớn hơn tổng số trong khoảng (Max - Min + 1)!', 'error');
-          return;
-        }
-        if (rangeSize > 1000) {
-          this.toastService.showToast('Khoảng giới hạn số (Max - Min + 1) không được vượt quá 1000 khi quay nhiều số cùng lúc để tiết kiệm gas!', 'error');
           return;
         }
       } else if (this.numWinners <= 0) {
@@ -335,6 +335,7 @@ export class DashboardComponent {
           param1 = this.numMax - this.numMin + 1;
           param2 = this.numWinners;
           participants = Array.from({ length: param1 }, (_, i) => (this.numMin + i).toString());
+          skinToSend = 'RandomNumber';
         } else {
           param1 = this.numMin;
           param2 = this.numMax;
@@ -438,10 +439,23 @@ export class DashboardComponent {
     }
   }
 
+  private isNumberWinners(type: number, skin?: string, result?: any): boolean {
+    if (type === 3) {
+      if (skin && skin.startsWith('RandomNumber')) return true;
+      if (result && typeof result === 'string') {
+        const clean = result.trim();
+        if (clean && /^\d+(,\d+)*$/.test(clean)) return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * Helper hiển thị tên loại bốc thăm
    */
-  public getDrawTypeName(type: number, skin?: string): string {
+  public getDrawTypeName(type: number, skin?: string, result?: any): string {
+    if (skin && skin.startsWith('RandomNumber')) return 'Quay số ngẫu nhiên';
+    if (this.isNumberWinners(type, skin, result)) return 'Quay số ngẫu nhiên';
     if (skin && skin.startsWith('Seating')) return 'Sơ đồ chỗ ngồi';
 
     // Game skins ưu tiên hiển thị trước
@@ -483,9 +497,12 @@ export class DashboardComponent {
   /**
    * Trả về danh sách class Tailwind cho badge tùy theo loại bốc thăm/skin
    */
-  public getDrawTypeBadgeClass(type: number, skin?: string): string {
+  public getDrawTypeBadgeClass(type: number, skin?: string, result?: any): string {
     // 1. Nhóm Game Skins (Đặc biệt) -> Dùng các tông màu Neon nổi bật
     if (skin) {
+      if (skin.startsWith('RandomNumber')) {
+        return 'bg-sky-500/10 dark:bg-sky-950/20 text-sky-600 dark:text-sky-400 border-sky-200/30 dark:border-sky-800/30';
+      }
       switch (skin) {
         case 'CoinFlip':
           return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';
@@ -526,6 +543,10 @@ export class DashboardComponent {
         default:
           return 'bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200/30 dark:border-purple-800/30';
       }
+    }
+
+    if (this.isNumberWinners(type, skin, result)) {
+      return 'bg-sky-500/10 dark:bg-sky-950/20 text-sky-600 dark:text-sky-400 border-sky-200/30 dark:border-sky-800/30';
     }
 
     // 2. Nhóm Chế độ bốc thăm cơ bản -> Chia nhóm màu hài hòa
