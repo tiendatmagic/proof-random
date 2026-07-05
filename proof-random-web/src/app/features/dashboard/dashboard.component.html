@@ -1,7 +1,7 @@
 <div class="space-y-8 animate-fade-in">
   <!-- OVERVIEW STATISTICS GRID -->
   <ng-container *ngIf="!isStatsLoading(); else statsSkeleton">
-    <section class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+    <section class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
       <!-- Card 1: Tổng số phiên bốc thăm -->
       <app-card>
         <div class="flex flex-col items-start gap-3">
@@ -136,22 +136,15 @@
           </svg>
           <div class="leading-relaxed">
             Bạn đang sử dụng mạng thử nghiệm
-            <span class="font-extrabold text-amber-700 dark:text-amber-300"
-              >Arbitrum Sepolia</span
-            >. Nếu tài khoản không đủ ETH làm phí gas, bạn có thể nhận token Faucet
-            miễn phí tại
+            <span class="font-extrabold text-amber-700 dark:text-amber-300">Arbitrum Sepolia</span>.
+            Nếu tài khoản không đủ ETH làm phí gas, bạn có thể nhận token Faucet miễn phí tại
             <a
               href="https://faucets.chain.link/"
               target="_blank"
               class="underline hover:text-amber-500 font-extrabold inline-flex items-center gap-0.5 cursor-pointer"
             >
               Chainlink Faucet
-              <svg
-                class="w-3.5 h-3.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
@@ -167,20 +160,15 @@
               class="underline hover:text-amber-500 font-extrabold inline-flex items-center gap-0.5 cursor-pointer"
             >
               Alchemy Faucet
-              <svg
-                class="w-3.5 h-3.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
                   d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
                 />
-              </svg>
-            </a>.
+              </svg> </a
+            >.
           </div>
         </div>
 
@@ -613,6 +601,103 @@
                   <div class="text-[10px] text-slate-400">Vietlott Lottery</div>
                 </div>
               </button>
+
+              <button
+                type="button"
+                (click)="selectMode(2, 'Plinko')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'Plinko',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3L2 20h20L12 3z" />
+                    <circle cx="12" cy="10" r="1.25" fill="currentColor"/>
+                    <circle cx="9" cy="14" r="1.25" fill="currentColor"/>
+                    <circle cx="15" cy="14" r="1.25" fill="currentColor"/>
+                    <circle cx="6" cy="18" r="1.25" fill="currentColor"/>
+                    <circle cx="12" cy="18" r="1.25" fill="currentColor"/>
+                    <circle cx="18" cy="18" r="1.25" fill="currentColor"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Thả bóng Plinko</div>
+                  <div class="text-[10px] text-slate-400">Plinko Board</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="selectMode(2, 'SlotMachine')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'SlotMachine',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="2" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5v14M15 5v14M3 12h18" />
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Quay Slot Machine</div>
+                  <div class="text-[10px] text-slate-400">Slot Reels</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="selectMode(2, 'CardDraw')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'CardDraw',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect x="3" y="6" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="2" />
+                    <rect x="11" y="4" width="10" height="14" rx="1.5" stroke="currentColor" stroke-width="2" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Bốc bài tây</div>
+                  <div class="text-[10px] text-slate-400">Card Draw</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                (click)="selectMode(1, 'OanTuTi')"
+                [ngClass]="{
+                  'border-[var(--color-primary)]/40 bg-[var(--color-primary)]/5 text-[var(--color-primary)] font-bold':
+                    selectedSkin === 'OanTuTi',
+                }"
+                class="flex items-center justify-start gap-2.5 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-900/30 transition-all text-sm text-left cursor-pointer active:scale-98"
+              >
+                <div
+                  class="w-8 h-8 shrink-0 min-w-8 rounded-lg bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center"
+                >
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="font-extrabold text-xs">Oản tù tì</div>
+                  <div class="text-[10px] text-slate-400">Rock Paper Scissors</div>
+                </div>
+              </button>
             </div>
           </div>
 
@@ -806,8 +891,10 @@
               {{ item.eventName.split(' | ')[0] }}
             </td>
             <td>
-              <span class="inline-flex items-center justify-center w-[165px] h-7 text-xs font-bold rounded-lg border text-center"
-                [class]="getDrawTypeBadgeClass(item.drawType, item.skin)">
+              <span
+                class="inline-flex items-center justify-center w-[165px] h-7 text-xs font-bold rounded-lg border text-center"
+                [class]="getDrawTypeBadgeClass(item.drawType, item.skin)"
+              >
                 {{ getDrawTypeName(item.drawType, item.skin) }}
               </span>
             </td>

@@ -368,6 +368,10 @@ export class VerifyComponent implements OnInit {
       BauCua:      'Bầu Cua Tôm Cá',
       ScratchCard: 'Vé số cào',
       Vietlott:    'Xổ số Vietlott',
+      Plinko:      'Thả bóng Plinko',
+      SlotMachine: 'Quay Slot Machine',
+      CardDraw:    'Bốc bài tây',
+      OanTuTi:     'Oản tù tì',
     };
     if (skin && skins[skin]) return skins[skin];
     const names: Record<number, string> = {

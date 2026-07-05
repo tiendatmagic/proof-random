@@ -7,9 +7,9 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   template: `
     <div class="animate-pulse-slow w-full" [ngSwitch]="type()">
-      
+
       <!-- Stats skeleton -->
-      <div *ngSwitchCase="'stats'" class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6">
+      <div *ngSwitchCase="'stats'" class="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-8">
         <div *ngFor="let i of [1,2,3]; let last = last" [class.col-span-2]="last" [class.sm:col-span-1]="last" class="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-[15px] p-6 h-[98px] flex items-center gap-4 shadow-sm">
           <div class="w-12 h-12 rounded-xl bg-slate-200 dark:bg-slate-800/80"></div>
           <div class="flex-1 space-y-2.5">
@@ -62,7 +62,7 @@ import { CommonModule } from '@angular/common';
           <div class="h-4 bg-slate-200 dark:bg-slate-800/80 rounded w-24"></div>
           <div class="h-6 bg-slate-200 dark:bg-slate-800/80 rounded w-32"></div>
         </div>
-        
+
         <div class="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/50 rounded-[15px] p-6 h-[110px] flex items-center justify-between gap-6 shadow-sm">
           <div class="space-y-2.5 flex-1">
             <div class="h-4 bg-slate-200 dark:bg-slate-800/80 rounded w-1/6"></div>

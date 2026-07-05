@@ -41,7 +41,7 @@ export class DashboardComponent {
   public description = '';
   public participantsText = '';
   public drawType = 2; // Mặc định: Random Name
-  public selectedSkin = ''; // '', 'LuckyWheel', 'Racing', 'MysteryBox', 'BauCua', 'ScratchCard'
+  public selectedSkin = ''; // '', 'LuckyWheel', 'Racing', 'MysteryBox', 'BauCua', 'ScratchCard', 'Vietlott', 'Plinko', 'SlotMachine', 'CardDraw', 'OanTuTi'
   
   // Tùy chọn tiền xử lý danh sách
   public optRemoveDuplicates = true;
@@ -83,6 +83,9 @@ export class DashboardComponent {
     } else if (skin === 'Vietlott') {
       this.numMin = 1;
       this.numMax = 80;
+    } else if (skin === 'OanTuTi') {
+      this.numMin = 1;
+      this.numMax = 3;
     }
   }
 
@@ -361,6 +364,10 @@ export class DashboardComponent {
       BauCua:      'Bầu Cua Tôm Cá',
       ScratchCard: 'Vé số cào',
       Vietlott:    'Xổ số Vietlott',
+      Plinko:      'Thả bóng Plinko',
+      SlotMachine: 'Quay Slot Machine',
+      CardDraw:    'Bốc bài tây',
+      OanTuTi:     'Oản tù tì',
     };
     if (skin && skins[skin]) return skins[skin];
 
@@ -403,6 +410,18 @@ export class DashboardComponent {
         case 'ScratchCard':
           // Vé số cào: Tím Neon quyến rũ
           return 'bg-purple-500/10 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200/30 dark:border-purple-800/30';
+        case 'Plinko':
+          // Plinko: Xanh cyan neon công nghệ
+          return 'bg-cyan-500/10 dark:bg-cyan-950/20 text-cyan-600 dark:text-cyan-400 border-cyan-200/30 dark:border-cyan-800/30';
+        case 'SlotMachine':
+          // Slot Machine: Vàng cam may mắn
+          return 'bg-orange-500/10 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 border-orange-200/30 dark:border-orange-800/30';
+        case 'CardDraw':
+          // Bốc bài tây: Hồng Neon
+          return 'bg-fuchsia-500/10 dark:bg-fuchsia-950/20 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-200/30 dark:border-fuchsia-800/30';
+        case 'OanTuTi':
+          // Oản tù tì: Xanh lục chàm
+          return 'bg-indigo-500/10 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border-indigo-200/30 dark:border-indigo-800/30';
         default:
           return 'bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400 border-purple-200/30 dark:border-purple-800/30';
       }

@@ -42,6 +42,11 @@ export class DetailComponent implements OnDestroy {
   private wheelAnimationFrameId: any = null;
   private boxTimeoutId: any = null;
   private bauCuaTimeoutId: any = null;
+  private plinkoAnimationFrameId: any = null;
+  private slotIntervalId: any = null;
+  private slotTimeoutId: any = null;
+  private oanTuTiTimeoutId: any = null;
+  private vietlottIntervalId: any = null;
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id') || '';
@@ -148,12 +153,25 @@ export class DetailComponent implements OnDestroy {
       const range = max - min + 1n;
       const mod = seed % range;
       const result = (min + mod).toString();
-      this.directModResult.set({
-        label: 'Random Number — Tính trực tiếp từ randomWord',
-        formula: `randomWord % (max − min + 1) + min`,
-        modulo: `${randomWord} % ${range.toString()} = ${mod.toString()}`,
-        result: `Vị trí: ${mod.toString()} → Kết quả: ${result}`
-      });
+      
+      if (details.skin === 'OanTuTi') {
+        const hands = ['Kéo', 'Búa', 'Bao'];
+        const chosenHand = hands[Number(mod)];
+        const cpuHandVal = hands[(Number(mod) + 2) % 3]; // CPU thua
+        this.directModResult.set({
+          label: 'Oản tù tì (OanTuTi) — Tính trực tiếp từ randomWord',
+          formula: `(randomWord % 3) + 1`,
+          modulo: `${randomWord} % 3 = ${mod.toString()} (0=Kéo, 1=Búa, 2=Bao)`,
+          result: `Người chiến thắng ra: ${chosenHand} vs Máy ra: ${cpuHandVal} → Người thắng cuộc!`
+        });
+      } else {
+        this.directModResult.set({
+          label: 'Random Number — Tính trực tiếp từ randomWord',
+          formula: `randomWord % (max − min + 1) + min`,
+          modulo: `${randomWord} % ${range.toString()} = ${mod.toString()}`,
+          result: `Vị trí: ${mod.toString()} → Kết quả: ${result}`
+        });
+      }
       return;
     }
 
@@ -161,8 +179,20 @@ export class DetailComponent implements OnDestroy {
       const total = BigInt(param1);
       const idx = seed % total;
       const name = participants && participants[Number(idx)] ? participants[Number(idx)] : `Index: ${idx}`;
+      
+      const skinsWithStep: Record<string, string> = {
+        Plinko: 'Thả bóng Plinko',
+        SlotMachine: 'Slot Machine',
+        CardDraw: 'Bốc bài tây',
+        LuckyWheel: 'Vòng quay may mắn',
+        Racing: 'Đua xe ngẫu nhiên',
+        MysteryBox: 'Hộp quà bí ẩn'
+      };
+
+      const prefix = details.skin && skinsWithStep[details.skin] ? `${skinsWithStep[details.skin]} — ` : 'Random Name — ';
+      
       this.directModResult.set({
-        label: 'Random Name — Tính trực tiếp từ randomWord',
+        label: `${prefix}Tính trực tiếp từ randomWord`,
         formula: `randomWord % tổng số người tham gia`,
         modulo: `${randomWord} % ${param1} = ${idx.toString()}`,
         result: `Vị trí: ${idx.toString()} → Người thắng: "${name}"`
@@ -248,76 +278,80 @@ export class DetailComponent implements OnDestroy {
       let tempRandom = seed;
       const winnerIndices: number[] = [];
 
-      for (let i = 0; i < k; i++) {
-        const inputSeed = tempRandom.toString();
-        const hashHex = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), i.toString()]);
-        tempRandom = BigInt(hashHex);
-        let candidate = Number(tempRandom % BigInt(total));
+      const pool = Array.from({ length: total }, (_, i) => i);
 
-        let duplicate = winnerIndices.includes(candidate);
-        if (duplicate) {
-          let attempt = 0;
-          while (duplicate && attempt < 30) {
-            const retryHash = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), (attempt + 100).toString()]);
-            tempRandom = BigInt(retryHash);
-            candidate = Number(tempRandom % BigInt(total));
-            duplicate = winnerIndices.includes(candidate);
-            attempt++;
-          }
-        }
-        winnerIndices.push(candidate);
-        const name = participants && participants[candidate] ? `"${participants[candidate]}"` : `Index ${candidate}`;
+      for (let i = 0; i < k; i++) {
+        const hashHex = this.web3Service.solidityKeccak256(
+          ['uint256', 'uint256'],
+          [tempRandom.toString(), BigInt(i).toString()]
+        );
+        const randVal = BigInt(hashHex);
+        const poolIndex = Number(randVal % BigInt(pool.length));
+        const originalIndex = pool.splice(poolIndex, 1)[0];
+        winnerIndices.push(originalIndex);
+
+        const name = participants && participants[originalIndex] ? participants[originalIndex] : `Index ${originalIndex}`;
         steps.push({
           stepIndex: i + 1,
-          label: `Bước ${i + 1} — Chọn người thắng thứ ${i + 1}`,
-          inputSeed: this.shortHash(inputSeed),
-          inputSeedFull: inputSeed,
+          label: `Lượt ${i + 1} — Chọn người thắng thứ ${i + 1}`,
+          inputSeed: this.shortHash(tempRandom.toString()),
+          inputSeedFull: tempRandom.toString(),
           hashOutput: this.shortHash(hashHex),
           hashOutputFull: hashHex,
-          poolSizeBefore: total - i,
-          indexChosen: candidate,
-          valueChosen: `Vị trí ${candidate} → ${name}`
+          poolSizeBefore: pool.length + 1,
+          indexChosen: poolIndex,
+          valueChosen: `Vị trí trong pool: ${poolIndex} (người thứ ${originalIndex}) → Trúng giải: "${name}"`
         });
+
+        tempRandom = randVal;
       }
       this.hashSteps.set(steps);
       return;
     }
 
     if (drawType === 9) {
+      const numTeams = param2;
       const total = param1;
       const steps: HashStep[] = [];
       let tempRandom = seed;
-      const MAX_DISPLAY = Math.min(total - 1, 10);
 
-      for (let i = total - 1; i > total - 1 - MAX_DISPLAY; i--) {
-        const inputSeed = tempRandom.toString();
-        const hashHex = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), i.toString()]);
-        tempRandom = BigInt(hashHex);
-        const swapIdx = Number(tempRandom % BigInt(i + 1));
+      const pool = Array.from({ length: total }, (_, i) => i);
+
+      for (let i = 0; i < total; i++) {
+        const hashHex = this.web3Service.solidityKeccak256(
+          ['uint256', 'uint256'],
+          [tempRandom.toString(), BigInt(i).toString()]
+        );
+        const randVal = BigInt(hashHex);
+        const poolIndex = Number(randVal % BigInt(pool.length));
+        const memberIndex = pool.splice(poolIndex, 1)[0];
+        const assignedTeam = (i % numTeams) + 1;
+
+        const name = participants && participants[memberIndex] ? participants[memberIndex] : `Index ${memberIndex}`;
         steps.push({
-          stepIndex: total - i,
-          label: `Bước ${total - i} — Hoán vị Fisher-Yates (i=${i})`,
-          inputSeed: this.shortHash(inputSeed),
-          inputSeedFull: inputSeed,
+          stepIndex: i + 1,
+          label: `Bước ${i + 1} — Chia thành viên thứ ${i + 1}`,
+          inputSeed: this.shortHash(tempRandom.toString()),
+          inputSeedFull: tempRandom.toString(),
           hashOutput: this.shortHash(hashHex),
           hashOutputFull: hashHex,
-          poolSizeBefore: i + 1,
-          indexChosen: swapIdx,
-          valueChosen: `Hoán vị vị trí ${i} ↔ ${swapIdx}`
+          poolSizeBefore: pool.length + 1,
+          indexChosen: poolIndex,
+          valueChosen: `Chọn thành viên: "${name}" (từ pool vị trí ${poolIndex}) → Đội ${assignedTeam}`
         });
+
+        tempRandom = randVal;
       }
       this.hashSteps.set(steps);
       return;
     }
 
     // --- Skin: Bầu Cua Tôm Cá ---
-    // 3 xúc xắc: d1 = seed%6, d2 = keccak256(seed,'1')%6, d3 = keccak256(seed,'2')%6
     if (details.skin === 'BauCua') {
       this.isHashChain.set(true);
       const bauCuaNames = ['Bầu', 'Cua', 'Tôm', 'Cá', 'Gà', 'Nai'];
       const steps: HashStep[] = [];
 
-      // Xúc xắc 1: mod trực tiếp
       const d1 = Number(seed % 6n);
       steps.push({
         stepIndex: 1,
@@ -331,7 +365,6 @@ export class DetailComponent implements OnDestroy {
         valueChosen: `${randomWord} % 6 = ${d1} → ${bauCuaNames[d1]}`
       });
 
-      // Xúc xắc 2: keccak256(seed, '1') % 6
       const hash2 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '1']);
       const d2 = Number(BigInt(hash2) % 6n);
       steps.push({
@@ -346,7 +379,6 @@ export class DetailComponent implements OnDestroy {
         valueChosen: `keccak256(seed, "1") % 6 = ${d2} → ${bauCuaNames[d2]}`
       });
 
-      // Xúc xắc 3: keccak256(seed, '2') % 6
       const hash3 = this.web3Service.solidityKeccak256(['uint256', 'uint256'], [seed.toString(), '2']);
       const d3 = Number(BigInt(hash3) % 6n);
       steps.push({
@@ -378,6 +410,14 @@ export class DetailComponent implements OnDestroy {
       this.initRacingProgress();
     } else if (data && data.skin === 'Vietlott') {
       this.resetVietlottState();
+    } else if (data && data.skin === 'Plinko') {
+      this.initPlinkoCanvas();
+    } else if (data && data.skin === 'SlotMachine') {
+      this.initSlotMachine();
+    } else if (data && data.skin === 'CardDraw') {
+      this.initCardDraw();
+    } else if (data && data.skin === 'OanTuTi') {
+      this.resetOanTuTi();
     }
   }
 
@@ -455,8 +495,12 @@ export class DetailComponent implements OnDestroy {
     this.stopPolling();
     if (this.raceAnimationFrameId) cancelAnimationFrame(this.raceAnimationFrameId);
     if (this.wheelAnimationFrameId) cancelAnimationFrame(this.wheelAnimationFrameId);
+    if (this.plinkoAnimationFrameId) cancelAnimationFrame(this.plinkoAnimationFrameId);
     if (this.boxTimeoutId) clearTimeout(this.boxTimeoutId);
     if (this.bauCuaTimeoutId) clearTimeout(this.bauCuaTimeoutId);
+    if (this.slotTimeoutId) clearTimeout(this.slotTimeoutId);
+    if (this.oanTuTiTimeoutId) clearTimeout(this.oanTuTiTimeoutId);
+    if (this.slotIntervalId) clearInterval(this.slotIntervalId);
     if (this.vietlottIntervalId) clearInterval(this.vietlottIntervalId);
   }
 
@@ -589,6 +633,10 @@ export class DetailComponent implements OnDestroy {
       BauCua:      'Bầu Cua Tôm Cá',
       ScratchCard: 'Vé số cào',
       Vietlott:    'Xổ số Vietlott',
+      Plinko:      'Thả bóng Plinko',
+      SlotMachine: 'Quay Slot Machine',
+      CardDraw:    'Bốc bài tây',
+      OanTuTi:     'Oản tù tì',
     };
     if (skin && skins[skin]) return skins[skin];
     const names: Record<number, string> = {
@@ -743,6 +791,26 @@ export class DetailComponent implements OnDestroy {
   public readonly raceDone = signal<boolean>(false);
   public readonly racerProgresses = signal<number[]>([]);
 
+  // --- TRÒ CHƠI NGẪU NHIÊN: ĐĂNG KÝ SIGNALS CHO 4 GAME MỚI ---
+  public readonly isPlinkoRunning = signal<boolean>(false);
+  public readonly plinkoDone = signal<boolean>(false);
+  
+  public readonly isSlotSpinning = signal<boolean>(false);
+  public readonly slotDone = signal<boolean>(false);
+  public readonly slotReels = signal<string[][]>([[], [], []]);
+  public readonly slotCurrentIndices = signal<number[]>([0, 0, 0]);
+
+  public readonly isCardShuffling = signal<boolean>(false);
+  public readonly cardDone = signal<boolean>(false);
+  public readonly cards = signal<any[]>([]);
+  public readonly pickedCardIdx = signal<number | null>(null);
+
+  public readonly isOanTuTiRunning = signal<boolean>(false);
+  public readonly oanTuTiDone = signal<boolean>(false);
+  public readonly playerHand = signal<string>('rock');
+  public readonly cpuHand = signal<string>('rock');
+  public readonly oanTuTiResultText = signal<string>('');
+
   private markAnimationsAsDone() {
     this.wheelSpinDone.set(true);
     this.raceDone.set(true);
@@ -750,6 +818,10 @@ export class DetailComponent implements OnDestroy {
     this.bauCuaOpened.set(true);
     this.scratchDone.set(true);
     this.vietlottDone.set(true);
+    this.plinkoDone.set(true);
+    this.slotDone.set(true);
+    this.cardDone.set(true);
+    this.oanTuTiDone.set(true);
     
     // Thiết lập kết quả Vietlott
     const type = this.selectedVietlottType();
@@ -765,9 +837,36 @@ export class DetailComponent implements OnDestroy {
     if (details && details.participants && details.result !== undefined && details.result !== null && details.result !== '') {
       const count = details.participants.length;
       const winnerIdx = Number(details.result);
+      
+      // Đồng bộ Racing
       const current = new Array(count).fill(50);
       current[winnerIdx] = 100;
       this.racerProgresses.set(current);
+      
+      // Đồng bộ Slot Machine
+      const winnerName = details.participants[winnerIdx] || 'Người thắng';
+      this.slotReels.set([[winnerName], [winnerName], [winnerName]]);
+      this.slotCurrentIndices.set([0, 0, 0]);
+
+      // Đồng bộ Bốc bài tây
+      this.pickedCardIdx.set(0);
+      const cardsList = [{ name: winnerName, isWinner: true, flipped: true }];
+      // Thêm các thẻ bài trượt giả
+      const others = details.participants.filter((p: string, idx: number) => idx !== winnerIdx).slice(0, 4);
+      others.forEach((p: string) => {
+        cardsList.push({ name: p, isWinner: false, flipped: true });
+      });
+      this.cards.set(cardsList);
+
+      // Đồng bộ Oản tù tì
+      if (details.drawType === 1) {
+        const mod = Number(BigInt(details.randomWord) % 3n);
+        const hands = ['scissors', 'rock', 'paper'];
+        const handsVN = ['Kéo', 'Búa', 'Bao'];
+        this.playerHand.set(hands[mod]);
+        this.cpuHand.set(hands[(mod + 2) % 3]); // CPU thua
+        this.oanTuTiResultText.set(`Người thắng cuộc ra: ${handsVN[mod]} vs Máy ra: ${handsVN[(mod + 2) % 3]} → Người thắng!`);
+      }
     }
   }
 
@@ -1071,7 +1170,6 @@ export class DetailComponent implements OnDestroy {
   public readonly vietlottBonus = signal<number | null>(null);
   public readonly revealedCount = signal<number>(0);
   public readonly currentSpinningNumber = signal<number>(0);
-  public vietlottIntervalId: any = null;
 
   public getVietlottResults(type: string): { numbers: number[], bonus?: number } {
     const details = this.sessionDetails();
@@ -1227,5 +1325,385 @@ export class DetailComponent implements OnDestroy {
           ? `Bộ số Power 6/55: ${resultObj.numbers.join(', ')} | Số phụ: ${resultObj.bonus}`
           : `Bộ số Mega 6/45: ${resultObj.numbers.join(', ')}`);
     this.toastService.showToast(textWin, 'success');
+  }
+
+  // ================= 7. PLINKO BOARD MAY MẮN =================
+  public initPlinkoCanvas() {
+    setTimeout(() => {
+      const canvas = document.getElementById('plinkoCanvas') as HTMLCanvasElement;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      this.drawPlinkoBoard(ctx, canvas.width, canvas.height, 12, null, null);
+    }, 100);
+  }
+
+  private drawPlinkoBoard(
+    ctx: CanvasRenderingContext2D,
+    width: number,
+    height: number,
+    rows: number,
+    ballX: number | null,
+    ballY: number | null
+  ) {
+    ctx.clearRect(0, 0, width, height);
+    
+    // Background tối giản sang trọng
+    const isDark = typeof document !== 'undefined' && document.documentElement.classList.contains('dark');
+    ctx.fillStyle = isDark ? '#020617' : '#f8fafc';
+    ctx.fillRect(0, 0, width, height);
+
+    // Vẽ lưới đinh tam giác (peg board)
+    ctx.fillStyle = isDark ? '#475569' : '#cbd5e1';
+    const startY = 40;
+    const rowSpacing = (height - 80) / rows;
+    
+    for (let r = 0; r < rows; r++) {
+      const pinsInRow = r + 3;
+      const rowWidth = pinsInRow * 20;
+      const startX = (width - rowWidth) / 2 + 10;
+      for (let p = 0; p < pinsInRow; p++) {
+        ctx.beginPath();
+        ctx.arc(startX + p * 20, startY + r * rowSpacing, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Vẽ quả bóng Plinko màu hồng Neon
+    if (ballX !== null && ballY !== null) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(ballX, ballY, 7.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff00dd';
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#ff00dd';
+      ctx.fill();
+      ctx.restore();
+    } else {
+      // Vẽ bóng ở vị trí thả mặc định
+      ctx.beginPath();
+      ctx.arc(width / 2, 20, 7.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff00dd';
+      ctx.fill();
+    }
+
+    // Vẽ các khe ở đáy bảng Plinko
+    const details = this.sessionDetails();
+    if (details && details.participants) {
+      const totalBins = 9;
+      const binWidth = width / totalBins;
+      ctx.fillStyle = isDark ? '#0f172a' : '#e2e8f0';
+      ctx.strokeStyle = isDark ? '#1e293b' : '#cbd5e1';
+      ctx.lineWidth = 1;
+      
+      ctx.font = 'bold 9px Quicksand, sans-serif';
+      ctx.textAlign = 'center';
+      
+      const winners = this.clientResult()?.winners || [];
+      const winnerName = winners[0] || 'Winner';
+      
+      // Phân bổ kết quả vào khe trung tâm (midBin)
+      const midBin = 4;
+      const binNames = new Array(totalBins).fill('');
+      binNames[midBin] = winnerName.length > 8 ? winnerName.substring(0, 6) + '..' : winnerName;
+      
+      let othersIdx = 0;
+      const others = details.participants.filter((p: string) => p !== winnerName);
+      for (let b = 0; b < totalBins; b++) {
+        if (b !== midBin) {
+          const name = others[othersIdx] || `Khe ${b}`;
+          binNames[b] = name.length > 8 ? name.substring(0, 6) + '..' : name;
+          othersIdx++;
+        }
+      }
+
+      for (let b = 0; b < totalBins; b++) {
+        const x = b * binWidth;
+        // Vẽ vách ngăn khe
+        ctx.beginPath();
+        ctx.moveTo(x, height - 30);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+
+        // Vẽ chữ kết quả
+        ctx.fillStyle = b === midBin ? '#ff00dd' : (isDark ? '#64748b' : '#64748b');
+        ctx.fillText(binNames[b], x + binWidth / 2, height - 10);
+      }
+    }
+  }
+
+  public startPlinko() {
+    if (this.isPlinkoRunning() || this.plinkoDone()) return;
+    this.isPlinkoRunning.set(true);
+
+    const canvas = document.getElementById('plinkoCanvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const rows = 12;
+    const midBin = 4;
+    const binWidth = width / 9;
+    const targetX = midBin * binWidth + binWidth / 2;
+
+    let currentX = width / 2;
+    let currentY = 20;
+    let vy = 2.5;
+
+    const animate = () => {
+      currentY += vy;
+
+      // Nảy ngang nhẹ theo lực hút kéo dần về trục đích
+      const distanceToBottom = height - 30 - currentY;
+      if (distanceToBottom > 20) {
+        const dx = targetX - currentX;
+        const drift = dx / (distanceToBottom / 5.5);
+        currentX += drift + (Math.random() - 0.5) * 2;
+      } else {
+        const dx = targetX - currentX;
+        currentX += dx * 0.2;
+      }
+
+      this.drawPlinkoBoard(ctx, width, height, rows, currentX, currentY);
+
+      if (currentY < height - 20) {
+        this.plinkoAnimationFrameId = requestAnimationFrame(animate);
+      } else {
+        this.isPlinkoRunning.set(false);
+        this.plinkoDone.set(true);
+        this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã chiến thắng Plinko!`, 'success');
+      }
+    };
+
+    this.plinkoAnimationFrameId = requestAnimationFrame(animate);
+  }
+
+  public skipPlinko() {
+    if (this.plinkoAnimationFrameId) {
+      cancelAnimationFrame(this.plinkoAnimationFrameId);
+      this.plinkoAnimationFrameId = null;
+    }
+    this.isPlinkoRunning.set(false);
+    this.plinkoDone.set(true);
+    this.initPlinkoCanvas();
+    this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã chiến thắng Plinko!`, 'success');
+  }
+
+  // ================= 8. SLOT MACHINE MAY MẮN =================
+  public initSlotMachine() {
+    const details = this.sessionDetails();
+    if (!details || !details.participants) return;
+    const winnerIdx = Number(details.result);
+    const winnerName = details.participants[winnerIdx] || 'Winner';
+    
+    const reels: string[][] = [[], [], []];
+    for (let r = 0; r < 3; r++) {
+      const shuffled = [...details.participants].sort(() => Math.random() - 0.5);
+      reels[r] = [...shuffled, winnerName];
+    }
+    this.slotReels.set(reels);
+    this.slotCurrentIndices.set([0, 0, 0]);
+    this.slotDone.set(false);
+    this.isSlotSpinning.set(false);
+  }
+
+  public startSlot() {
+    if (this.isSlotSpinning() || this.slotDone()) return;
+    this.isSlotSpinning.set(true);
+
+    const reels = this.slotReels();
+    let speed1 = true;
+    let speed2 = true;
+    let speed3 = true;
+
+    this.slotIntervalId = setInterval(() => {
+      this.slotCurrentIndices.update(curr => {
+        const next = [...curr];
+        if (speed1) next[0] = (next[0] + 1) % reels[0].length;
+        if (speed2) next[1] = (next[1] + 1) % reels[1].length;
+        if (speed3) next[2] = (next[2] + 1) % reels[2].length;
+        return next;
+      });
+    }, 85);
+
+    this.slotTimeoutId = setTimeout(() => {
+      speed1 = false;
+      this.slotCurrentIndices.update(curr => [reels[0].length - 1, curr[1], curr[2]]);
+      
+      this.slotTimeoutId = setTimeout(() => {
+        speed2 = false;
+        this.slotCurrentIndices.update(curr => [curr[0], reels[1].length - 1, curr[2]]);
+        
+        this.slotTimeoutId = setTimeout(() => {
+          speed3 = false;
+          this.slotCurrentIndices.update(curr => [curr[0], curr[1], reels[2].length - 1]);
+          clearInterval(this.slotIntervalId);
+          this.slotIntervalId = null;
+          this.isSlotSpinning.set(false);
+          this.slotDone.set(true);
+          this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã trúng Jackpot Slot!`, 'success');
+        }, 1000);
+      }, 800);
+    }, 1800);
+  }
+
+  public skipSlot() {
+    if (this.slotIntervalId) {
+      clearInterval(this.slotIntervalId);
+      this.slotIntervalId = null;
+    }
+    if (this.slotTimeoutId) {
+      clearTimeout(this.slotTimeoutId);
+      this.slotTimeoutId = null;
+    }
+    
+    this.isSlotSpinning.set(false);
+    this.slotDone.set(true);
+    
+    const details = this.sessionDetails();
+    if (details) {
+      const winnerName = details.participants[Number(details.result)] || 'Winner';
+      this.slotReels.set([[winnerName], [winnerName], [winnerName]]);
+      this.slotCurrentIndices.set([0, 0, 0]);
+    }
+    this.toastService.showToast(`Chúc mừng ${this.clientResult().winners[0]} đã trúng Jackpot Slot!`, 'success');
+  }
+
+  // ================= 9. BỐC BÀI TÂY (CARD DRAW) =================
+  public initCardDraw() {
+    const details = this.sessionDetails();
+    if (!details || !details.participants) return;
+    const winnerIdx = Number(details.result);
+    const winnerName = details.participants[winnerIdx] || 'Winner';
+
+    const cardsList = [{ name: winnerName, isWinner: true, flipped: false }];
+    const others = details.participants
+      .filter((p: string, idx: number) => idx !== winnerIdx)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 4);
+
+    others.forEach((p: string) => {
+      cardsList.push({ name: p, isWinner: false, flipped: false });
+    });
+
+    const shuffled = cardsList.sort(() => Math.random() - 0.5);
+    this.cards.set(shuffled);
+    this.cardDone.set(false);
+    this.pickedCardIdx.set(null);
+    this.isCardShuffling.set(false);
+  }
+
+  public shuffleCards() {
+    if (this.isCardShuffling() || this.cardDone()) return;
+    this.isCardShuffling.set(true);
+    
+    setTimeout(() => {
+      this.isCardShuffling.set(false);
+      this.toastService.showToast('Xáo bài hoàn tất! Vui lòng chọn 1 lá bài tây.', 'success');
+    }, 1500);
+  }
+
+  public pickCard(idx: number) {
+    if (this.isCardShuffling() || this.cardDone() || this.pickedCardIdx() !== null) return;
+    
+    this.pickedCardIdx.set(idx);
+    
+    // Lật thẻ được bốc
+    this.cards.update(list => {
+      const next = [...list];
+      next[idx].flipped = true;
+      return next;
+    });
+
+    // Lật nốt các thẻ khác sau 1s
+    setTimeout(() => {
+      this.cards.update(list => {
+        return list.map(c => ({ ...c, flipped: true }));
+      });
+      this.cardDone.set(true);
+      const isWinner = this.cards()[idx].isWinner;
+      if (isWinner) {
+        this.toastService.showToast(`Tuyệt vời! Bạn đã chọn trúng lá bài chiến thắng: ${this.cards()[idx].name}`, 'success');
+      } else {
+        this.toastService.showToast(`Người chiến thắng thực sự là: ${this.clientResult().winners[0]}`, 'success');
+      }
+    }, 1000);
+  }
+
+  public skipCard() {
+    this.isCardShuffling.set(false);
+    this.cardDone.set(true);
+    this.pickedCardIdx.set(0);
+    this.cards.update(list => {
+      return list.map(c => ({ ...c, flipped: true }));
+    });
+    this.toastService.showToast(`Người chiến thắng: ${this.clientResult().winners[0]}`, 'success');
+  }
+
+  // ================= 10. OẢN TÙ TÌ (OANTUTI) =================
+  public resetOanTuTi() {
+    this.playerHand.set('rock');
+    this.cpuHand.set('rock');
+    this.oanTuTiResultText.set('');
+    this.oanTuTiDone.set(false);
+    this.isOanTuTiRunning.set(false);
+  }
+
+  public startOanTuTi() {
+    if (this.isOanTuTiRunning() || this.oanTuTiDone()) return;
+    this.isOanTuTiRunning.set(true);
+
+    const details = this.sessionDetails();
+    if (!details || !details.randomWord) return;
+
+    let shakeCount = 0;
+    const hands = ['rock', 'paper', 'scissors'];
+    
+    const interval = setInterval(() => {
+      this.playerHand.set(hands[shakeCount % 3]);
+      this.cpuHand.set(hands[(shakeCount + 1) % 3]);
+      shakeCount++;
+    }, 150);
+
+    this.oanTuTiTimeoutId = setTimeout(() => {
+      clearInterval(interval);
+      
+      const mod = Number(BigInt(details.randomWord) % 3n);
+      const handsValue = ['scissors', 'rock', 'paper']; // 0 = Kéo, 1 = Búa, 2 = Bao
+      const handsVN = ['Kéo', 'Búa', 'Bao'];
+      
+      const pHand = handsValue[mod];
+      const cHand = handsValue[(mod + 2) % 3]; // CPU thua
+
+      this.playerHand.set(pHand);
+      this.cpuHand.set(cHand);
+      
+      this.isOanTuTiRunning.set(false);
+      this.oanTuTiDone.set(true);
+      
+      const winnerName = this.clientResult()?.winners[0] || 'Người chơi';
+      this.oanTuTiResultText.set(`Người chiến thắng "${winnerName}" ra: ${handsVN[mod]} vs Máy ra: ${handsVN[(mod + 2) % 3]} → Thắng cuộc!`);
+      this.toastService.showToast(`Oản tù tì kết thúc! ${winnerName} chiến thắng!`, 'success');
+    }, 2000);
+  }
+
+  public skipOanTuTi() {
+    if (this.oanTuTiTimeoutId) clearTimeout(this.oanTuTiTimeoutId);
+    this.isOanTuTiRunning.set(false);
+    this.oanTuTiDone.set(true);
+
+    const details = this.sessionDetails();
+    if (details) {
+      const mod = Number(BigInt(details.randomWord) % 3n);
+      const hands = ['scissors', 'rock', 'paper'];
+      const handsVN = ['Kéo', 'Búa', 'Bao'];
+      this.playerHand.set(hands[mod]);
+      this.cpuHand.set(hands[(mod + 2) % 3]);
+      
+      const winnerName = this.clientResult()?.winners[0] || 'Người chơi';
+      this.oanTuTiResultText.set(`Người chiến thắng "${winnerName}" ra: ${handsVN[mod]} vs Máy ra: ${handsVN[(mod + 2) % 3]} → Thắng cuộc!`);
+    }
   }
 }

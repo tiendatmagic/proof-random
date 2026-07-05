@@ -96,6 +96,10 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Đồng bộ hóa logo hiển thị trên WalletConnect AppKit bằng cách chép đè logo trong suốt chính thức của DApp từ `public/logo.png` sang `public/assets/logo.png`.
 - [x] Bổ sung banner thông báo và liên kết Faucet (Chainlink Faucet & Alchemy Faucet) tại trang chủ (Dashboard) khi người dùng truy cập mạng thử nghiệm Arbitrum Sepolia.
 - [x] Khắc phục triệt để lỗi lệch dữ liệu thống kê trên Dashboard (Tổng phiên vs Lượt quay thành công) bằng cách truy vấn getSessionsCount trực tiếp từ contract state và tự động làm mới cache sự kiện khi phát hiện dữ liệu lỗi thời.
+- [x] Khắc phục lỗi hiển thị tên chế độ quay "Quay xúc xắc" thay vì "Bầu Cua Tôm Cá" trên trang Chi tiết (Detail) bằng cách sửa đổi hàm getDrawTypeName nhận thêm tham số skin, đồng bộ hóa tại giao diện và các bộ dữ liệu xuất file.
+- [x] Triển khai thành công 4 chế độ bốc thăm mới: Plinko (Thả bóng may mắn), Slot Machine (Quay hũ), Bốc bài tây (Card Draw), và Oản tù tì (Rock-Paper-Scissors). Đồng bộ hóa hoàn hảo trên cả 4 trang Dashboard, Lịch sử, Chi tiết, Xác minh và hệ thống băm đối soát.
+
+
 
 
 
