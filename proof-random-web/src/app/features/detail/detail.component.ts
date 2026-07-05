@@ -56,6 +56,12 @@ export class DetailComponent implements OnDestroy {
       drawType: 2
     });
     
+    // Nếu là phiên bốc thăm mới tinh vừa tạo, tắt Skeleton Loader ngay lập tức để hiện màn hình chờ VRF và đếm giây
+    const isFresh = this.route.snapshot.queryParamMap.get('fresh') === 'true';
+    if (isFresh) {
+      this.isLoading.set(false);
+    }
+    
     this.loadSessionDetails();
   }
 
