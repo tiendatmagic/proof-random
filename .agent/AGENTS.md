@@ -128,11 +128,4 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Tích hợp ô nhập số lượng đồng xu cần lật cho chế độ "Lật đồng xu (Coin Flip)" trên bảng cấu hình Dashboard. Khi số lượng > 1, tự động chuyển sang drawType 3 với participants sinh tự động (Heads, Tails), gắn tag [Skin:CoinFlip]. Đồng thời nâng cấp giao diện, hoạt ảnh nhấp nháy, chốt kết quả và timeline băm xác minh trên trang Chi tiết và Xác minh để hỗ trợ hoàn hảo nhiều đồng xu cùng lúc.
 - [x] Sửa lỗi trắng màn hình (không hiển thị kết quả) ở trang Chi tiết đối với chế độ lật nhiều đồng xu (CoinFlip skin) bằng cách cho phép skinType là 'CoinFlip' đi vào trong div bọc ngoài cùng và loại trừ skinType === 'CoinFlip' khỏi vùng hiển thị Chọn nhiều người thắng (Multiple Winners) của file standard-game.component.html.
 - [x] Bản địa hóa các nhãn hiển thị của Lật đồng xu (Coin Flip) sang tiếng Việt: thay thế thuật ngữ dịch thô "Chân dung / Số" bằng thuật ngữ chuẩn truyền thống "Ngửa (Heads) / Sấp (Tails)" trên toàn bộ giao diện cấu hình Dashboard, kết quả hiển thị StandardGame và các Toast thông báo.
-
-
-
-
-
-
-
-
+- [x] Giới hạn Số tối đa (Max) là 100 đối với chế độ Quay số để khắc phục triệt để lỗi calldata quá lớn (oversized data) khi gọi RPC, đồng thời bổ sung logic nhận diện chính xác chế độ "Quay số ngẫu nhiên" (Random Number) cho cả các phiên cũ và mới có drawType = 3 khi kết quả chứa toàn bộ các con số.
