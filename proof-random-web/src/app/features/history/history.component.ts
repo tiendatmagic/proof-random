@@ -38,7 +38,7 @@ export class HistoryComponent {
     { value: 'Vietlott',     label: 'Xổ số Vietlott (Power/Mega/Keno)' },
   ];
 
-  // Danh sách thô từ Event logs
+  // Danh sách thô từ Event logs hoặc danh sách phân trang từ blockchain
   public readonly rawDraws = signal<any[]>([]);
   public readonly isLoading = signal<boolean>(true);
 
@@ -51,9 +51,21 @@ export class HistoryComponent {
   public readonly currentPage = signal(1);
   public readonly pageSize = 10;
 
+  // Cache lưu trữ toàn bộ dữ liệu khi quét full để phục vụ lọc nhanh
+  private allDrawsCache: any[] = [];
+  private hasFullScan = false;
+
+  // Tổng số lượng phiên trên blockchain (dùng cho phân trang on-chain)
+  public readonly totalOnChainDraws = signal<number>(0);
+
+  // Nhận diện trạng thái đang có bộ lọc hoạt động
+  public readonly isFiltering = computed(() => {
+    return !!this.filterSearch().trim() || !!this.filterCreator().trim() || this.filterType() !== 0;
+  });
+
   // Lọc dữ liệu bằng Computed Signals
   public readonly filteredDraws = computed(() => {
-    let result = this.rawDraws();
+    let result = this.isFiltering() ? this.allDrawsCache : this.rawDraws();
 
     if (this.filterSearch().trim()) {
       const q = this.filterSearch().toLowerCase().trim();
@@ -80,35 +92,72 @@ export class HistoryComponent {
   // Dữ liệu hiển thị trên trang hiện tại
   public readonly paginatedDraws = computed(() => {
     const list = this.filteredDraws();
-    const startIndex = (this.currentPage() - 1) * this.pageSize;
-    return list.slice(startIndex, startIndex + this.pageSize);
+    if (this.isFiltering()) {
+      const startIndex = (this.currentPage() - 1) * this.pageSize;
+      return list.slice(startIndex, startIndex + this.pageSize);
+    } else {
+      // Chế độ mặc định: rawDraws đã chứa đúng 10 phiên được phân trang trực tiếp từ blockchain
+      return list;
+    }
   });
 
   // Tính tổng số trang
   public readonly totalPages = computed(() => {
-    return Math.ceil(this.filteredDraws().length / this.pageSize) || 1;
+    if (this.isFiltering()) {
+      return Math.ceil(this.filteredDraws().length / this.pageSize) || 1;
+    } else {
+      return Math.ceil(this.totalOnChainDraws() / this.pageSize) || 1;
+    }
   });
 
   constructor() {
     effect(() => {
-      this.loadAllHistory();
+      // Đăng ký các signal đổi giá trị để kích hoạt tải lại dữ liệu tương ứng
+      this.currentPage();
+      this.filterSearch();
+      this.filterCreator();
+      this.filterType();
+
+      this.loadHistory();
     });
   }
 
   /**
-   * Quét sự kiện blockchain để lấy lịch sử bốc thăm
+   * Tải dữ liệu lịch sử bốc thăm (tự động phân trang hoặc quét full tùy theo trạng thái bộ lọc)
    */
-  public async loadAllHistory() {
+  public async loadHistory() {
     this.isLoading.set(true);
     try {
-      const draws = await this.web3Service.getAllDrawSessionsFromEvents();
-      this.rawDraws.set(draws);
-      this.currentPage.set(1); // Reset về trang 1
+      if (this.isFiltering()) {
+        if (!this.hasFullScan) {
+          // Nếu chưa quét full, quét toàn bộ sự kiện từ blockchain
+          const draws = await this.web3Service.getAllDrawSessionsFromEvents();
+          this.allDrawsCache = draws;
+          this.hasFullScan = true;
+        }
+        // Cập nhật rawDraws ảo để kích hoạt computed filteredDraws chạy lại
+        this.rawDraws.set([...this.allDrawsCache]);
+      } else {
+        // Chế độ mặc định: tải đúng 10 phiên thuộc trang hiện tại trực tiếp từ Blockchain
+        const result = await this.web3Service.getDrawSessionsPaginated(this.currentPage(), this.pageSize);
+        this.rawDraws.set(result.draws);
+        this.totalOnChainDraws.set(result.total);
+      }
     } catch (err) {
-      console.warn('[History] Quét lịch sử bốc thăm lỗi:', err);
+      console.warn('[History] Tải lịch sử bốc thăm lỗi:', err);
     } finally {
       this.isLoading.set(false);
     }
+  }
+
+  /**
+   * Nút làm mới dữ liệu: xóa bộ nhớ cache và tải lại từ đầu
+   */
+  public async loadAllHistory() {
+    this.hasFullScan = false;
+    this.allDrawsCache = [];
+    this.currentPage.set(1);
+    await this.loadHistory();
   }
 
   /**

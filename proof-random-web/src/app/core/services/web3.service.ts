@@ -284,6 +284,53 @@ export class Web3Service {
   }
 
   /**
+   * Lấy danh sách các phiên bốc thăm phân trang trực tiếp từ Contract State
+   * Giúp dApp tải cực nhanh và không bị giới hạn block range của RPC Node khi dữ liệu lớn
+   */
+  public async getDrawSessionsPaginated(page: number, limit: number): Promise<{ draws: any[], total: number }> {
+    try {
+      const contract = this.getContract(false);
+      const totalBig = await contract['getSessionsCount']();
+      const total = Number(totalBig);
+      
+      if (total === 0) {
+        return { draws: [], total: 0 };
+      }
+      
+      const draws: any[] = [];
+      const startIndex = total - 1 - (page - 1) * limit;
+      const endIndex = Math.max(0, startIndex - limit + 1);
+      
+      // Tạo danh sách index cần đọc
+      const indices: number[] = [];
+      for (let i = startIndex; i >= endIndex; i--) {
+        indices.push(i);
+      }
+      
+      // Đọc song song các requestId
+      const idPromises = indices.map(idx => contract['requestIds'](idx));
+      const requestIdsBig = await Promise.all(idPromises);
+      
+      // Đọc chi tiết từng phiên song song
+      const detailPromises = requestIdsBig.map(reqId => this.getDrawSessionDetails(reqId.toString()));
+      const details = await Promise.all(detailPromises);
+      
+      // Lọc các phiên hợp lệ
+      for (const d of details) {
+        if (d) {
+          draws.push(d);
+        }
+      }
+      
+      return { draws, total };
+    } catch (err) {
+      console.error('[Web3] Phân trang bốc thăm lỗi:', err);
+      return { draws: [], total: 0 };
+    }
+  }
+
+
+  /**
    * Gửi yêu cầu bốc thăm lên blockchain (Write)
    */
   public async requestDraw(
