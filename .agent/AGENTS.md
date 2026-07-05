@@ -118,3 +118,4 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Kế thừa tất cả 16 component con từ `BaseGameComponent` và vá thành công lỗi thiếu các hàm `skipWheel()`, `skipRace()`, `skipBox()` cục bộ trong từng component con.
 - [x] Sửa lỗi cú pháp dấu đóng ngoặc class thừa ở BingoGameComponent và dọn dẹp các hàm skip rác bị cào nhầm trong BauCuaGameComponent.
 - [x] Rút gọn tệp `detail.component.ts` chính xuống chỉ còn 768 dòng và `detail.component.html` xuống còn 735 dòng, import thành công GameShowcaseComponent và biên dịch dự án chạy thành công 100% không một lỗi cảnh báo nào.
+- [x] Dọn dẹp toàn bộ 15 dòng lệnh console.log debug, in thông tin thô (subInfo, subId) và cache log dư thừa ở các tệp verify.component.ts, detail.component.ts và web3.service.ts nhằm làm sạch console trình duyệt và tối ưu hóa hiệu năng debug.

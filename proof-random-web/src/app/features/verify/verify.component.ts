@@ -325,7 +325,6 @@ export class VerifyComponent implements OnInit {
       let requestId = query;
 
       if (query.startsWith('0x') && query.length === 66) {
-        console.log('[Verify] Phát hiện mã băm giao dịch (Tx Hash). Đang tìm RequestID...');
         const contract = this.web3Service.getContract(false);
         const filter = contract['filters']['DrawCreated']();
         const events = await contract.queryFilter(filter, 0, 'latest');
@@ -333,7 +332,6 @@ export class VerifyComponent implements OnInit {
         const targetEvent = events.find(e => e.transactionHash.toLowerCase() === query.toLowerCase());
         if (targetEvent) {
           requestId = (targetEvent as any).args.requestId.toString();
-          console.log('[Verify] Đã tìm thấy Request ID tương ứng:', requestId);
         } else {
           this.toastService.showToast('Không tìm thấy phiên bốc thăm tương ứng với Tx Hash này!', 'error');
           this.isVerifying.set(false);

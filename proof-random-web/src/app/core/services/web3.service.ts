@@ -251,7 +251,6 @@ export class Web3Service {
         console.warn('[Web3] Lỗi khi xóa cache sessionStorage:', e);
       }
     }
-    console.log(`[Web3] Đã xóa cache lịch sử bốc thăm cho mạng ${chainId}`);
   }
 
 
@@ -481,7 +480,6 @@ export class Web3Service {
       const CACHE_DURATION = 180000; // 3 phút
 
       if (cache && !forceRefresh && (Date.now() - cache.timestamp < CACHE_DURATION)) {
-        console.log(`[Web3] Sử dụng cache phân trang cho mạng ${chainId} | Trang ${page}`);
         return { draws: cache.draws, total: cache.total };
       }
 
@@ -606,9 +604,7 @@ export class Web3Service {
         }
       }
 
-      console.log('[Web3] Gửi requestDraw với gas overrides:', overrides);
       const tx = await contract['requestDraw'](drawType, param1, param2, eventName, participants, overrides);
-      console.log('[Web3] Giao dịch gửi requestDraw:', tx.hash);
       const receipt = await tx.wait();
       
       // Tìm requestId từ Event logs của giao dịch
@@ -679,7 +675,6 @@ export class Web3Service {
           const provider = new JsonRpcProvider(rpcUrl);
           const tx = await provider.getTransaction(cleanQuery);
           if (tx) {
-            console.log(`[Web3] Phát hiện Tx Hash trên mạng ${cid}. Tự động chuyển cấu hình.`);
             this.configuredChainId.set(cid);
             return cid;
           }
@@ -697,7 +692,6 @@ export class Web3Service {
           
           const session = await contract['sessions'](cleanQuery);
           if (session && session.creator !== '0x0000000000000000000000000000000000000000') {
-            console.log(`[Web3] Phát hiện RequestID trên mạng ${cid}. Tự động chuyển cấu hình.`);
             this.configuredChainId.set(cid);
             return cid;
           }
@@ -760,11 +754,9 @@ export class Web3Service {
 
       // Trả về cache nếu đã quét full và không yêu cầu làm mới
       if (this._hasFullScan[chainId] && !forceRefresh) {
-        console.log(`[Web3] Sử dụng cache sự kiện cho mạng ${chainId} (${this._allDrawsCache[chainId].length} phiên)`);
         return this._allDrawsCache[chainId];
       }
 
-      console.log(`[Web3] Quét toàn bộ sự kiện DrawCreated cho mạng ${chainId}...`);
       const contract = this.getContract(false);
       const filter = contract['filters']['DrawCreated']();
       const events = await contract.queryFilter(filter, 0, 'latest');
@@ -1064,12 +1056,9 @@ export class Web3Service {
         return null;
       }
 
-      console.log('[Web3] subId:', subId.toString(), '| coordinator:', coordinatorAddress);
-
       // Truy vấn Chainlink VRF Coordinator để lấy balance
       const coordinator = new Contract(coordinatorAddress, VRF_COORDINATOR_ABI, rpcProvider);
       const subInfo = await coordinator['getSubscription'](subId);
-      console.log('[Web3] subInfo:', subInfo);
 
       // getSubscription trả về tuple/struct - truy cập theo tên trường
       const balanceJuels: bigint = subInfo.balance ?? subInfo[0];
@@ -1111,11 +1100,9 @@ export class Web3Service {
 
       // Trả về cache nếu hợp lệ và không forceRefresh
       if (cache && !forceRefresh && (Date.now() - cache.timestamp < CACHE_DURATION)) {
-        console.log(`[Web3] Sử dụng cache dashboard stats cho mạng ${chainId} (cách đây ${((Date.now() - cache.timestamp)/1000).toFixed(0)} giây)`);
         return cache.stats;
       }
 
-      console.log(`[Web3] Tải mới dữ liệu dashboard stats từ blockchain cho mạng ${chainId}...`);
       const contract = this.getContract(false);
       
       // 1. Đọc tổng số phiên bốc thăm trực tiếp từ Contract State
@@ -1127,7 +1114,6 @@ export class Web3Service {
       
       // Tự động kiểm tra và force refresh nếu phát hiện cache bị cũ so với chain state
       if (draws.length < totalSessionsCount) {
-        console.log(`[Web3] Số lượng sự kiện trong cache cũ (${draws.length} < ${totalSessionsCount}). Đang quét lại sự kiện...`);
         draws = await this.getAllDrawSessionsFromEvents(true);
       }
 
@@ -1203,7 +1189,6 @@ export class Web3Service {
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem(`proof_random_dashboard_stats_${chainId}`);
       }
-      console.log(`[Web3] Đã xóa cache dashboard stats cho mạng ${chainId}`);
     } else {
       this._dashboardStatsCache = {};
       if (typeof window !== 'undefined') {
@@ -1214,7 +1199,6 @@ export class Web3Service {
           }
         }
       }
-      console.log('[Web3] Đã xóa toàn bộ cache dashboard stats');
     }
   }
 

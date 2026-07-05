@@ -109,7 +109,6 @@ export class DetailComponent implements OnDestroy {
       } else {
         // Nếu không tìm thấy dữ liệu (thường do RPC lag chưa sync kịp block chứa draw mới), 
         // ta vẫn chạy polling để tự động cập nhật khi blockchain đồng bộ xong.
-        console.log('[Detail] Chưa tìm thấy dữ liệu phiên bốc thăm. Sẽ tiếp tục polling...');
         this.startPolling();
       }
     } catch (err) {
@@ -456,7 +455,6 @@ export class DetailComponent implements OnDestroy {
       this.waitingTime.update(val => val + 1);
     }, 1000);
 
-    console.log('[Web3] Đang đợi kết quả Chainlink VRF. Bắt đầu polling...');
     this.pollingInterval = setInterval(async () => {
       const id = this.requestId();
       const data = await this.web3Service.getDrawSessionDetails(id, true);
@@ -465,7 +463,6 @@ export class DetailComponent implements OnDestroy {
         this.sessionDetails.set(data);
         
         if (data.fulfilled) {
-          console.log('[Web3] Chainlink VRF đã trả kết quả. Dừng polling.');
           const res = this.web3Service.calculateResultClientSide(
             data.drawType,
             data.param1,
