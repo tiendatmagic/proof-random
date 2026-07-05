@@ -421,14 +421,14 @@ export class Web3Service {
     if (!walletProvider) {
       if (typeof window !== 'undefined' && (window as any).ethereum) {
         const browserProvider = new BrowserProvider((window as any).ethereum);
-        const signer = await browserProvider.getSigner();
+        const signer = await browserProvider.getSigner(this.currentAccount());
         return new Contract(address, PROOF_RANDOM_ABI, signer);
       }
       throw new Error('Không thể tìm thấy provider của ví.');
     }
     
     const browserProvider = new BrowserProvider(walletProvider);
-    const signer = await browserProvider.getSigner();
+    const signer = await browserProvider.getSigner(this.currentAccount());
     return new Contract(address, PROOF_RANDOM_ABI, signer);
   }
 
@@ -507,18 +507,26 @@ export class Web3Service {
         const mult = this.gasMode() === 'fast' ? 2.0 : this.gasMultiplier();
         const multBig = BigInt(Math.round(mult * 100));
         
-        // 1. Ước tính gasLimit để tránh out-of-gas
+        // 1. Ước tính gasLimit bằng contract read-only (JsonRpcProvider công cộng) để tránh ví chặn RPC eth_estimateGas
         try {
-          const estimatedGas = await contract['requestDraw'].estimateGas(drawType, param1, param2, eventName, participants);
+          const readOnlyContract = this.getContract(false);
+          const estimatedGas = await readOnlyContract['requestDraw'].estimateGas(
+            drawType,
+            param1,
+            param2,
+            eventName,
+            participants,
+            { from: this.currentAccount() }
+          );
           overrides.gasLimit = (estimatedGas * multBig) / 100n;
         } catch (e) {
-          console.warn('[Web3] Không thể ước tính gasLimit, dùng mặc định:', e);
+          console.warn('[Web3] Không thể ước tính gasLimit qua RPC công cộng:', e);
         }
         
-        // 2. Lấy dữ liệu phí gas và nhân thêm hệ số
+        // 2. Lấy dữ liệu phí gas và nhân thêm hệ số từ JsonRpcProvider công cộng
         try {
-          const provider = contract.runner?.provider || new JsonRpcProvider(this.rpcUrl());
-          const feeData = await provider.getFeeData();
+          const publicProvider = new JsonRpcProvider(this.rpcUrl());
+          const feeData = await publicProvider.getFeeData();
           
           if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
             overrides.maxFeePerGas = (feeData.maxFeePerGas * multBig) / 100n;
@@ -527,7 +535,7 @@ export class Web3Service {
             overrides.gasPrice = (feeData.gasPrice * multBig) / 100n;
           }
         } catch (e) {
-          console.warn('[Web3] Không thể lấy fee data, để ví tự tính:', e);
+          console.warn('[Web3] Không thể lấy fee data từ RPC công cộng:', e);
         }
       }
 
