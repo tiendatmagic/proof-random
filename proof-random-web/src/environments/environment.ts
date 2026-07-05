@@ -4,6 +4,6 @@ export const environment = {
   defaultChainId: '421614', // Mặc định Arbitrum Sepolia cho môi trường dev
   contracts: {
     arbitrumSepolia: '0x509bbbbb45409d6e71cab8c919d921efe3a0a96b',
-    arbitrum: '0x0000000000000000000000000000000000000000'
+    arbitrum: '0x2491D0ed80EaF42308608F003ceC925929939a94'
   }
 };
