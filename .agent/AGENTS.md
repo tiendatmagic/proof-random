@@ -85,6 +85,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục lỗi ẩn nút đổi chain, kết nối ví và thông tin ví trên mobile bằng việc tích hợp các điều khiển ví/mạng rút gọn trên Mobile Header và hiển thị bảng điều khiển ví/mạng chi tiết tại Sidebar Drawer.
 - [x] Định cấu hình lại Grid thống kê Dashboard (Tổng số phiên bốc thăm, Lượt quay thành công, Số dư Oracle) hiển thị thành 2 cột trên mobile, trong đó card Số dư Oracle chiếm trọn 2 cột để tạo bố cục cân đối và tránh bị cắt text Sub ID.
 - [x] Đồng bộ hóa component Skeleton Loader thống kê Dashboard tương ứng với bố cục grid 2 cột mới trên mobile.
+- [x] Xây dựng bộ điều khiển tùy chỉnh cài đặt gas (Gas Settings Widget) tại chân Sidebar: Hỗ trợ 3 chế độ (Mặc định - ví tự tính, Nhanh - nhân đôi x2 phí gas, Tùy chọn - tự nhập hệ số nhân gas). Cấu hình tự động lưu trữ vào localStorage và tự động áp dụng dưới dạng Overrides (`gasLimit`, `maxFeePerGas`, `maxPriorityFeePerGas`) khi gửi transaction, giúp giảm thiểu tối đa lỗi Out-of-gas hoặc nghẽn mạng blockchain.
+
 
 
 

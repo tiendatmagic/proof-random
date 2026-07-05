@@ -32,6 +32,10 @@ export class Web3Service {
   public readonly chainId = signal<string>('');
   public readonly walletError = signal<string>('');
 
+  // Trạng thái cấu hình Gas của dApp (mặc định, nhanh x2, tùy chỉnh)
+  public readonly gasMode = signal<'default' | 'fast' | 'custom'>('default');
+  public readonly gasMultiplier = signal<number>(2.0);
+
   // Cấu hình mạng mặc định và contract hiện hành
   public readonly configuredChainId = signal<string>(WEB3_CONFIG.defaultChainId);
   public readonly activeNetwork = computed(() => {
@@ -92,7 +96,43 @@ export class Web3Service {
   private modal: any = null;
 
   constructor() {
+    this.loadGasSettings();
     this.initAppKit();
+  }
+
+  /**
+   * Đọc cấu hình cài đặt gas từ localStorage
+   */
+  private loadGasSettings() {
+    if (typeof window === 'undefined') return;
+    try {
+      const mode = localStorage.getItem('proof_random_gas_mode') as 'default' | 'fast' | 'custom' | null;
+      if (mode) this.gasMode.set(mode);
+      const mult = localStorage.getItem('proof_random_gas_multiplier');
+      if (mult) this.gasMultiplier.set(parseFloat(mult));
+    } catch (e) {
+      console.warn('[Web3] Không thể đọc cài đặt gas từ localStorage:', e);
+    }
+  }
+
+  /**
+   * Thay đổi chế độ gas
+   */
+  public setGasMode(mode: 'default' | 'fast' | 'custom') {
+    this.gasMode.set(mode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('proof_random_gas_mode', mode);
+    }
+  }
+
+  /**
+   * Thay đổi hệ số nhân gas tùy chỉnh
+   */
+  public setGasMultiplier(mult: number) {
+    this.gasMultiplier.set(mult);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('proof_random_gas_multiplier', mult.toString());
+    }
   }
 
   /**
@@ -350,7 +390,40 @@ export class Web3Service {
     try {
       // Dùng getContractWithSigner() để đảm bảo được await getSigner() đúng cách (ethers v6)
       const contract = await this.getContractWithSigner();
-      const tx = await contract['requestDraw'](drawType, param1, param2, eventName, participants);
+
+      // Cấu hình Gas Overrides
+      const overrides: any = {};
+      
+      if (this.gasMode() !== 'default') {
+        const mult = this.gasMode() === 'fast' ? 2.0 : this.gasMultiplier();
+        const multBig = BigInt(Math.round(mult * 100));
+        
+        // 1. Ước tính gasLimit để tránh out-of-gas
+        try {
+          const estimatedGas = await contract['requestDraw'].estimateGas(drawType, param1, param2, eventName, participants);
+          overrides.gasLimit = (estimatedGas * multBig) / 100n;
+        } catch (e) {
+          console.warn('[Web3] Không thể ước tính gasLimit, dùng mặc định:', e);
+        }
+        
+        // 2. Lấy dữ liệu phí gas và nhân thêm hệ số
+        try {
+          const provider = contract.runner?.provider || new JsonRpcProvider(this.rpcUrl());
+          const feeData = await provider.getFeeData();
+          
+          if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
+            overrides.maxFeePerGas = (feeData.maxFeePerGas * multBig) / 100n;
+            overrides.maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas * multBig) / 100n;
+          } else if (feeData.gasPrice) {
+            overrides.gasPrice = (feeData.gasPrice * multBig) / 100n;
+          }
+        } catch (e) {
+          console.warn('[Web3] Không thể lấy fee data, để ví tự tính:', e);
+        }
+      }
+
+      console.log('[Web3] Gửi requestDraw với gas overrides:', overrides);
+      const tx = await contract['requestDraw'](drawType, param1, param2, eventName, participants, overrides);
       console.log('[Web3] Giao dịch gửi requestDraw:', tx.hash);
       const receipt = await tx.wait();
       

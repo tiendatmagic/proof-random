@@ -1,6 +1,7 @@
 import { Component, inject, signal, HostListener, ElementRef } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Web3Service } from './core/services/web3.service';
 import { ThemeService } from './core/services/theme.service';
 import { ToastService } from './core/services/toast.service';
@@ -9,7 +10,7 @@ import { ToastComponent } from './shared/components/toast/toast.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ToastComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, ToastComponent, FormsModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -107,5 +108,14 @@ export class App {
   public switchNetwork(chainId: string) {
     this.web3Service.switchNetwork(chainId);
     this.isChainDropdownOpen.set(false);
+  }
+
+  /**
+   * Cập nhật hệ số nhân gas tùy chỉnh khi người dùng nhập số
+   */
+  public onCustomGasMultiplierChange(value: number) {
+    if (value && value >= 1.0) {
+      this.web3Service.setGasMultiplier(value);
+    }
   }
 }
