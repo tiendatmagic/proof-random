@@ -1482,10 +1482,25 @@
             <svg class="w-16 h-16 text-rose-500 animate-pulse mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m11.314 11.314l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
             </svg>
-            <span class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-1.5">Món ngon hôm nay</span>
-            <h3 class="text-xl font-black text-center text-slate-800 dark:text-white max-w-xs break-words px-2 leading-snug">
-              {{ clientResult().winners[0] }}
-            </h3>
+            <!-- Nếu chỉ có 1 món ăn -->
+            <ng-container *ngIf="clientResult().winners.length === 1">
+              <span class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-1.5">Món ngon hôm nay</span>
+              <h3 class="text-xl font-black text-center text-slate-800 dark:text-white max-w-xs break-words px-2 leading-snug">
+                {{ clientResult().winners[0] }}
+              </h3>
+            </ng-container>
+
+            <!-- Nếu có nhiều món ăn -->
+            <ng-container *ngIf="clientResult().winners.length > 1">
+              <span class="text-[10px] font-bold text-rose-500 uppercase tracking-widest mb-2">Thực đơn hôm nay của bạn</span>
+              <div class="flex flex-wrap justify-center gap-1.5 max-w-[200px] max-h-[120px] overflow-y-auto pr-1">
+                <span *ngFor="let item of clientResult().winners" 
+                      class="px-2.5 py-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/40 dark:border-slate-700/40 text-[11px] font-extrabold text-slate-800 dark:text-white shadow-sm flex items-center gap-1">
+                  <span class="w-1 h-1 rounded-full bg-rose-500 shrink-0"></span>
+                  {{ item }}
+                </span>
+              </div>
+            </ng-container>
           </div>
         </div>
 

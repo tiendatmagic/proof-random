@@ -298,6 +298,8 @@ export class DetailComponent implements OnDestroy {
         labelPrefix = 'Xếp hạng vị trí thứ';
       } else if (details.skin && details.skin.startsWith('Seating')) {
         labelPrefix = 'Xếp vào chỗ ngồi thứ';
+      } else if (details.skin === 'WhatToEat') {
+        labelPrefix = 'Chọn món ăn thứ';
       }
 
       for (let i = 0; i < k; i++) {
@@ -320,6 +322,8 @@ export class DetailComponent implements OnDestroy {
           const row = Math.floor(i / cols) + 1;
           const col = (i % cols) + 1;
           valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Xếp vào Hàng ${row}, Cột ${col} (Bàn ${i + 1}): "${name}"`;
+        } else if (details.skin === 'WhatToEat') {
+          valueChosenText = `Chọn từ pool vị trí ${poolIndex} (món thứ ${originalIndex}) → Món ăn: "${name}"`;
         }
 
         steps.push({
@@ -1993,8 +1997,14 @@ export class DetailComponent implements OnDestroy {
       this.isFoodOpening.set(false);
       this.foodOpened.set(true);
       
-      const winnerName = this.clientResult()?.winners[0] || 'Món ngon';
-      this.toastService.showToast(`Món ngon của bạn hôm nay: ${winnerName}!`, 'success');
+      const winners = this.clientResult()?.winners || [];
+      if (winners.length === 1) {
+        this.toastService.showToast(`Món ngon của bạn hôm nay: ${winners[0]}!`, 'success');
+      } else if (winners.length > 1) {
+        this.toastService.showToast(`Đã chọn ra ${winners.length} món ngon cho thực đơn hôm nay!`, 'success');
+      } else {
+        this.toastService.showToast(`Đã mở nắp khay thức ăn!`, 'success');
+      }
     }, 2500);
   }
 
@@ -2003,7 +2013,13 @@ export class DetailComponent implements OnDestroy {
     this.isFoodOpening.set(false);
     this.foodOpened.set(true);
     
-    const winnerName = this.clientResult()?.winners[0] || 'Món ngon';
-    this.toastService.showToast(`Món ngon của bạn hôm nay: ${winnerName}!`, 'success');
+    const winners = this.clientResult()?.winners || [];
+    if (winners.length === 1) {
+      this.toastService.showToast(`Món ngon của bạn hôm nay: ${winners[0]}!`, 'success');
+    } else if (winners.length > 1) {
+      this.toastService.showToast(`Đã chọn ra ${winners.length} món ngon cho thực đơn hôm nay!`, 'success');
+    } else {
+      this.toastService.showToast(`Đã mở nắp khay thức ăn!`, 'success');
+    }
   }
 }

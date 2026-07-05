@@ -108,12 +108,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục lỗi câu chữ hiển thị kết quả game Oản Tù Tì (Rock-Paper-Scissors) mơ hồ ở trang Chi tiết (Detail), chuyển đổi định dạng hiển thị thành: "Người chơi \"[Tên]\" ([Kéo/Búa/Bao]) CHIẾN THẮNG Máy ([Kéo/Búa/Bao])" để làm rõ bên thắng/thua.
 - [x] Sửa lỗi hiển thị méo mó của icon nút "Chia sẻ Link" ở trang Chi tiết (Detail), thay thế bằng icon dạng liên kết (Link) chuẩn từ Heroicons v2 rõ nét và cân đối.
 - [x] Thiết lập thuật toán Oản Tù Tì (Rock-Paper-Scissors) ngẫu nhiên 100% cho cả Người chơi (playerMod = randomWord % 3) và Máy (cpuMod = (randomWord / 3) % 3) giúp kết quả có thể Thắng, Thua hoặc Hòa thực tế mà không cần mặc định Người chơi luôn thắng. Cập nhật đồng bộ các text hiển thị kết quả và Timeline băm xác minh.
-
-
-
-
-
-
+- [x] Triển khai thành công tính năng chọn nhiều món ăn trong chế độ Hôm nay ăn gì? (What to Eat Picker): tích hợp cấu hình số lượng (numWinners) linh hoạt, tự động chuyển đổi drawType và mapping logic Multiple Winners giúp chọn ra danh sách món ăn độc lập không trùng lặp, đồng bộ hoàn hảo giao diện và timeline xác minh.
 
 
 

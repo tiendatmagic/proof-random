@@ -93,16 +93,17 @@
     >
       Hôm nay ăn gì? (What to Eat Picker): Quay món ăn ngẫu nhiên từ thực đơn để chọn ra món ăn ngon cho ngày hôm nay.
     </p>
-    <div
-      class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30"
-    >
-      <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
-        Số lượng người thắng / Món ăn
-      </div>
-      <div class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]"></span>
-        1 Lựa chọn (Winner)
-      </div>
+    <div class="space-y-1.5" *ngIf="selectedSkin === 'WhatToEat'">
+      <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+        >Số lượng món ăn cần chọn</label
+      >
+      <input
+        type="number"
+        [ngModel]="numWinners"
+        (ngModelChange)="numWinnersChange.emit($event)"
+        min="1"
+        class="form-input"
+      />
     </div>
   </div>
 

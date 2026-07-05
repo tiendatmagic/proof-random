@@ -214,6 +214,8 @@ export class VerifyComponent implements OnInit {
         labelPrefix = 'Xếp vị trí thứ';
       } else if (details.skin && details.skin.startsWith('Seating')) {
         labelPrefix = 'Xếp vào vị trí ghế thứ';
+      } else if (details.skin === 'WhatToEat') {
+        labelPrefix = 'Chọn món ăn thứ';
       }
 
       for (let i = 0; i < k; i++) {
@@ -245,6 +247,8 @@ export class VerifyComponent implements OnInit {
           const row = Math.floor(i / cols) + 1;
           const col = (i % cols) + 1;
           valueChosenText = `Hàng ${row}, Cột ${col} (Bàn số ${i + 1}) → ${name}`;
+        } else if (details.skin === 'WhatToEat') {
+          valueChosenText = `Chọn món ăn #${i + 1} → ${name}`;
         }
 
         steps.push({

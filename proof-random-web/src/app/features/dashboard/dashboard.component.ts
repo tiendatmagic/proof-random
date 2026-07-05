@@ -226,16 +226,18 @@ export class DashboardComponent {
       }
     } else if (this.drawType === 2 || this.drawType === 3 || this.drawType === 9) { // Chế độ cần danh sách người
       if (participants.length === 0) {
-        this.toastService.showToast('Vui lòng nhập danh sách người tham gia!', 'error');
+        this.toastService.showToast('Vui lòng nhập danh sách người tham gia / món ăn!', 'error');
         return;
       }
-      if (this.drawType === 3) { // Multi Winners
+      
+      const isMultiWhatToEat = (this.selectedSkin === 'WhatToEat' && this.numWinners > 1);
+      if (this.drawType === 3 || isMultiWhatToEat) { // Multi Winners hoặc WhatToEat chọn nhiều món
         if (this.numWinners <= 0) {
-          this.toastService.showToast('Số người thắng phải lớn hơn 0!', 'error');
+          this.toastService.showToast('Số lượng người thắng / món ăn phải lớn hơn 0!', 'error');
           return;
         }
         if (this.numWinners > participants.length) {
-          this.toastService.showToast('Số người thắng không được lớn hơn tổng số người tham gia!', 'error');
+          this.toastService.showToast('Số lượng người thắng / món ăn không được lớn hơn tổng số lựa chọn!', 'error');
           return;
         }
       } else if (this.drawType === 9) { // Random Team
@@ -253,22 +255,35 @@ export class DashboardComponent {
     // 4. Chuẩn bị tham số gửi lên contract
     let param1 = 0;
     let param2 = 0;
+    let drawTypeToSend = this.drawType;
 
-    if (this.drawType === 1) {
-      param1 = this.numMin;
-      param2 = this.numMax;
-    } else if (this.drawType === 2) {
-      param1 = participants.length;
-      param2 = 0;
-    } else if (this.drawType === 3) {
-      param1 = participants.length;
-      param2 = this.numWinners;
-    } else if (this.drawType === 5) {
-      param1 = this.diceSides;
-      param2 = 0;
-    } else if (this.drawType === 9) {
-      param1 = participants.length;
-      param2 = this.numTeams;
+    if (this.selectedSkin === 'WhatToEat') {
+      if (this.numWinners > 1) {
+        drawTypeToSend = 3;
+        param1 = participants.length;
+        param2 = this.numWinners;
+      } else {
+        drawTypeToSend = 2;
+        param1 = participants.length;
+        param2 = 0;
+      }
+    } else {
+      if (this.drawType === 1) {
+        param1 = this.numMin;
+        param2 = this.numMax;
+      } else if (this.drawType === 2) {
+        param1 = participants.length;
+        param2 = 0;
+      } else if (this.drawType === 3) {
+        param1 = participants.length;
+        param2 = this.numWinners;
+      } else if (this.drawType === 5) {
+        param1 = this.diceSides;
+        param2 = 0;
+      } else if (this.drawType === 9) {
+        param1 = participants.length;
+        param2 = this.numTeams;
+      }
     }
 
     // Gộp mô tả vào eventName ngăn cách bởi dấu | để tối ưu gas
@@ -286,7 +301,7 @@ export class DashboardComponent {
 
     try {
       const requestId = await this.web3Service.requestDraw(
-        this.drawType,
+        drawTypeToSend,
         param1,
         param2,
         fullEventName,
