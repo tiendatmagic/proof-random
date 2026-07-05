@@ -167,143 +167,285 @@
     </app-card>
 
     <!-- RESULT DISPLAY ACCORDING TO CHOSEN DRAW TYPE -->
-    <app-card
-      class="min-h-[250px] flex flex-col justify-center items-center text-center py-10"
-    >
-
+    <app-card class="min-h-[250px] flex flex-col justify-center items-center text-center py-10">
       <!-- ================= CUSTOM GAME SKINS ================= -->
 
       <!-- 1. Lucky Wheel Skin -->
-      <div *ngIf="skinType === 'LuckyWheel' && clientResult()" class="space-y-6 mx-auto flex flex-col items-center animate-fade-in">
+      <div
+        *ngIf="skinType === 'LuckyWheel' && clientResult()"
+        class="space-y-6 mx-auto flex flex-col items-center animate-fade-in"
+      >
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Vòng quay may mắn</p>
         <div class="relative w-[300px] h-[300px] flex items-center justify-center mx-auto">
           <canvas id="wheelCanvas" width="300" height="300" class="max-w-full"></canvas>
           <!-- Center arrow pointer -->
-          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-[var(--color-primary)] filter drop-shadow-md"></div>
+          <div
+            class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-[var(--color-primary)] filter drop-shadow-md"
+          ></div>
           <!-- Inner circle spin button -->
-          <button (click)="spinWheel()" [disabled]="isWheelSpinning()" class="absolute w-14 h-14 rounded-full bg-slate-900 border border-[var(--color-primary)]/40 flex items-center justify-center text-xs font-black uppercase text-white shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition-all select-none">
-            <svg *ngIf="wheelSpinDone()" class="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+          <button
+            (click)="spinWheel()"
+            [disabled]="isWheelSpinning()"
+            class="absolute w-14 h-14 rounded-full bg-slate-900 border border-[var(--color-primary)]/40 flex items-center justify-center text-xs font-black uppercase text-white shadow-lg cursor-pointer hover:scale-105 active:scale-95 transition-all select-none"
+          >
+            <svg
+              *ngIf="wheelSpinDone()"
+              class="w-5 h-5 text-amber-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             <span *ngIf="!wheelSpinDone()">{{ isWheelSpinning() ? '...' : 'QUAY' }}</span>
           </button>
         </div>
-        
+
         <!-- Skip Action for Lucky Wheel -->
         <div class="flex justify-center w-full" *ngIf="!wheelSpinDone()">
-          <button (click)="skipWheel()" class="btn btn-secondary btn-sm cursor-pointer font-bold flex items-center gap-1.5">
+          <button
+            (click)="skipWheel()"
+            class="btn btn-secondary btn-sm cursor-pointer font-bold flex items-center gap-1.5"
+          >
             <span>Bỏ qua quay</span>
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 5l7 7-7 7M5 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
-        
+
         <!-- Show winner when done -->
         <div *ngIf="wheelSpinDone()" class="animate-fade-in text-center space-y-2">
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Người chiến thắng</div>
-          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            Người chiến thắng
+          </div>
+          <h3
+            class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
+          >
             {{ clientResult().winners[0] }}
           </h3>
         </div>
       </div>
 
       <!-- 2. Racing Skin -->
-      <div *ngIf="skinType === 'Racing' && clientResult()" class="space-y-6 w-full max-w-2xl mx-auto px-4 flex flex-col items-center animate-fade-in">
-        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Đua xe ngẫu nhiên</p>
-        
-        <div class="w-full space-y-4 bg-slate-100/50 dark:bg-slate-950/20 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/20">
-          <div *ngFor="let progress of racerProgresses(); let idx = index" class="relative h-10 w-full bg-slate-200/60 dark:bg-slate-900/60 rounded-xl overflow-hidden border border-slate-300/50 dark:border-slate-800/40 flex items-center px-4">
+      <div
+        *ngIf="skinType === 'Racing' && clientResult()"
+        class="space-y-6 w-full max-w-2xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Đua xe ngẫu nhiên
+        </p>
+
+        <div
+          class="w-full space-y-4 bg-slate-100/50 dark:bg-slate-950/20 p-4 rounded-2xl border border-slate-200 dark:border-slate-800/20"
+        >
+          <div
+            *ngFor="let progress of racerProgresses(); let idx = index"
+            class="relative h-10 w-full bg-slate-200/60 dark:bg-slate-900/60 rounded-xl overflow-hidden border border-slate-300/50 dark:border-slate-800/40 flex items-center px-4"
+          >
             <!-- Track line -->
-            <div class="absolute inset-x-0 h-0.5 bg-slate-300 dark:bg-slate-800/40 border-dashed border-t border-slate-400/20 dark:border-slate-700/20"></div>
+            <div
+              class="absolute inset-x-0 h-0.5 bg-slate-300 dark:bg-slate-800/40 border-dashed border-t border-slate-400/20 dark:border-slate-700/20"
+            ></div>
             <!-- Racer Name tag -->
-            <span class="absolute left-4 z-10 text-[10px] font-bold text-slate-700 dark:text-slate-300 select-none bg-white/90 dark:bg-slate-950/80 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800/50">
+            <span
+              class="absolute left-4 z-10 text-[10px] font-bold text-slate-700 dark:text-slate-300 select-none bg-white/90 dark:bg-slate-950/80 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-800/50"
+            >
               {{ sessionDetails().participants[idx] }}
             </span>
             <!-- Vehicle moving -->
-            <div class="absolute transition-all duration-75 flex items-center gap-1.5" [style.left.%]="progress" style="transform: translateX(-50%); margin-left: 20px;">
+            <div
+              class="absolute transition-all duration-75 flex items-center gap-1.5"
+              [style.left.%]="progress"
+              style="transform: translateX(-50%); margin-left: 20px"
+            >
               <!-- Speed SVG Icon replacing Emoji car -->
-              <svg class="w-5 h-5 text-[var(--color-primary)] animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <svg
+                class="w-5 h-5 text-[var(--color-primary)] animate-pulse"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                />
               </svg>
               <!-- Star SVG Icon replacing Emoji crown -->
-              <svg *ngIf="raceDone() && isWinnerIndex(idx)" class="w-3.5 h-3.5 text-amber-500 fill-amber-500" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              <svg
+                *ngIf="raceDone() && isWinnerIndex(idx)"
+                class="w-3.5 h-3.5 text-amber-500 fill-amber-500"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                />
               </svg>
             </div>
             <!-- Finish Line -->
-            <div class="absolute right-4 top-0 bottom-0 w-2 bg-gradient-to-b from-red-500 via-white to-red-500 opacity-60"></div>
+            <div
+              class="absolute right-4 top-0 bottom-0 w-2 bg-gradient-to-b from-red-500 via-white to-red-500 opacity-60"
+            ></div>
           </div>
         </div>
-        
+
         <div class="flex gap-3 justify-center w-full" *ngIf="!raceDone()">
-          <button (click)="startRace()" [disabled]="isRacing()" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
+          <button
+            (click)="startRace()"
+            [disabled]="isRacing()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
             <span>{{ isRacing() ? 'ĐANG ĐUA...' : 'BẮT ĐẦU CUỘC ĐUA' }}</span>
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"
+              />
             </svg>
           </button>
-          <button (click)="skipRace()" class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5">
+          <button
+            (click)="skipRace()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
             <span>Bỏ qua</span>
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 5l7 7-7 7M5 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
-        
+
         <div *ngIf="raceDone()" class="animate-fade-in text-center space-y-2">
-          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Đạt giải nhất</div>
-          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+          <div
+            class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
+          >
+            Đạt giải nhất
+          </div>
+          <h3
+            class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
+          >
             {{ clientResult().winners[0] }}
           </h3>
         </div>
       </div>
 
       <!-- 3. Mystery Box Skin -->
-      <div *ngIf="skinType === 'MysteryBox' && clientResult()" class="space-y-6 mx-auto flex flex-col items-center animate-fade-in">
-        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hộp quà bí ẩn</p>
-        
+      <div
+        *ngIf="skinType === 'MysteryBox' && clientResult()"
+        class="space-y-6 mx-auto flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Hộp quà bí ẩn
+        </p>
+
         <div class="relative w-56 h-56 flex items-center justify-center mx-auto">
-          <div [ngClass]="{
-            'animate-[bounce_0.6s_infinite]': isBoxOpening(),
-            'scale-105': boxOpened()
-          }" class="transition-transform duration-500 flex items-center justify-center">
-            
+          <div
+            [ngClass]="{
+              'animate-[bounce_0.6s_infinite]': isBoxOpening(),
+              'scale-105': boxOpened(),
+            }"
+            class="transition-transform duration-500 flex items-center justify-center"
+          >
             <!-- Beautiful 3D Gift Box SVG (Closed) -->
-            <svg *ngIf="!boxOpened()" class="w-40 h-40 filter drop-shadow-[0_0_25px_rgba(236,72,153,0.55)]" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              *ngIf="!boxOpened()"
+              class="w-40 h-40 filter drop-shadow-[0_0_25px_rgba(236,72,153,0.55)]"
+              viewBox="0 0 200 200"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <!-- Shadow under box -->
-              <ellipse cx="100" cy="180" rx="60" ry="12" fill="rgba(0,0,0,0.15)"/>
-              
+              <ellipse cx="100" cy="180" rx="60" ry="12" fill="rgba(0,0,0,0.15)" />
+
               <!-- Box Body -->
-              <path d="M40 90 L100 120 L160 90 L160 160 L100 190 L40 160 Z" fill="url(#boxBodyGrad)"/>
-              <path d="M100 120 L160 90 L160 160 L100 190 Z" fill="rgba(0,0,0,0.1)"/> <!-- shading -->
-              
+              <path
+                d="M40 90 L100 120 L160 90 L160 160 L100 190 L40 160 Z"
+                fill="url(#boxBodyGrad)"
+              />
+              <path d="M100 120 L160 90 L160 160 L100 190 Z" fill="rgba(0,0,0,0.1)" />
+              <!-- shading -->
+
               <!-- Vertical Ribbon on Body -->
-              <path d="M90 115 L110 125 L110 185 L90 180 Z" fill="url(#ribbonGrad)"/>
-              
+              <path d="M90 115 L110 125 L110 185 L90 180 Z" fill="url(#ribbonGrad)" />
+
               <!-- Box Lid -->
-              <path d="M34 76 L100 108 L166 76 L166 94 L100 126 L34 94 Z" fill="url(#boxLidGrad)"/>
-              <path d="M100 108 L166 76 L166 94 L100 126 Z" fill="rgba(0,0,0,0.1)"/> <!-- shading -->
-              
+              <path d="M34 76 L100 108 L166 76 L166 94 L100 126 L34 94 Z" fill="url(#boxLidGrad)" />
+              <path d="M100 108 L166 76 L166 94 L100 126 Z" fill="rgba(0,0,0,0.1)" />
+              <!-- shading -->
+
               <!-- Top Ribbon on Lid -->
-              <path d="M34 76 L100 108 L166 76" stroke="url(#ribbonGrad)" stroke-width="16" stroke-linecap="round"/>
-              
+              <path
+                d="M34 76 L100 108 L166 76"
+                stroke="url(#ribbonGrad)"
+                stroke-width="16"
+                stroke-linecap="round"
+              />
+
               <!-- Ribbon Bow on Top -->
-              <path d="M100 70 C75 40, 60 70, 100 75 Z" fill="url(#ribbonGrad)" stroke="#fff" stroke-width="1"/>
-              <path d="M100 70 C125 40, 140 70, 100 75 Z" fill="url(#ribbonGrad)" stroke="#fff" stroke-width="1"/>
-              <circle cx="100" cy="72" r="10" fill="#FFE082" stroke="#FFD54F" stroke-width="2"/>
-              
+              <path
+                d="M100 70 C75 40, 60 70, 100 75 Z"
+                fill="url(#ribbonGrad)"
+                stroke="#fff"
+                stroke-width="1"
+              />
+              <path
+                d="M100 70 C125 40, 140 70, 100 75 Z"
+                fill="url(#ribbonGrad)"
+                stroke="#fff"
+                stroke-width="1"
+              />
+              <circle cx="100" cy="72" r="10" fill="#FFE082" stroke="#FFD54F" stroke-width="2" />
+
               <!-- Gradients definitions -->
               <defs>
-                <linearGradient id="boxBodyGrad" x1="40" y1="90" x2="160" y2="190" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="boxBodyGrad"
+                  x1="40"
+                  y1="90"
+                  x2="160"
+                  y2="190"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0%" stop-color="#ec4899" />
                   <stop offset="100%" stop-color="#8b5cf6" />
                 </linearGradient>
-                <linearGradient id="boxLidGrad" x1="34" y1="76" x2="166" y2="126" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="boxLidGrad"
+                  x1="34"
+                  y1="76"
+                  x2="166"
+                  y2="126"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0%" stop-color="#f43f5e" />
                   <stop offset="100%" stop-color="#a855f7" />
                 </linearGradient>
-                <linearGradient id="ribbonGrad" x1="90" y1="70" x2="110" y2="185" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="ribbonGrad"
+                  x1="90"
+                  y1="70"
+                  x2="110"
+                  y2="185"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0%" stop-color="#fbbf24" />
                   <stop offset="100%" stop-color="#f59e0b" />
                 </linearGradient>
@@ -311,13 +453,19 @@
             </svg>
 
             <!-- Beautiful 3D Gift Box SVG (Open with Sparkles) -->
-            <svg *ngIf="boxOpened()" class="w-40 h-40 filter drop-shadow-[0_0_35px_rgba(251,191,36,0.6)]" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              *ngIf="boxOpened()"
+              class="w-40 h-40 filter drop-shadow-[0_0_35px_rgba(251,191,36,0.6)]"
+              viewBox="0 0 200 200"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <!-- Shadow under box -->
-              <ellipse cx="100" cy="180" rx="60" ry="12" fill="rgba(0,0,0,0.15)"/>
-              
+              <ellipse cx="100" cy="180" rx="60" ry="12" fill="rgba(0,0,0,0.15)" />
+
               <!-- Magic Light Beam -->
-              <path d="M100 120 L50 20 L150 20 Z" fill="url(#magicBeamGrad)" opacity="0.35"/>
-              
+              <path d="M100 120 L50 20 L150 20 Z" fill="url(#magicBeamGrad)" opacity="0.35" />
+
               <!-- Confetti Circles & Stars -->
               <circle cx="45" cy="40" r="5" fill="#f43f5e" class="animate-pulse" />
               <circle cx="155" cy="45" r="6" fill="#3b82f6" class="animate-pulse" />
@@ -325,119 +473,237 @@
               <circle cx="125" cy="12" r="5" fill="#fbbf24" />
               <path d="M35 70 L38 73 L35 76 L32 73 Z" fill="#a855f7" />
               <path d="M165 80 L168 83 L165 86 L162 83 Z" fill="#ec4899" />
-              
+
               <!-- Box Body (Open) -->
-              <path d="M40 90 L100 120 L160 90 L160 160 L100 190 L40 160 Z" fill="url(#boxBodyGrad)"/>
-              <path d="M100 120 L160 90 L160 160 L100 190 Z" fill="rgba(0,0,0,0.1)"/> <!-- shading -->
-              
+              <path
+                d="M40 90 L100 120 L160 90 L160 160 L100 190 L40 160 Z"
+                fill="url(#boxBodyGrad)"
+              />
+              <path d="M100 120 L160 90 L160 160 L100 190 Z" fill="rgba(0,0,0,0.1)" />
+              <!-- shading -->
+
               <!-- Inner box glow (represents the gift inside) -->
               <ellipse cx="100" cy="105" rx="45" ry="15" fill="#fff" opacity="0.9" />
-              
+
               <!-- Vertical Ribbon on Body -->
-              <path d="M90 115 L110 125 L110 185 L90 180 Z" fill="url(#ribbonGrad)"/>
-              
+              <path d="M90 115 L110 125 L110 185 L90 180 Z" fill="url(#ribbonGrad)" />
+
               <!-- Detached Lid flying away and rotating -->
-              <g style="transform: translate(-15px, -40px) rotate(-18deg); transform-origin: 100px 100px;">
-                <path d="M34 76 L100 108 L166 76 L166 94 L100 126 L34 94 Z" fill="url(#boxLidGrad)"/>
-                <path d="M100 108 L166 76 L166 94 L100 126 Z" fill="rgba(0,0,0,0.1)"/>
+              <g
+                style="
+                  transform: translate(-15px, -40px) rotate(-18deg);
+                  transform-origin: 100px 100px;
+                "
+              >
+                <path
+                  d="M34 76 L100 108 L166 76 L166 94 L100 126 L34 94 Z"
+                  fill="url(#boxLidGrad)"
+                />
+                <path d="M100 108 L166 76 L166 94 L100 126 Z" fill="rgba(0,0,0,0.1)" />
                 <!-- Top Ribbon on Lid -->
-                <path d="M34 76 L100 108 L166 76" stroke="url(#ribbonGrad)" stroke-width="16" stroke-linecap="round"/>
+                <path
+                  d="M34 76 L100 108 L166 76"
+                  stroke="url(#ribbonGrad)"
+                  stroke-width="16"
+                  stroke-linecap="round"
+                />
                 <!-- Bow Tie on Lid -->
-                <path d="M100 70 C75 40, 60 70, 100 75 Z" fill="url(#ribbonGrad)" stroke="#fff" stroke-width="1"/>
-                <path d="M100 70 C125 40, 140 70, 100 75 Z" fill="url(#ribbonGrad)" stroke="#fff" stroke-width="1"/>
-                <circle cx="100" cy="72" r="10" fill="#FFE082" stroke="#FFD54F" stroke-width="2"/>
+                <path
+                  d="M100 70 C75 40, 60 70, 100 75 Z"
+                  fill="url(#ribbonGrad)"
+                  stroke="#fff"
+                  stroke-width="1"
+                />
+                <path
+                  d="M100 70 C125 40, 140 70, 100 75 Z"
+                  fill="url(#ribbonGrad)"
+                  stroke="#fff"
+                  stroke-width="1"
+                />
+                <circle cx="100" cy="72" r="10" fill="#FFE082" stroke="#FFD54F" stroke-width="2" />
               </g>
-              
+
               <!-- Gradients definitions -->
               <defs>
-                <linearGradient id="boxBodyGrad" x1="40" y1="90" x2="160" y2="190" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="boxBodyGrad"
+                  x1="40"
+                  y1="90"
+                  x2="160"
+                  y2="190"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0%" stop-color="#ec4899" />
                   <stop offset="100%" stop-color="#8b5cf6" />
                 </linearGradient>
-                <linearGradient id="boxLidGrad" x1="34" y1="76" x2="166" y2="126" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="boxLidGrad"
+                  x1="34"
+                  y1="76"
+                  x2="166"
+                  y2="126"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0%" stop-color="#f43f5e" />
                   <stop offset="100%" stop-color="#a855f7" />
                 </linearGradient>
-                <linearGradient id="ribbonGrad" x1="90" y1="70" x2="110" y2="185" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="ribbonGrad"
+                  x1="90"
+                  y1="70"
+                  x2="110"
+                  y2="185"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0%" stop-color="#fbbf24" />
                   <stop offset="100%" stop-color="#f59e0b" />
                 </linearGradient>
-                <linearGradient id="magicBeamGrad" x1="100" y1="120" x2="100" y2="20" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.85"/>
-                  <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+                <linearGradient
+                  id="magicBeamGrad"
+                  x1="100"
+                  y1="120"
+                  x2="100"
+                  y2="20"
+                  gradientUnits="userSpaceOnUse"
+                >
+                  <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.85" />
+                  <stop offset="100%" stop-color="#fbbf24" stop-opacity="0" />
                 </linearGradient>
               </defs>
             </svg>
-            
           </div>
         </div>
-        
+
         <div class="flex gap-3 justify-center w-full" *ngIf="!boxOpened()">
-          <button (click)="openBox()" [disabled]="isBoxOpening()" class="btn btn-primary cursor-pointer font-black text-sm">
+          <button
+            (click)="openBox()"
+            [disabled]="isBoxOpening()"
+            class="btn btn-primary cursor-pointer font-black text-sm"
+          >
             {{ isBoxOpening() ? 'ĐANG MỞ...' : 'MỞ HỘP QUÀ' }}
           </button>
-          <button (click)="skipBox()" class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5">
+          <button
+            (click)="skipBox()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
             <span>Bỏ qua</span>
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 5l7 7-7 7M5 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
-        
+
         <div *ngIf="boxOpened()" class="animate-fade-in text-center space-y-2">
-          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Phần thưởng trúng giải</div>
-          <h3 class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all">
+          <div
+            class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
+          >
+            Phần thưởng trúng giải
+          </div>
+          <h3
+            class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
+          >
             {{ clientResult().winners[0] }}
           </h3>
         </div>
       </div>
 
       <!-- 4. Bau Cua Skin -->
-      <div *ngIf="skinType === 'BauCua' && clientResult()" class="space-y-6 w-full max-w-2xl mx-auto px-4 flex flex-col items-center animate-fade-in">
-        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Lắc Bầu Cua Tôm Cá</p>
-        
+      <div
+        *ngIf="skinType === 'BauCua' && clientResult()"
+        class="space-y-6 w-full max-w-2xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Lắc Bầu Cua Tôm Cá
+        </p>
+
         <div class="relative w-48 h-48 flex items-center justify-center mx-auto">
-          <div [ngClass]="{
-            'animate-[bounce_0.4s_infinite]': isBauCuaShaking(),
-            'translate-y-[-20px] opacity-0 pointer-events-none': bauCuaOpened()
-          }" class="absolute z-10 w-36 h-36 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-2xl flex items-center justify-center transition-all duration-700 select-none mx-auto">
+          <div
+            [ngClass]="{
+              'animate-[bounce_0.4s_infinite]': isBauCuaShaking(),
+              'translate-y-[-20px] opacity-0 pointer-events-none': bauCuaOpened(),
+            }"
+            class="absolute z-10 w-36 h-36 rounded-full bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/50 backdrop-blur-md shadow-2xl flex items-center justify-center transition-all duration-700 select-none mx-auto"
+          >
             <!-- Sleek container lid replacing soup bowl emoji -->
-            <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/50 shadow-inner flex items-center justify-center font-black text-slate-500 dark:text-slate-400 text-xs tracking-wider">
+            <div
+              class="w-24 h-24 rounded-full bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/50 shadow-inner flex items-center justify-center font-black text-slate-500 dark:text-slate-400 text-xs tracking-wider"
+            >
               BÁT ÚP
             </div>
           </div>
-          <div class="w-40 h-40 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-200/80 dark:border-slate-800/40 shadow-inner flex items-center justify-center gap-3 mx-auto">
+          <div
+            class="w-40 h-40 rounded-full bg-slate-100 dark:bg-slate-900 border-4 border-slate-200/80 dark:border-slate-800/40 shadow-inner flex items-center justify-center gap-3 mx-auto"
+          >
             <ng-container *ngIf="bauCuaOpened()">
-              <div *ngFor="let die of bauCuaResultDice" class="w-12 h-12 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-[var(--color-primary)]/40 flex items-center justify-center text-xs font-extrabold text-[var(--color-primary)] shadow-md select-none">
+              <div
+                *ngFor="let die of bauCuaResultDice"
+                class="w-12 h-12 rounded-xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-[var(--color-primary)]/40 flex items-center justify-center text-xs font-extrabold text-[var(--color-primary)] shadow-md select-none"
+              >
                 {{ bauCuaItems[die].name }}
               </div>
             </ng-container>
-            <span *ngIf="!bauCuaOpened() && !isBauCuaShaking()" class="text-xs font-bold text-slate-400 dark:text-slate-500">Đang úp bát</span>
+            <span
+              *ngIf="!bauCuaOpened() && !isBauCuaShaking()"
+              class="text-xs font-bold text-slate-400 dark:text-slate-500"
+              >Đang úp bát</span
+            >
           </div>
         </div>
-        
+
         <div class="flex gap-3 justify-center w-full" *ngIf="!bauCuaOpened()">
-          <button (click)="shakeBauCua()" [disabled]="isBauCuaShaking()" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
+          <button
+            (click)="shakeBauCua()"
+            [disabled]="isBauCuaShaking()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
             <span>{{ isBauCuaShaking() ? 'ĐANG LẮC...' : 'LẮC BẦU CUA' }}</span>
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2" />
-              <circle cx="8" cy="8" r="1" fill="currentColor"/>
-              <circle cx="16" cy="16" r="1" fill="currentColor"/>
-              <circle cx="12" cy="12" r="1" fill="currentColor"/>
+              <rect
+                x="4"
+                y="4"
+                width="16"
+                height="16"
+                rx="2"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <circle cx="8" cy="8" r="1" fill="currentColor" />
+              <circle cx="16" cy="16" r="1" fill="currentColor" />
+              <circle cx="12" cy="12" r="1" fill="currentColor" />
             </svg>
           </button>
-          <button (click)="skipBauCua()" class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5">
+          <button
+            (click)="skipBauCua()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
             <span>Bỏ qua</span>
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 5l7 7-7 7M5 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
-        
+
         <div *ngIf="bauCuaOpened()" class="animate-fade-in text-center space-y-3">
-          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kết quả xúc xắc linh vật</div>
+          <div
+            class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
+          >
+            Kết quả xúc xắc linh vật
+          </div>
           <div class="flex gap-2.5 justify-center">
-            <div *ngFor="let die of bauCuaResultDice" class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/15 text-xs font-extrabold text-[var(--color-primary)] select-none">
+            <div
+              *ngFor="let die of bauCuaResultDice"
+              class="px-3 py-1.5 rounded-lg bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/15 text-xs font-extrabold text-[var(--color-primary)] select-none"
+            >
               {{ bauCuaItems[die].name }}
             </div>
           </div>
@@ -445,70 +711,162 @@
       </div>
 
       <!-- 5. Scratch Card Skin -->
-      <div *ngIf="skinType === 'ScratchCard' && clientResult()" class="space-y-6 flex flex-col items-center mx-auto animate-fade-in">
-        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Vé số cào may mắn</p>
-        
-        <div class="relative w-[240px] h-[120px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800/20 bg-slate-50 dark:bg-slate-950/60 shadow-lg flex flex-col items-center justify-center mx-auto">
-          <div class="absolute inset-0 flex flex-col items-center justify-center select-all space-y-1">
-            <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Con số cào được</span>
-            <span class="text-4xl font-black text-[var(--color-primary)] font-mono">{{ clientResult().result }}</span>
+      <div
+        *ngIf="skinType === 'ScratchCard' && clientResult()"
+        class="space-y-6 flex flex-col items-center mx-auto animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Vé số cào may mắn
+        </p>
+
+        <div
+          class="relative w-[240px] h-[120px] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800/20 bg-slate-50 dark:bg-slate-950/60 shadow-lg flex flex-col items-center justify-center mx-auto"
+        >
+          <div
+            class="absolute inset-0 flex flex-col items-center justify-center select-all space-y-1"
+          >
+            <span
+              class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
+              >Con số cào được</span
+            >
+            <span class="text-4xl font-black text-[var(--color-primary)] font-mono">{{
+              clientResult().result
+            }}</span>
           </div>
-          
-          <canvas id="scratchCanvas" width="240" height="120" class="absolute z-10 transition-opacity duration-300 mx-auto"></canvas>
+
+          <canvas
+            id="scratchCanvas"
+            width="240"
+            height="120"
+            class="absolute z-10 transition-opacity duration-300 mx-auto"
+          ></canvas>
         </div>
-        
+
         <div class="flex gap-2 justify-center w-full">
-          <button (click)="autoScratch()" *ngIf="!scratchDone()" class="btn btn-secondary btn-sm cursor-pointer font-bold">
+          <button
+            (click)="autoScratch()"
+            *ngIf="!scratchDone()"
+            class="btn btn-secondary btn-sm cursor-pointer font-bold"
+          >
             Cào tự động
           </button>
         </div>
       </div>
 
       <!-- 6. Vietlott Skin -->
-      <div *ngIf="skinType === 'Vietlott' && clientResult()" class="space-y-6 w-full max-w-xl mx-auto px-4 flex flex-col items-center animate-fade-in">
-        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Mô phỏng Xổ số Vietlott</p>
-        
+      <div
+        *ngIf="skinType === 'Vietlott' && clientResult()"
+        class="space-y-6 w-full max-w-xl mx-auto px-4 flex flex-col items-center animate-fade-in"
+      >
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+          Mô phỏng Xổ số Vietlott
+        </p>
+
         <!-- Vietlott Mode Tabs -->
-        <div class="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 w-full max-w-xs justify-center mx-auto">
-          <button (click)="selectVietlottType('Power655')" [disabled]="isVietlottDrawing()" [ngClass]="{'bg-white dark:bg-slate-800 text-[var(--color-primary)] shadow-sm font-bold': selectedVietlottType() === 'Power655', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200': selectedVietlottType() !== 'Power655'}" class="flex-1 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-bold active:scale-98">
+        <div
+          class="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200/50 dark:border-slate-800/50 w-full max-w-xs justify-center mx-auto"
+        >
+          <button
+            (click)="selectVietlottType('Power655')"
+            [disabled]="isVietlottDrawing()"
+            [ngClass]="{
+              'bg-white dark:bg-slate-800 text-[var(--color-primary)] shadow-sm font-bold':
+                selectedVietlottType() === 'Power655',
+              'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200':
+                selectedVietlottType() !== 'Power655',
+            }"
+            class="flex-1 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-bold active:scale-98"
+          >
             Power 6/55
           </button>
-          <button (click)="selectVietlottType('Mega645')" [disabled]="isVietlottDrawing()" [ngClass]="{'bg-white dark:bg-slate-800 text-[var(--color-primary)] shadow-sm font-bold': selectedVietlottType() === 'Mega645', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200': selectedVietlottType() !== 'Mega645'}" class="flex-1 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-bold active:scale-98">
+          <button
+            (click)="selectVietlottType('Mega645')"
+            [disabled]="isVietlottDrawing()"
+            [ngClass]="{
+              'bg-white dark:bg-slate-800 text-[var(--color-primary)] shadow-sm font-bold':
+                selectedVietlottType() === 'Mega645',
+              'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200':
+                selectedVietlottType() !== 'Mega645',
+            }"
+            class="flex-1 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-bold active:scale-98"
+          >
             Mega 6/45
           </button>
-          <button (click)="selectVietlottType('Keno')" [disabled]="isVietlottDrawing()" [ngClass]="{'bg-white dark:bg-slate-800 text-[var(--color-primary)] shadow-sm font-bold': selectedVietlottType() === 'Keno', 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200': selectedVietlottType() !== 'Keno'}" class="flex-1 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-bold active:scale-98">
+          <button
+            (click)="selectVietlottType('Keno')"
+            [disabled]="isVietlottDrawing()"
+            [ngClass]="{
+              'bg-white dark:bg-slate-800 text-[var(--color-primary)] shadow-sm font-bold':
+                selectedVietlottType() === 'Keno',
+              'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200':
+                selectedVietlottType() !== 'Keno',
+            }"
+            class="flex-1 py-1.5 text-xs rounded-lg transition-all cursor-pointer font-bold active:scale-98"
+          >
             Keno
           </button>
         </div>
 
         <!-- 6a. Mega 6/45 & Power 6/55 Display -->
-        <div *ngIf="selectedVietlottType() !== 'Keno'" class="w-full py-8 flex flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-950/20 rounded-2xl border border-slate-200/50 dark:border-slate-800/30 min-h-[160px]">
+        <div
+          *ngIf="selectedVietlottType() !== 'Keno'"
+          class="w-full py-8 flex flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-950/20 rounded-2xl border border-slate-200/50 dark:border-slate-800/30 min-h-[160px]"
+        >
           <div class="flex flex-wrap gap-3 justify-center items-center px-4">
-            <div *ngFor="let num of vietlottNumbers(); let i = index" class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg border animate-scale-in"
+            <div
+              *ngFor="let num of vietlottNumbers(); let i = index"
+              class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg border animate-scale-in"
               [ngClass]="{
-                'bg-gradient-to-tr from-rose-500 to-red-600 border-rose-400': selectedVietlottType() === 'Mega645' || (selectedVietlottType() === 'Power655' && i < 6)
-              }">
+                'bg-gradient-to-tr from-rose-500 to-red-600 border-rose-400':
+                  selectedVietlottType() === 'Mega645' ||
+                  (selectedVietlottType() === 'Power655' && i < 6),
+              }"
+            >
               {{ num < 10 ? '0' + num : num }}
             </div>
-            
-            <div *ngIf="isVietlottDrawing() && revealedCount() < (selectedVietlottType() === 'Power655' ? 7 : 6)" class="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-800 flex items-center justify-center font-bold text-lg text-slate-700 dark:text-slate-300 border border-slate-400 dark:border-slate-700 shadow-lg animate-pulse">
-              {{ currentSpinningNumber() < 10 ? '0' + currentSpinningNumber() : currentSpinningNumber() }}
+
+            <div
+              *ngIf="
+                isVietlottDrawing() &&
+                revealedCount() < (selectedVietlottType() === 'Power655' ? 7 : 6)
+              "
+              class="w-12 h-12 rounded-full bg-slate-300 dark:bg-slate-800 flex items-center justify-center font-bold text-lg text-slate-700 dark:text-slate-300 border border-slate-400 dark:border-slate-700 shadow-lg animate-pulse"
+            >
+              {{
+                currentSpinningNumber() < 10
+                  ? '0' + currentSpinningNumber()
+                  : currentSpinningNumber()
+              }}
             </div>
-            
+
             <ng-container *ngIf="selectedVietlottType() === 'Power655'">
-              <span *ngIf="revealedCount() >= 7 || (isVietlottDrawing() && revealedCount() === 6)" class="text-xl font-bold text-amber-500 mx-1 select-none animate-fade-in">+</span>
-              <div *ngIf="vietlottBonus() !== null" class="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 border border-amber-300 flex items-center justify-center font-bold text-lg text-slate-900 shadow-lg animate-scale-in">
+              <span
+                *ngIf="revealedCount() >= 7 || (isVietlottDrawing() && revealedCount() === 6)"
+                class="text-xl font-bold text-amber-500 mx-1 select-none animate-fade-in"
+                >+</span
+              >
+              <div
+                *ngIf="vietlottBonus() !== null"
+                class="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-amber-500 border border-amber-300 flex items-center justify-center font-bold text-lg text-slate-900 shadow-lg animate-scale-in"
+              >
                 {{ vietlottBonus()! < 10 ? '0' + vietlottBonus() : vietlottBonus() }}
               </div>
             </ng-container>
-            
+
             <ng-container *ngIf="!isVietlottDrawing() && !vietlottDone()">
-              <div *ngFor="let item of [1,2,3,4,5,6]" class="w-12 h-12 rounded-full border border-dashed border-slate-300 dark:border-slate-800 flex items-center justify-center text-xs font-bold text-slate-300 dark:text-slate-800 select-none">
+              <div
+                *ngFor="let item of [1, 2, 3, 4, 5, 6]"
+                class="w-12 h-12 rounded-full border border-dashed border-slate-300 dark:border-slate-800 flex items-center justify-center text-xs font-bold text-slate-300 dark:text-slate-800 select-none"
+              >
                 ?
               </div>
               <ng-container *ngIf="selectedVietlottType() === 'Power655'">
-                <span class="text-xl font-bold text-slate-200 dark:text-slate-800 mx-1 select-none">+</span>
-                <div class="w-12 h-12 rounded-full border border-dashed border-amber-300/30 flex items-center justify-center text-xs font-bold text-amber-300/30 select-none">
+                <span class="text-xl font-bold text-slate-200 dark:text-slate-800 mx-1 select-none"
+                  >+</span
+                >
+                <div
+                  class="w-12 h-12 rounded-full border border-dashed border-amber-300/30 flex items-center justify-center text-xs font-bold text-amber-300/30 select-none"
+                >
                   ?
                 </div>
               </ng-container>
@@ -517,47 +875,82 @@
         </div>
 
         <!-- 6b. Keno 80 numbers grid Display -->
-        <div *ngIf="selectedVietlottType() === 'Keno'" class="w-full p-4 bg-slate-50/50 dark:bg-slate-950/20 rounded-2xl border border-slate-200/50 dark:border-slate-800/30">
+        <div
+          *ngIf="selectedVietlottType() === 'Keno'"
+          class="w-full p-4 bg-slate-50/50 dark:bg-slate-950/20 rounded-2xl border border-slate-200/50 dark:border-slate-800/30"
+        >
           <div class="grid grid-cols-10 gap-1.5 max-w-sm mx-auto">
-            <div *ngFor="let num of [].constructor(80); let idx = index" class="aspect-square flex items-center justify-center rounded-md text-[10px] font-bold border transition-all duration-300"
+            <div
+              *ngFor="let num of [].constructor(80); let idx = index"
+              class="aspect-square flex items-center justify-center rounded-md text-[10px] font-bold border transition-all duration-300"
               [ngClass]="{
-                'bg-emerald-500 text-white border-emerald-400 shadow-md scale-105 filter drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]': vietlottNumbers().includes(idx + 1),
-                'bg-slate-100 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800/40 text-slate-400 dark:text-slate-600': !vietlottNumbers().includes(idx + 1),
-                'animate-pulse ring-2 ring-emerald-500': isVietlottDrawing() && currentSpinningNumber() === idx + 1
-              }">
+                'bg-emerald-500 text-white border-emerald-400 shadow-md scale-105 filter drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]':
+                  vietlottNumbers().includes(idx + 1),
+                'bg-slate-100 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800/40 text-slate-400 dark:text-slate-600':
+                  !vietlottNumbers().includes(idx + 1),
+                'animate-pulse ring-2 ring-emerald-500':
+                  isVietlottDrawing() && currentSpinningNumber() === idx + 1,
+              }"
+            >
               {{ idx + 1 }}
             </div>
           </div>
-          <div class="text-center mt-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          <div
+            class="text-center mt-3 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+          >
             Đã xổ: {{ vietlottNumbers().length }} / 20 số
           </div>
         </div>
 
         <!-- Control Actions -->
         <div class="flex gap-3 justify-center w-full" *ngIf="!vietlottDone()">
-          <button (click)="startVietlottDraw()" [disabled]="isVietlottDrawing()" class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2">
+          <button
+            (click)="startVietlottDraw()"
+            [disabled]="isVietlottDrawing()"
+            class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2"
+          >
             <span>{{ isVietlottDrawing() ? 'ĐANG QUAY SỐ...' : 'BẮT ĐẦU QUAY SỐ' }}</span>
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18v3z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18v3z"
+              />
             </svg>
           </button>
-          <button (click)="skipVietlott()" class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5">
+          <button
+            (click)="skipVietlott()"
+            class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+          >
             <span>Bỏ qua</span>
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 5l7 7-7 7M5 5l7 7-7 7"
+              />
             </svg>
           </button>
         </div>
 
         <!-- Show Vietlott details when done -->
         <div *ngIf="vietlottDone()" class="animate-fade-in text-center space-y-2">
-          <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-            <span *ngIf="selectedVietlottType() === 'Power655'">Giải thưởng Vietlott Power 6/55</span>
+          <div
+            class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest"
+          >
+            <span *ngIf="selectedVietlottType() === 'Power655'"
+              >Giải thưởng Vietlott Power 6/55</span
+            >
             <span *ngIf="selectedVietlottType() === 'Mega645'">Giải thưởng Vietlott Mega 6/45</span>
             <span *ngIf="selectedVietlottType() === 'Keno'">Kết quả xổ số Vietlott Keno</span>
           </div>
-          <h3 class="text-xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all max-w-md mx-auto leading-relaxed">
-            {{ vietlottNumbers().join(' - ') }} <span *ngIf="selectedVietlottType() === 'Power655'"> (+ {{ vietlottBonus() }})</span>
+          <h3
+            class="text-xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all max-w-md mx-auto leading-relaxed"
+          >
+            {{ vietlottNumbers().join(' - ') }}
+            <span *ngIf="selectedVietlottType() === 'Power655'"> (+ {{ vietlottBonus() }})</span>
           </h3>
         </div>
       </div>
@@ -789,13 +1182,23 @@
               class="btn btn-cancel btn-sm cursor-pointer font-bold flex items-center gap-1.5"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                />
               </svg>
               Sao chép kết quả
             </button>
-            <button (click)="shareOnX()" class="btn btn-cancel btn-sm cursor-pointer font-bold flex items-center gap-1.5">
+            <button
+              (click)="shareOnX()"
+              class="btn btn-cancel btn-sm cursor-pointer font-bold flex items-center gap-1.5"
+            >
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.261 5.636 5.903-5.636Zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.261 5.636 5.903-5.636Zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                />
               </svg>
               Tweet kết quả
             </button>
@@ -804,7 +1207,9 @@
               class="btn btn-cancel btn-sm cursor-pointer font-bold flex items-center gap-1.5"
             >
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                <path
+                  d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+                />
               </svg>
               Facebook
             </button>
@@ -823,7 +1228,12 @@
               class="btn btn-cancel btn-sm cursor-pointer font-extrabold flex items-center gap-1.5"
             >
               <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                />
               </svg>
               Xuất file JSON
             </button>
@@ -912,17 +1322,30 @@
         <div
           class="flex items-start gap-2 text-[11px] font-bold text-slate-400 dark:text-slate-500 leading-relaxed max-w-xl"
         >
-          <svg class="w-4 h-4 shrink-0 mt-0.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.346A3.978 3.978 0 0112 16.012a3.978 3.978 0 01-2.83-1.173l-.346-.346z" />
+          <svg
+            class="w-4 h-4 shrink-0 mt-0.5 text-amber-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.346A3.978 3.978 0 0112 16.012a3.978 3.978 0 01-2.83-1.173l-.346-.346z"
+            />
           </svg>
-          <span>Bạn muốn tự kiểm thử xem kết quả có đúng thuật toán? Hãy copy mã Request ID và mở trang Xác minh để so khớp số ngẫu nhiên on-chain với kết quả đã công bố.</span>
+          <span
+            >Bạn muốn tự kiểm thử xem kết quả có đúng thuật toán? Hãy copy mã Request ID và mở trang
+            Xác minh để so khớp số ngẫu nhiên on-chain với kết quả đã công bố.</span
+          >
         </div>
         <a
           [routerLink]="['/verify']"
           [queryParams]="{ q: sessionDetails().requestId }"
           class="btn btn-secondary btn-sm select-none font-extrabold text-xs shrink-0 self-start sm:self-auto"
         >
-          Mở trang Xác minh (Verify)
+          Mở trang Xác minh
         </a>
       </div>
     </app-card>
