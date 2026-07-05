@@ -31,6 +31,9 @@ export class DetailComponent implements OnDestroy {
   public readonly directModResult = signal<DirectModResult | null>(null);
   public readonly isHashChain = signal<boolean>(false);
 
+  public readonly waitingTime = signal<number>(0);
+  private timerInterval: any = null;
+
   // Lưu trữ interval để dọn dẹp (polling)
   private pollingInterval: any = null;
 
@@ -364,6 +367,11 @@ export class DetailComponent implements OnDestroy {
   private startPolling() {
     if (this.pollingInterval) return;
 
+    this.waitingTime.set(0);
+    this.timerInterval = setInterval(() => {
+      this.waitingTime.update(val => val + 1);
+    }, 1000);
+
     console.log('[Web3] Đang đợi kết quả Chainlink VRF. Bắt đầu polling...');
     this.pollingInterval = setInterval(async () => {
       const id = this.requestId();
@@ -391,6 +399,10 @@ export class DetailComponent implements OnDestroy {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
       this.pollingInterval = null;
+    }
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
     }
   }
 

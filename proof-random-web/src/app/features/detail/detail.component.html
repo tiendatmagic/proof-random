@@ -69,12 +69,17 @@
         <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <div
             class="h-full rounded-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] animate-[shimmer_2s_ease-in-out_infinite]"
-            style="width: 70%"
+            style="width: 100%"
           ></div>
         </div>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          Thường mất 10–30 giây
-        </p>
+        <div class="space-y-1">
+          <p class="text-xs font-bold text-[var(--color-primary)] dark:text-[var(--color-secondary)] uppercase tracking-wider animate-pulse">
+            Đang chờ kết quả từ VRF Chainlink: {{ waitingTime() }} giây...
+          </p>
+          <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">
+            (Thường mất khoảng 10–30 giây)
+          </p>
+        </div>
       </div>
 
       <!-- Step indicators -->

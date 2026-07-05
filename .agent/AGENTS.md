@@ -89,6 +89,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Thiết kế lại bộ chọn giao diện Sáng/Tối (Theme Toggler) ở chân Sidebar: hiển thị tiêu đề và trạng thái Sáng/Tối/Tự động ở bên trái và cụm 3 nút icon tròn nhỏ (Mặt trời, Đồng hồ, Mặt trăng) dạng pill (rounded-full) có shadow-sm nổi bật bên phải, đồng bộ giao diện và màu sắc động.
 - [x] Đồng bộ hóa giao diện và màu sắc badge của bảng "5 Phiên gần đây nhất" trên Dashboard giống như bảng của trang Lịch sử (History) (hỗ trợ hiển thị tên và màu sắc động cho cả 15 chế độ/skins khác nhau).
 - [x] Thiết lập chế độ gas mặc định là "Mặc định" (default) khi dApp chạy trên mạng Arbitrum One Mainnet (chain ID 42161) và khôi phục cài đặt hoặc chuyển về "Nhanh" (fast) đối với các mạng thử nghiệm.
+- [x] Tích hợp bộ đếm thời gian (waitingTime) hiển thị số giây chờ Chainlink VRF thực tế chạy động trên trang Chi tiết (Detail) thay thế cho văn bản tĩnh.
 
 
 
