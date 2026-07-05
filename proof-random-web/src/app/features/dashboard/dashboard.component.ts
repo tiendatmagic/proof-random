@@ -86,13 +86,20 @@ export class DashboardComponent {
     } else if (skin === 'OanTuTi') {
       this.numMin = 1;
       this.numMax = 3;
+    } else if (skin === 'Bingo') {
+      this.numMin = 1;
+      this.numMax = 90;
     } else if (skin === 'WhatToEat') {
-      if (!this.participantsText.trim() || this.participantsText.includes('Nguyễn Văn A')) {
+      if (!this.participantsText.trim() || this.participantsText.includes('Nguyễn Văn A') || this.participantsText.includes('Fool')) {
         this.participantsText = 'Cơm tấm Sườn Bì Chả\nPhở Bò Tái Nạm\nBún Chả Hà Nội\nGà Rán KFC\nBánh Mì Thịt Nướng\nPizza Hải Sản\nBún Đậu Mắm Tôm\nSushi Nhật Bản\nLẩu Thái Cay CoCo';
       }
+    } else if (skin === 'Tarot') {
+      if (!this.participantsText.trim() || this.participantsText.includes('Nguyễn Văn A') || this.participantsText.includes('Cơm tấm')) {
+        this.participantsText = 'The Fool (Chàng Khờ)\nThe Magician (Nhà Ảo Thuật)\nThe High Priestess (Nữ Tư Tế)\nThe Empress (Nữ Hoàng)\nThe Emperor (Hoàng Đế)\nThe Hierophant (Giáo Hoàng)\nThe Lovers (Tình Nhân)\nThe Chariot (Chiến Xa)\nStrength (Sức Mạnh)\nThe Hermit (Ẩn Sĩ)\nWheel of Fortune (Vòng Quay Số Phận)\nJustice (Công Lý)\nThe Hanged Man (Kẻ Treo)\nDeath (Tử Thần)\nTemperance (Tiết Độ)\nThe Devil (Ác Quỷ)\nThe Tower (Tòa Tháp)\nThe Star (Ngôi Sao)\nThe Moon (Mặt Trăng)\nThe Sun (Mặt Trời)\nJudgement (Phán Xét)\nThe World (Thế Giới)';
+      }
     } else {
-      // Nếu quay lại các chế độ thông thường mà đang chứa món ăn mẫu, reset về rỗng
-      if (this.participantsText.includes('Cơm tấm Sườn Bì Chả')) {
+      // Nếu quay lại các chế độ thông thường mà đang chứa mẫu đặc biệt, reset về rỗng
+      if (this.participantsText.includes('Cơm tấm Sườn Bì Chả') || this.participantsText.includes('The Fool')) {
         this.participantsText = '';
       }
     }
@@ -348,7 +355,9 @@ export class DashboardComponent {
       CardDraw:    'Bốc bài tây',
       OanTuTi:     'Oản tù tì',
       Sequence:    'Thứ tự ngẫu nhiên',
-      WhatToEat:   'Hôm nay ăn gì?'
+      WhatToEat:   'Hôm nay ăn gì?',
+      Tarot:       'Rút bài Tarot',
+      Bingo:       'Quay số Bingo'
     };
     if (skin && skins[skin]) return skins[skin];
 

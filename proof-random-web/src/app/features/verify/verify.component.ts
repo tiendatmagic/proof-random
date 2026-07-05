@@ -397,7 +397,9 @@ export class VerifyComponent implements OnInit {
       CardDraw:    'Bốc bài tây',
       OanTuTi:     'Oản tù tì',
       Sequence:    'Thứ tự ngẫu nhiên',
-      WhatToEat:   'Hôm nay ăn gì?'
+      WhatToEat:   'Hôm nay ăn gì?',
+      Tarot:       'Rút bài Tarot',
+      Bingo:       'Quay số Bingo'
     };
     if (skin && skins[skin]) return skins[skin];
     const names: Record<number, string> = {

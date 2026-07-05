@@ -44,6 +44,8 @@ export class HistoryComponent {
     { value: 'Sequence',     label: 'Thứ tự ngẫu nhiên (Random Sequence)' },
     { value: 'Seating',      label: 'Sơ đồ chỗ ngồi (Seating Chart)' },
     { value: 'WhatToEat',    label: 'Hôm nay ăn gì? (What to Eat Picker)' },
+    { value: 'Tarot',        label: 'Rút bài Tarot (Tarot Card Reader)' },
+    { value: 'Bingo',        label: 'Quay số Bingo (Bingo Caller)' }
   ];
 
   // Danh sách thô từ Event logs hoặc danh sách phân trang từ blockchain
@@ -219,7 +221,9 @@ export class HistoryComponent {
       CardDraw:    'Bốc bài tây',
       OanTuTi:     'Oản tù tì',
       Sequence:    'Thứ tự ngẫu nhiên',
-      WhatToEat:   'Hôm nay ăn gì?'
+      WhatToEat:   'Hôm nay ăn gì?',
+      Tarot:       'Rút bài Tarot',
+      Bingo:       'Quay số Bingo'
     };
     if (skin && skins[skin]) return skins[skin];
 

@@ -47,6 +47,9 @@ export class DetailComponent implements OnDestroy {
   private slotTimeoutId: any = null;
   private oanTuTiTimeoutId: any = null;
   private vietlottIntervalId: any = null;
+  private tarotTimeoutId: any = null;
+  private bingoTimeoutId: any = null;
+  private bingoIntervalId: any = null;
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id') || '';
@@ -459,6 +462,10 @@ export class DetailComponent implements OnDestroy {
       this.initSeating();
     } else if (data && data.skin === 'WhatToEat') {
       this.initWhatToEat();
+    } else if (data && data.skin === 'Tarot') {
+      this.initTarot();
+    } else if (data && data.skin === 'Bingo') {
+      this.initBingo();
     }
   }
 
@@ -543,6 +550,9 @@ export class DetailComponent implements OnDestroy {
     if (this.oanTuTiTimeoutId) clearTimeout(this.oanTuTiTimeoutId);
     if (this.slotIntervalId) clearInterval(this.slotIntervalId);
     if (this.vietlottIntervalId) clearInterval(this.vietlottIntervalId);
+    if (this.tarotTimeoutId) clearTimeout(this.tarotTimeoutId);
+    if (this.bingoTimeoutId) clearTimeout(this.bingoTimeoutId);
+    if (this.bingoIntervalId) clearInterval(this.bingoIntervalId);
   }
 
   /**
@@ -678,6 +688,10 @@ export class DetailComponent implements OnDestroy {
       SlotMachine: 'Quay Slot Machine',
       CardDraw:    'Bốc bài tây',
       OanTuTi:     'Oản tù tì',
+      Sequence:    'Thứ tự ngẫu nhiên',
+      WhatToEat:   'Hôm nay ăn gì?',
+      Tarot:       'Rút bài Tarot',
+      Bingo:       'Quay số Bingo'
     };
     if (skin && skins[skin]) return skins[skin];
     const names: Record<number, string> = {
@@ -865,6 +879,18 @@ export class DetailComponent implements OnDestroy {
   public readonly isFoodOpening = signal<boolean>(false);
   public readonly foodOpened = signal<boolean>(false);
 
+  // 14. Rút bài Tarot (Tarot Card Reader)
+  public readonly isTarotRunning = signal<boolean>(false);
+  public readonly tarotDone = signal<boolean>(false);
+  public readonly tarotCards = signal<any[]>([]);
+  public readonly tarotSelectedIdx = signal<number | null>(null);
+
+  // 15. Quay số Bingo (Bingo Caller)
+  public readonly isBingoRunning = signal<boolean>(false);
+  public readonly bingoDone = signal<boolean>(false);
+  public readonly bingoNumber = signal<number | null>(null);
+  public readonly bingoBallList = signal<number[]>([]);
+
   private markAnimationsAsDone() {
     this.wheelSpinDone.set(true);
     this.raceDone.set(true);
@@ -879,6 +905,8 @@ export class DetailComponent implements OnDestroy {
     this.sequenceDone.set(true);
     this.seatingDone.set(true);
     this.foodOpened.set(true);
+    this.tarotDone.set(true);
+    this.bingoDone.set(true);
     
     // Thiết lập kết quả Vietlott
     const type = this.selectedVietlottType();
@@ -960,6 +988,44 @@ export class DetailComponent implements OnDestroy {
           }
           this.seatingLayout.set(layout);
         }
+      }
+
+      // Đồng bộ Tarot
+      if (details.skin === 'Tarot') {
+        const wName = details.participants[winnerIdx] || 'The Sun (Mặt Trời)';
+        const allTarotList = [
+          'The Fool (Chàng Khờ)', 'The Magician (Nhà Ảo Thuật)', 'The High Priestess (Nữ Tư Tế)',
+          'The Empress (Nữ Hoàng)', 'The Emperor (Hoàng Đế)', 'The Hierophant (Giáo Hoàng)',
+          'The Lovers (Tình Nhân)', 'The Chariot (Chiến Xa)', 'Strength (Sức Mạnh)',
+          'The Hermit (Ẩn Sĩ)', 'Wheel of Fortune (Vòng Quay Số Phận)', 'Justice (Công Lý)',
+          'The Hanged Man (Kẻ Treo)', 'Death (Tử Thần)', 'Temperance (Tiết Độ)',
+          'The Devil (Ác Quỷ)', 'The Tower (Tòa Tháp)', 'The Star (Ngôi Sao)',
+          'The Moon (Mặt Trăng)', 'The Sun (Mặt Trời)', 'Judgement (Phán Xét)', 'The World (Thế Giới)'
+        ];
+        const fakes = allTarotList.filter(c => c !== wName);
+        const fake1 = fakes[Number(BigInt(details.randomWord || 0) % BigInt(fakes.length))];
+        const fakes2 = fakes.filter(c => c !== fake1);
+        const fake2 = fakes2[Number((BigInt(details.randomWord || 0) / 2n) % BigInt(fakes2.length))];
+        const winPos = Number(BigInt(details.randomWord || 0) % 3n);
+        
+        const cardsList = new Array(3);
+        cardsList[winPos] = { name: wName, isWinner: true, flipped: true, selected: true, desc: this.getTarotDesc(wName) };
+        let fakeIdx = 0;
+        const fakeArr = [fake1, fake2];
+        for (let i = 0; i < 3; i++) {
+          if (i !== winPos) {
+            const fakeName = fakeArr[fakeIdx++];
+            cardsList[i] = { name: fakeName, isWinner: false, flipped: true, selected: false, desc: this.getTarotDesc(fakeName) };
+          }
+        }
+        this.tarotCards.set(cardsList);
+        this.tarotDone.set(true);
+      }
+
+      // Đồng bộ Bingo
+      if (details.skin === 'Bingo') {
+        this.bingoNumber.set(Number(details.result));
+        this.bingoDone.set(true);
       }
     }
   }
@@ -2020,6 +2086,176 @@ export class DetailComponent implements OnDestroy {
       this.toastService.showToast(`Đã chọn ra ${winners.length} món ngon cho thực đơn hôm nay!`, 'success');
     } else {
       this.toastService.showToast(`Đã mở nắp khay thức ăn!`, 'success');
+    }
+  }
+
+  // ================= 14. RÚT BÀI TAROT (TAROT) =================
+  public initTarot() {
+    this.isTarotRunning.set(false);
+    this.tarotDone.set(false);
+    this.tarotSelectedIdx.set(null);
+    if (this.tarotTimeoutId) clearTimeout(this.tarotTimeoutId);
+
+    const details = this.sessionDetails();
+    if (details && details.participants && details.result !== undefined && details.result !== null) {
+      const winnerIdx = Number(details.result);
+      const wName = details.participants[winnerIdx] || 'The Sun (Mặt Trời)';
+      
+      const allTarotList = [
+        'The Fool (Chàng Khờ)', 'The Magician (Nhà Ảo Thuật)', 'The High Priestess (Nữ Tư Tế)',
+        'The Empress (Nữ Hoàng)', 'The Emperor (Hoàng Đế)', 'The Hierophant (Giáo Hoàng)',
+        'The Lovers (Tình Nhân)', 'The Chariot (Chiến Xa)', 'Strength (Sức Mạnh)',
+        'The Hermit (Ẩn Sĩ)', 'Wheel of Fortune (Vòng Quay Số Phận)', 'Justice (Công Lý)',
+        'The Hanged Man (Kẻ Treo)', 'Death (Tử Thần)', 'Temperance (Tiết Độ)',
+        'The Devil (Ác Quỷ)', 'The Tower (Tòa Tháp)', 'The Star (Ngôi Sao)',
+        'The Moon (Mặt Trăng)', 'The Sun (Mặt Trời)', 'Judgement (Phán Xét)', 'The World (Thế Giới)'
+      ];
+
+      const fakes = allTarotList.filter(c => c !== wName);
+      const fake1 = fakes[Number(BigInt(details.randomWord || 0) % BigInt(fakes.length))];
+      const fakes2 = fakes.filter(c => c !== fake1);
+      const fake2 = fakes2[Number((BigInt(details.randomWord || 0) / 2n) % BigInt(fakes2.length))];
+
+      const winPos = Number(BigInt(details.randomWord || 0) % 3n);
+      const cardsList = new Array(3);
+      cardsList[winPos] = { name: wName, isWinner: true, flipped: false, selected: false, desc: this.getTarotDesc(wName) };
+      
+      let fakeIdx = 0;
+      const fakeArr = [fake1, fake2];
+      for (let i = 0; i < 3; i++) {
+        if (i !== winPos) {
+          const fakeName = fakeArr[fakeIdx++];
+          cardsList[i] = { name: fakeName, isWinner: false, flipped: false, selected: false, desc: this.getTarotDesc(fakeName) };
+        }
+      }
+      this.tarotCards.set(cardsList);
+    }
+  }
+
+  public selectTarotCard(idx: number) {
+    if (this.isTarotRunning() || this.tarotDone()) return;
+    this.tarotSelectedIdx.set(idx);
+    this.startTarotAnimation(idx);
+  }
+
+  public startTarot() {
+    if (this.isTarotRunning() || this.tarotDone()) return;
+    const cardsList = this.tarotCards();
+    const winIdx = cardsList.findIndex(c => c.isWinner);
+    this.tarotSelectedIdx.set(winIdx >= 0 ? winIdx : 1);
+    this.startTarotAnimation(winIdx >= 0 ? winIdx : 1);
+  }
+
+  private startTarotAnimation(selectedIdx: number) {
+    this.isTarotRunning.set(true);
+    
+    this.tarotTimeoutId = setTimeout(() => {
+      this.isTarotRunning.set(false);
+      this.tarotDone.set(true);
+
+      const cardsList = this.tarotCards().map((c, i) => {
+        if (i === selectedIdx || c.isWinner) {
+          return { ...c, flipped: true, selected: i === selectedIdx };
+        }
+        return c;
+      });
+      this.tarotCards.set(cardsList);
+
+      const winnerCard = cardsList.find(c => c.isWinner);
+      if (winnerCard) {
+        this.toastService.showToast(`Bạn đã rút được lá bài: ${winnerCard.name}!`, 'success');
+      }
+    }, 2000);
+  }
+
+  public skipTarot() {
+    if (this.tarotTimeoutId) clearTimeout(this.tarotTimeoutId);
+    this.isTarotRunning.set(false);
+    this.tarotDone.set(true);
+
+    const cardsList = this.tarotCards().map(c => ({ ...c, flipped: true }));
+    this.tarotCards.set(cardsList);
+
+    const winnerCard = cardsList.find(c => c.isWinner);
+    if (winnerCard) {
+      this.toastService.showToast(`Kết quả rút bài: ${winnerCard.name}!`, 'success');
+    }
+  }
+
+  public getTarotDesc(cardName: string): string {
+    const cards = [
+      { name: 'The Fool (Chàng Khờ)', desc: 'Khởi đầu mới, hành trình phiêu lưu và niềm tin thuần khiết.' },
+      { name: 'The Magician (Nhà Ảo Thuật)', desc: 'Ý chí mạnh mẽ, tài năng thiên bẩm và khả năng hiện thực hóa ước mơ.' },
+      { name: 'The High Priestess (Nữ Tư Tế)', desc: 'Trực giác nhạy bén, tri thức bí ẩn và thế giới nội tâm sâu sắc.' },
+      { name: 'The Empress (Nữ Hoàng)', desc: 'Sự sung túc, khả năng sáng tạo, tình mẫu tử và thiên nhiên trù phú.' },
+      { name: 'The Emperor (Hoàng Đế)', desc: 'Quyền lực, kỷ luật thép, sự bảo hộ và tính trật tự.' },
+      { name: 'The Hierophant (Giáo Hoàng)', desc: 'Truyền thống, niềm tin tôn giáo, sự giáo dục và lời khuyên thông thái.' },
+      { name: 'The Lovers (Tình Nhân)', desc: 'Tình yêu đôi lứa, sự hòa hợp và những lựa chọn quan trọng từ trái tim.' },
+      { name: 'The Chariot (Chiến Xa)', desc: 'Chiến thắng vượt bậc nhờ ý chí kiên định và sự kiểm soát.' },
+      { name: 'Strength (Sức Mạnh)', desc: 'Lòng quả cảm, sự nhẫn nại và sức mạnh tinh thần thuần hóa nghịch cảnh.' },
+      { name: 'The Hermit (Ẩn Sĩ)', desc: 'Sự chiêm nghiệm, tìm kiếm chân lý nội tâm và sự cô độc thông thái.' },
+      { name: 'Wheel of Fortune (Vòng Quay Số Phận)', desc: 'Sự thay đổi định mệnh, cơ hội bất ngờ và chu kỳ mới.' },
+      { name: 'Justice (Công Lý)', desc: 'Sự công bằng, chân lý, luật nhân quả và quyết định sáng suốt.' },
+      { name: 'The Hanged Man (Kẻ Treo)', desc: 'Sự hy sinh cống hiến, góc nhìn mới mẻ và sự tạm dừng cần thiết.' },
+      { name: 'Death (Tử Thần)', desc: 'Sự kết thúc để khởi đầu mới, chuyển hóa sâu sắc và buông bỏ.' },
+      { name: 'Temperance (Tiết Độ)', desc: 'Sự cân bằng, hòa hợp, kiên nhẫn và dòng chảy trung dung.' },
+      { name: 'The Devil (Ác Quỷ)', desc: 'Sự ràng buộc vật chất, cám dỗ và nỗi sợ hãi vô hình.' },
+      { name: 'The Tower (Tòa Tháp)', desc: 'Sự sụp đổ bất ngờ, thay đổi đột ngột giải phóng khỏi xiềng xích.' },
+      { name: 'The Star (Ngôi Sao)', desc: 'Niềm hy vọng, sự chữa lành vết thương lòng và niềm tin vào tương lai.' },
+      { name: 'The Moon (Mặt Trăng)', desc: 'Sự mơ hồ, ảo ảnh, nỗi sợ tiềm thức và trực giác trỗi dậy.' },
+      { name: 'The Sun (Mặt Trời)', desc: 'Thành công rực rỡ, niềm vui tràn ngập, năng lượng tích cực và sự tỏ tường.' },
+      { name: 'Judgement (Phán Xét)', desc: 'Sự thức tỉnh tâm linh, tiếng gọi lương tri và sự tha thứ giải thoát.' },
+      { name: 'The World (Thế Giới)', desc: 'Sự hoàn thành viên mãn, thành tựu trọn vẹn và sự tự do tuyệt đối.' }
+    ];
+    const clean = (n: string) => n.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const target = clean(cardName);
+    const found = cards.find(c => clean(c.name).includes(target) || target.includes(clean(c.name)));
+    return found ? found.desc : 'Một lá bài may mắn mang thông điệp tích cực cho bạn hôm nay.';
+  }
+
+  // ================= 15. QUAY SỐ BINGO (BINGO) =================
+  private bingoBallIntervalId: any = null;
+
+  public initBingo() {
+    this.isBingoRunning.set(false);
+    this.bingoDone.set(false);
+    this.bingoNumber.set(null);
+    if (this.bingoBallIntervalId) clearInterval(this.bingoBallIntervalId);
+    if (this.bingoTimeoutId) clearTimeout(this.bingoTimeoutId);
+    this.bingoBallList.set([12, 25, 47, 88, 9, 36, 73, 52, 61, 80]);
+  }
+
+  public startBingo() {
+    if (this.isBingoRunning() || this.bingoDone()) return;
+    this.isBingoRunning.set(true);
+
+    const details = this.sessionDetails();
+    if (!details || !details.result) return;
+    const finalNumber = Number(details.result);
+
+    this.bingoBallIntervalId = setInterval(() => {
+      const randomBalls = Array.from({ length: 10 }, () => Math.floor(Math.random() * 90) + 1);
+      this.bingoBallList.set(randomBalls);
+    }, 100);
+
+    this.bingoTimeoutId = setTimeout(() => {
+      if (this.bingoBallIntervalId) clearInterval(this.bingoBallIntervalId);
+      this.isBingoRunning.set(false);
+      this.bingoDone.set(true);
+      this.bingoNumber.set(finalNumber);
+      this.toastService.showToast(`Bingo! Con số may mắn là: ${finalNumber}!`, 'success');
+    }, 3000);
+  }
+
+  public skipBingo() {
+    if (this.bingoBallIntervalId) clearInterval(this.bingoBallIntervalId);
+    if (this.bingoTimeoutId) clearTimeout(this.bingoTimeoutId);
+    this.isBingoRunning.set(false);
+    this.bingoDone.set(true);
+
+    const details = this.sessionDetails();
+    if (details && details.result) {
+      this.bingoNumber.set(Number(details.result));
     }
   }
 }
