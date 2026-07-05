@@ -83,14 +83,20 @@ export class App {
   @HostListener('document:click', ['$event'])
   public onClick(event: MouseEvent) {
     const target = event.target as HTMLElement;
-    if (
-      !this.elementRef.nativeElement.querySelector('#wallet-dropdown-container')?.contains(target)
-    ) {
+    
+    const isInsideWallet = 
+      this.elementRef.nativeElement.querySelector('#wallet-dropdown-container')?.contains(target) ||
+      this.elementRef.nativeElement.querySelector('#mobile-wallet-dropdown-container')?.contains(target);
+      
+    if (!isInsideWallet) {
       this.isWalletDropdownOpen.set(false);
     }
-    if (
-      !this.elementRef.nativeElement.querySelector('#chain-dropdown-container')?.contains(target)
-    ) {
+
+    const isInsideChain = 
+      this.elementRef.nativeElement.querySelector('#chain-dropdown-container')?.contains(target) ||
+      this.elementRef.nativeElement.querySelector('#mobile-chain-dropdown-container')?.contains(target);
+      
+    if (!isInsideChain) {
       this.isChainDropdownOpen.set(false);
     }
   }
