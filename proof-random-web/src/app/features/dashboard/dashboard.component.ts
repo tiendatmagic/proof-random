@@ -108,74 +108,19 @@ export class DashboardComponent {
   }
 
   /**
-   * Truy vấn lịch sử sự kiện trên blockchain để tính toán số liệu thống kê
+   * Truy vấn lịch sử sự kiện trên blockchain để tính toán số liệu thống kê (có sử dụng Cache)
    */
   public async loadBlockchainStats() {
     this.isStatsLoading.set(true);
     try {
-      const contract = this.web3Service.getContract(false);
-      
-      // 1. Đọc tổng số phiên trực tiếp từ Contract State
-      const totalSessionsBig = await contract['getSessionsCount']();
-      const totalSessionsCount = Number(totalSessionsBig);
-      this.totalSessions.set(totalSessionsCount);
-
-      // 2. Lấy danh sách sự kiện từ cache
-      let draws = await this.web3Service.getAllDrawSessionsFromEvents(false);
-      
-      // 3. Tự động kiểm tra và force refresh nếu phát hiện cache bị cũ so với chain state
-      if (draws.length < totalSessionsCount) {
-        console.log(`[Dashboard] Cache cũ (${draws.length} < ${totalSessionsCount}). Đang tự động quét lại sự kiện blockchain...`);
-        draws = await this.web3Service.getAllDrawSessionsFromEvents(true);
+      const stats = await this.web3Service.getDashboardStats(false);
+      if (stats) {
+        this.totalSessions.set(stats.totalSessions);
+        this.totalDraws.set(stats.totalDraws);
+        this.linkBalance.set(stats.linkBalance);
+        this.subscriptionId.set(stats.subscriptionId);
+        this.recentDraws.set(stats.recentDraws);
       }
-
-      // Lấy 5 phiên gần nhất làm Recent Draws
-      // Gọi RPC sessions để kiểm tra xem đã fulfilled chưa
-      const recent = [];
-      const limit = Math.min(draws.length, 5);
-      
-      for (let i = 0; i < limit; i++) {
-        const d = draws[i];
-        const status = await this.web3Service.getDrawSession(d.requestId);
-        recent.push({
-          ...d,
-          fulfilled: status ? status.fulfilled : false,
-          result: status ? status.result : '',
-          timestamp: status ? status.timestamp : 0
-        });
-      }
-      this.recentDraws.set(recent);
-
-      // Tính tổng số lượt quay đã hoàn thành (fulfilled)
-      // Để tránh gọi RPC quá nhiều gây chậm, ta tạm thời lấy số lượng phiên có kết quả
-      let completedCount = 0;
-      
-      // Quét các event DrawFulfilled để biết chính xác tổng số lần VRF callback thành công
-      try {
-        const filter = contract['filters']['DrawFulfilled']();
-        const fulfilledEvents = await contract.queryFilter(filter, 0, 'latest');
-        completedCount = fulfilledEvents.length;
-      } catch (err) {
-        // Fallback đếm thủ công nếu RPC bị giới hạn range
-        completedCount = recent.filter(r => r.fulfilled).length;
-      }
-
-      // Đảm bảo số lượt thành công không bao giờ vượt quá tổng số phiên (nếu có lỗi RPC tạm thời)
-      if (completedCount > totalSessionsCount) {
-        completedCount = totalSessionsCount;
-      }
-      this.totalDraws.set(completedCount);
-
-      // Lấy số dư LINK từ VRF Subscription
-      const linkInfo = await this.web3Service.getLinkSubscriptionBalance();
-      if (linkInfo) {
-        this.linkBalance.set(linkInfo.balance);
-        this.subscriptionId.set(linkInfo.subscriptionId);
-      } else {
-        this.linkBalance.set('N/A');
-        this.subscriptionId.set('');
-      }
-
     } catch (err) {
       console.warn('[Dashboard] Tải thống kê blockchain lỗi:', err);
     } finally {
@@ -337,6 +282,9 @@ export class DashboardComponent {
       this.toastService.showToast('Gửi yêu cầu bốc thăm thành công!', 'success');
       this.isPendingTx.set(false);
       
+      // Xóa cache Dashboard Stats của chain hiện tại để khi quay lại Dashboard số liệu được cập nhật mới nhất
+      this.web3Service.clearDashboardStatsCache(this.web3Service.configuredChainId().toString());
+
       // Chuyển hướng sang trang chi tiết phiên bốc thăm để đợi kết quả từ Chainlink VRF
       this.router.navigate(['/detail', requestId], { queryParams: { fresh: 'true' } });
 

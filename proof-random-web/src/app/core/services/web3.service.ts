@@ -16,6 +16,14 @@ const VRF_COORDINATORS: Record<string, string> = {
   '421614':  '0x5CE801a2c317E05C558F87353f2257D5f25a3D61', // Arbitrum Sepolia
 };
 
+export interface DashboardStats {
+  totalSessions: number;
+  totalDraws: number;
+  linkBalance: string;
+  subscriptionId: string;
+  recentDraws: any[];
+}
+
 // Tích hợp Reown AppKit cho WalletConnect
 import { createAppKit } from '@reown/appkit';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
@@ -113,6 +121,12 @@ export class Web3Service {
   // Cache chi tiết phiên bốc thăm theo chainId và requestId
   private _drawSessionDetailsCache: Record<string, Record<string, any>> = {};
 
+  // Cache thống kê Dashboard theo chainId
+  private _dashboardStatsCache: Record<string, { stats: DashboardStats; timestamp: number }> = {};
+
+  // Cache phân trang lịch sử bốc thăm theo chainId và page
+  private _paginatedDrawsCache: Record<string, Record<number, { draws: any[], total: number, timestamp: number }>> = {};
+
   constructor() {
     this.loadGasSettings();
     this.initAppKit();
@@ -162,6 +176,12 @@ export class Web3Service {
       sessionStorage.setItem(`proof_random_history_cache_${chainId}`, JSON.stringify(this._allDrawsCache[chainId] || []));
       sessionStorage.setItem(`proof_random_has_full_scan_${chainId}`, JSON.stringify(!!this._hasFullScan[chainId]));
       sessionStorage.setItem(`proof_random_session_details_${chainId}`, JSON.stringify(this._drawSessionDetailsCache[chainId] || {}));
+      if (this._dashboardStatsCache[chainId]) {
+        sessionStorage.setItem(`proof_random_dashboard_stats_${chainId}`, JSON.stringify(this._dashboardStatsCache[chainId]));
+      }
+      if (this._paginatedDrawsCache[chainId]) {
+        sessionStorage.setItem(`proof_random_paginated_draws_${chainId}`, JSON.stringify(this._paginatedDrawsCache[chainId]));
+      }
     } catch (e) {
       console.warn('[Web3] Không thể ghi cache vào sessionStorage:', e);
     }
@@ -195,6 +215,18 @@ export class Web3Service {
       } else {
         this._drawSessionDetailsCache[chainId] = {};
       }
+
+      const dashboardStatsStr = sessionStorage.getItem(`proof_random_dashboard_stats_${chainId}`);
+      if (dashboardStatsStr) {
+        this._dashboardStatsCache[chainId] = JSON.parse(dashboardStatsStr);
+      }
+
+      const paginatedStr = sessionStorage.getItem(`proof_random_paginated_draws_${chainId}`);
+      if (paginatedStr) {
+        this._paginatedDrawsCache[chainId] = JSON.parse(paginatedStr);
+      } else {
+        this._paginatedDrawsCache[chainId] = {};
+      }
     } catch (e) {
       console.warn('[Web3] Không thể đọc cache từ sessionStorage:', e);
     }
@@ -208,16 +240,18 @@ export class Web3Service {
     this._allDrawsCache[chainId] = [];
     this._hasFullScan[chainId] = false;
     this._drawSessionDetailsCache[chainId] = {};
+    this._paginatedDrawsCache[chainId] = {};
     if (typeof window !== 'undefined') {
       try {
         sessionStorage.removeItem(`proof_random_history_cache_${chainId}`);
         sessionStorage.removeItem(`proof_random_has_full_scan_${chainId}`);
         sessionStorage.removeItem(`proof_random_session_details_${chainId}`);
+        sessionStorage.removeItem(`proof_random_paginated_draws_${chainId}`);
       } catch (e) {
         console.warn('[Web3] Lỗi khi xóa cache sessionStorage:', e);
       }
     }
-    console.log(`[Web3] Đã xóa cache lịch sử của mạng ${chainId}`);
+    console.log(`[Web3] Đã xóa cache lịch sử bốc thăm cho mạng ${chainId}`);
   }
 
 
@@ -433,11 +467,24 @@ export class Web3Service {
   }
 
   /**
-   * Lấy danh sách các phiên bốc thăm phân trang trực tiếp từ Contract State
+   * Lấy danh sách các phiên bốc thăm phân trang trực tiếp từ Contract State (có sử dụng Cache)
    * Giúp dApp tải cực nhanh và không bị giới hạn block range của RPC Node khi dữ liệu lớn
    */
-  public async getDrawSessionsPaginated(page: number, limit: number): Promise<{ draws: any[], total: number }> {
+  public async getDrawSessionsPaginated(page: number, limit: number, forceRefresh = false): Promise<{ draws: any[], total: number }> {
     try {
+      const chainId = this.configuredChainId().toString();
+      if (!this._paginatedDrawsCache[chainId]) {
+        this._paginatedDrawsCache[chainId] = {};
+      }
+
+      const cache = this._paginatedDrawsCache[chainId][page];
+      const CACHE_DURATION = 180000; // 3 phút
+
+      if (cache && !forceRefresh && (Date.now() - cache.timestamp < CACHE_DURATION)) {
+        console.log(`[Web3] Sử dụng cache phân trang cho mạng ${chainId} | Trang ${page}`);
+        return { draws: cache.draws, total: cache.total };
+      }
+
       const contract = this.getContract(false);
       const totalBig = await contract['getSessionsCount']();
       const total = Number(totalBig);
@@ -470,12 +517,32 @@ export class Web3Service {
           draws.push(d);
         }
       }
+
+      // Lưu cache
+      this._paginatedDrawsCache[chainId][page] = {
+        draws,
+        total,
+        timestamp: Date.now()
+      };
+      this.saveCacheToSessionStorage();
       
       return { draws, total };
     } catch (err) {
       console.error('[Web3] Phân trang bốc thăm lỗi:', err);
-      return { draws: [], total: 0 };
+      const chainId = this.configuredChainId().toString();
+      const cache = this._paginatedDrawsCache[chainId]?.[page];
+      return cache ? { draws: cache.draws, total: cache.total } : { draws: [], total: 0 };
     }
+  }
+
+  /**
+   * Kiểm tra xem đã có cache phân trang hợp lệ cho trang hiện tại hay chưa
+   */
+  public hasPaginatedDrawsCache(page: number, limit: number): boolean {
+    const chainId = this.configuredChainId().toString();
+    const cache = this._paginatedDrawsCache[chainId]?.[page];
+    const CACHE_DURATION = 180000; // 3 phút
+    return !!(cache && (Date.now() - cache.timestamp < CACHE_DURATION));
   }
 
 
@@ -1031,6 +1098,124 @@ export class Web3Service {
       skin: '',
       eventName: rawEventName
     };
+  }
+
+  /**
+   * Truy vấn và cache các số liệu thống kê cho Dashboard
+   */
+  public async getDashboardStats(forceRefresh = false): Promise<DashboardStats | null> {
+    try {
+      const chainId = this.configuredChainId().toString();
+      const cache = this._dashboardStatsCache[chainId];
+      const CACHE_DURATION = 180000; // 3 phút (180.000 ms)
+
+      // Trả về cache nếu hợp lệ và không forceRefresh
+      if (cache && !forceRefresh && (Date.now() - cache.timestamp < CACHE_DURATION)) {
+        console.log(`[Web3] Sử dụng cache dashboard stats cho mạng ${chainId} (cách đây ${((Date.now() - cache.timestamp)/1000).toFixed(0)} giây)`);
+        return cache.stats;
+      }
+
+      console.log(`[Web3] Tải mới dữ liệu dashboard stats từ blockchain cho mạng ${chainId}...`);
+      const contract = this.getContract(false);
+      
+      // 1. Đọc tổng số phiên bốc thăm trực tiếp từ Contract State
+      const totalSessionsBig = await contract['getSessionsCount']();
+      const totalSessionsCount = Number(totalSessionsBig);
+
+      // 2. Lấy danh sách sự kiện từ cache hoặc blockchain
+      let draws = await this.getAllDrawSessionsFromEvents(forceRefresh);
+      
+      // Tự động kiểm tra và force refresh nếu phát hiện cache bị cũ so với chain state
+      if (draws.length < totalSessionsCount) {
+        console.log(`[Web3] Số lượng sự kiện trong cache cũ (${draws.length} < ${totalSessionsCount}). Đang quét lại sự kiện...`);
+        draws = await this.getAllDrawSessionsFromEvents(true);
+      }
+
+      // 3. Lấy 5 phiên gần nhất làm Recent Draws
+      const recent = [];
+      const limit = Math.min(draws.length, 5);
+      
+      for (let i = 0; i < limit; i++) {
+        const d = draws[i];
+        const status = await this.getDrawSession(d.requestId);
+        recent.push({
+          ...d,
+          fulfilled: status ? status.fulfilled : false,
+          result: status ? status.result : '',
+          timestamp: status ? status.timestamp : 0
+        });
+      }
+
+      // 4. Tính tổng số lượt quay đã hoàn thành (fulfilled)
+      let completedCount = 0;
+      try {
+        const filter = contract['filters']['DrawFulfilled']();
+        const fulfilledEvents = await contract.queryFilter(filter, 0, 'latest');
+        completedCount = fulfilledEvents.length;
+      } catch (err) {
+        // Fallback đếm thủ công nếu RPC bị giới hạn range
+        completedCount = recent.filter(r => r.fulfilled).length;
+      }
+
+      if (completedCount > totalSessionsCount) {
+        completedCount = totalSessionsCount;
+      }
+
+      // 5. Lấy số dư LINK từ VRF Subscription
+      let balanceStr = 'N/A';
+      let subscriptionIdStr = '';
+      const linkInfo = await this.getLinkSubscriptionBalance();
+      if (linkInfo) {
+        balanceStr = linkInfo.balance;
+        subscriptionIdStr = linkInfo.subscriptionId;
+      }
+
+      const stats: DashboardStats = {
+        totalSessions: totalSessionsCount,
+        totalDraws: completedCount,
+        linkBalance: balanceStr,
+        subscriptionId: subscriptionIdStr,
+        recentDraws: recent
+      };
+
+      // Cập nhật cache
+      this._dashboardStatsCache[chainId] = {
+        stats,
+        timestamp: Date.now()
+      };
+      this.saveCacheToSessionStorage();
+
+      return stats;
+    } catch (err) {
+      console.error('[Web3] Tải dashboard stats lỗi:', err);
+      // Trả về cache cũ nếu có lỗi
+      const chainId = this.configuredChainId().toString();
+      return this._dashboardStatsCache[chainId]?.stats || null;
+    }
+  }
+
+  /**
+   * Xóa bộ nhớ cache dashboard stats của một hoặc tất cả mạng lưới
+   */
+  public clearDashboardStatsCache(chainId?: string) {
+    if (chainId) {
+      delete this._dashboardStatsCache[chainId];
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(`proof_random_dashboard_stats_${chainId}`);
+      }
+      console.log(`[Web3] Đã xóa cache dashboard stats cho mạng ${chainId}`);
+    } else {
+      this._dashboardStatsCache = {};
+      if (typeof window !== 'undefined') {
+        const keys = Object.keys(sessionStorage);
+        for (const key of keys) {
+          if (key.startsWith('proof_random_dashboard_stats_')) {
+            sessionStorage.removeItem(key);
+          }
+        }
+      }
+      console.log('[Web3] Đã xóa toàn bộ cache dashboard stats');
+    }
   }
 
   public solidityKeccak256(types: string[], values: any[]): string {

@@ -135,7 +135,18 @@ export class HistoryComponent {
    * Tải dữ liệu lịch sử bốc thăm (tự động phân trang hoặc quét full tùy theo trạng thái bộ lọc)
    */
   public async loadHistory() {
-    this.isLoading.set(true);
+    const page = this.currentPage();
+    
+    // Kiểm tra xem đã có cache phân trang hoặc cache sự kiện đầy đủ chưa
+    const hasCache = this.isFiltering()
+      ? this.web3Service.historyHasFullScan
+      : this.web3Service.hasPaginatedDrawsCache(page, this.pageSize);
+
+    // Chỉ hiển thị skeleton loader khi không có sẵn cache để tránh nhấp nháy giao diện
+    if (!hasCache) {
+      this.isLoading.set(true);
+    }
+
     try {
       if (this.isFiltering()) {
         // Tải danh sách đã quét từ event logs (đã tự động có cache trong Web3Service)
@@ -143,8 +154,8 @@ export class HistoryComponent {
         // Cập nhật rawDraws ảo để kích hoạt computed filteredDraws chạy lại
         this.rawDraws.set([...draws]);
       } else {
-        // Chế độ mặc định: tải đúng 10 phiên thuộc trang hiện tại trực tiếp từ Blockchain
-        const result = await this.web3Service.getDrawSessionsPaginated(this.currentPage(), this.pageSize);
+        // Chế độ mặc định: tải đúng 10 phiên thuộc trang hiện tại trực tiếp từ Blockchain (có sử dụng cache phân trang)
+        const result = await this.web3Service.getDrawSessionsPaginated(page, this.pageSize, false);
         this.rawDraws.set(result.draws);
         this.totalOnChainDraws.set(result.total);
       }
@@ -156,12 +167,26 @@ export class HistoryComponent {
   }
 
   /**
-   * Nút làm mới dữ liệu: xóa bộ nhớ cache và tải lại từ đầu
+   * Nút làm mới dữ liệu: xóa bộ nhớ cache và tải lại từ đầu từ blockchain
    */
   public async loadAllHistory() {
     this.web3Service.clearHistoryCache();
     this.currentPage.set(1);
-    await this.loadHistory();
+    this.isLoading.set(true); // Bắt buộc hiện skeleton loader khi làm mới thủ công
+    try {
+      if (this.isFiltering()) {
+        const draws = await this.web3Service.getAllDrawSessionsFromEvents(true); // forceRefresh = true
+        this.rawDraws.set([...draws]);
+      } else {
+        const result = await this.web3Service.getDrawSessionsPaginated(1, this.pageSize, true); // forceRefresh = true
+        this.rawDraws.set(result.draws);
+        this.totalOnChainDraws.set(result.total);
+      }
+    } catch (err) {
+      console.warn('[History] Làm mới dữ liệu lỗi:', err);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
   /**
