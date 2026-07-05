@@ -91,6 +91,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Thiết lập chế độ gas mặc định là "Mặc định" (default) khi dApp chạy trên mạng Arbitrum One Mainnet (chain ID 42161) và khôi phục cài đặt hoặc chuyển về "Nhanh" (fast) đối với các mạng thử nghiệm.
 - [x] Tích hợp bộ đếm thời gian (waitingTime) hiển thị số giây chờ Chainlink VRF thực tế chạy động trên trang Chi tiết (Detail) thay thế cho văn bản tĩnh.
 - [x] Thiết lập hệ thống lưu cache thông minh client-side (RAM Web3Service kết hợp sessionStorage chia theo chainId) cho trang Lịch sử (History) và Chi tiết (Detail), giúp chuyển đổi trang mượt mà tức thì (Instant Load UX) và giảm tải 90% RPC Node request.
+- [x] Sửa lỗi Social Login (Google, Facebook) trên Reown AppKit: chuyển đổi default account type sang EOA và cung cấp hướng dẫn whitelist domain để tránh lỗi "Action not allowed" khi ký giao dịch.
 
 
 

@@ -269,10 +269,13 @@ export class Web3Service {
         },
         projectId,
         features: {
-          email: false,
-          socials: false,
+          email: true,
+          socials: ['google', 'facebook', 'x', 'apple'],
           analytics: false,
           reownAuthentication: false
+        },
+        defaultAccountTypes: {
+          eip155: 'eoa'
         }
       });
 
