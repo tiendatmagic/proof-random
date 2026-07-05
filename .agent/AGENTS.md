@@ -92,6 +92,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Tích hợp bộ đếm thời gian (waitingTime) hiển thị số giây chờ Chainlink VRF thực tế chạy động trên trang Chi tiết (Detail) thay thế cho văn bản tĩnh.
 - [x] Thiết lập hệ thống lưu cache thông minh client-side (RAM Web3Service kết hợp sessionStorage chia theo chainId) cho trang Lịch sử (History) và Chi tiết (Detail), giúp chuyển đổi trang mượt mà tức thì (Instant Load UX) và giảm tải 90% RPC Node request.
 - [x] Sửa lỗi Social Login (Google, Facebook) trên Reown AppKit: chuyển đổi default account type sang EOA và cung cấp hướng dẫn whitelist domain để tránh lỗi "Action not allowed" khi ký giao dịch, đồng thời cô lập hoàn toàn các cuộc gọi RPC phụ trợ (estimateGas, getFeeData) sang JsonRpcProvider công cộng để tránh lỗi "Requested RPC call is not allowed".
+- [x] Khắc phục lỗi nút "Kết nối" ví trên mobile bị đổi màu nền thành trắng (làm ẩn chữ khi hover) bằng cách định nghĩa đầy đủ biến CSS `--color-primary-hover` trong `styles.css`.
+- [x] Đồng bộ hóa logo hiển thị trên WalletConnect AppKit bằng cách chép đè logo trong suốt chính thức của DApp từ `public/logo.png` sang `public/assets/logo.png`.
 
 
 
