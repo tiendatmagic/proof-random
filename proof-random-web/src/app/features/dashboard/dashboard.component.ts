@@ -226,7 +226,12 @@ export class DashboardComponent {
     }
 
     // Validate theo từng chế độ quay
-    if (this.drawType === 1) { // Random Number
+    if (this.selectedSkin === 'Bingo') {
+      if (this.numWinners <= 0 || this.numWinners > 90) {
+        this.toastService.showToast('Số lượng bóng cần quay phải từ 1 đến 90!', 'error');
+        return;
+      }
+    } else if (this.drawType === 1) { // Random Number
       if (this.numMin >= this.numMax) {
         this.toastService.showToast('Số Min phải nhỏ hơn số Max!', 'error');
         return;
@@ -273,6 +278,16 @@ export class DashboardComponent {
         drawTypeToSend = 2;
         param1 = participants.length;
         param2 = 0;
+      }
+    } else if (this.selectedSkin === 'Bingo') {
+      if (this.numWinners > 1) {
+        drawTypeToSend = 3;
+        param1 = 90;
+        param2 = this.numWinners;
+      } else {
+        drawTypeToSend = 1;
+        param1 = 1;
+        param2 = 90;
       }
     } else {
       if (this.drawType === 1) {

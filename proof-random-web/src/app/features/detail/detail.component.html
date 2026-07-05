@@ -1646,34 +1646,53 @@
         </p>
 
         <!-- Lồng quay số Bingo -->
-        <div class="relative w-64 h-64 flex items-center justify-center select-none">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-8 w-full py-4 select-none">
           <!-- Lồng bóng (SVG) -->
           <div
-            [ngClass]="{ 'animate-[spin_1.5s_linear_infinite]': isBingoRunning() }"
-            class="w-48 h-48 border-[6px] border-slate-300 dark:border-slate-800 rounded-full relative flex items-center justify-center bg-slate-950/10 dark:bg-slate-950/40"
+            [ngClass]="{ 'animate-[spin_1.5s_linear_infinite]': isBingoRunning(), 'w-48 h-48': bingoNumbers().length <= 1, 'w-36 h-36': bingoNumbers().length > 1 }"
+            class="border-[6px] border-slate-300 dark:border-slate-800 rounded-full relative flex items-center justify-center bg-slate-950/10 dark:bg-slate-950/40 transition-all duration-300 shrink-0"
           >
             <!-- Trục quay -->
-            <div class="absolute w-[6px] h-20 bg-slate-400 dark:bg-slate-700 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute w-[6px] h-3/5 bg-slate-400 dark:bg-slate-700 left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
             
             <!-- Các quả bóng số đang quay -->
             <ng-container *ngIf="isBingoRunning() || !bingoDone()">
               <div
                 *ngFor="let ball of bingoBallList(); let idx = index"
-                [style.transform]="'rotate(' + (idx * 36) + 'deg) translate(50px) rotate(-' + (idx * 36) + 'deg)'"
-                class="absolute w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md flex items-center justify-center text-[10px] font-black text-white"
+                [style.transform]="'rotate(' + (idx * 36) + 'deg) translate(' + (bingoNumbers().length > 1 ? 35 : 50) + 'px) rotate(-' + (idx * 36) + 'deg)'"
+                class="absolute rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-md flex items-center justify-center text-[10px] font-black text-white shrink-0"
+                [ngClass]="{ 'w-6 h-6': bingoNumbers().length > 1, 'w-8 h-8': bingoNumbers().length <= 1 }"
               >
                 {{ ball }}
               </div>
             </ng-container>
+
+            <!-- Bóng số trúng thưởng bay ra ở giữa (Dành cho 1 số) -->
+            <div
+              *ngIf="bingoDone() && bingoNumbers().length === 1 && bingoNumber() !== null"
+              class="absolute w-28 h-28 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 shadow-[0_0_25px_rgba(245,158,11,0.6)] flex flex-col items-center justify-center border-4 border-white animate-scale-up z-10"
+            >
+              <span class="text-[9px] font-black text-white/80 uppercase tracking-wider mb-1">CON SỐ</span>
+              <span class="text-4xl font-extrabold text-white tracking-tighter">{{ bingoNumber() }}</span>
+            </div>
           </div>
 
-          <!-- Bóng số trúng thưởng bay ra ở giữa -->
+          <!-- Danh sách nhiều bóng số (Dành cho nhiều số) -->
           <div
-            *ngIf="bingoDone() && bingoNumber() !== null"
-            class="absolute w-28 h-28 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 shadow-[0_0_25px_rgba(245,158,11,0.6)] flex flex-col items-center justify-center border-4 border-white animate-scale-up"
+            *ngIf="bingoDone() && bingoNumbers().length > 1"
+            class="flex-1 flex flex-col items-center md:items-start space-y-3 w-full animate-fade-in"
           >
-            <span class="text-[9px] font-black text-white/80 uppercase tracking-wider mb-1">CON SỐ</span>
-            <span class="text-4xl font-extrabold text-white tracking-tighter">{{ bingoNumber() }}</span>
+            <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Danh sách bóng số trúng thưởng</span>
+            <div class="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-6 gap-2 w-full max-h-[160px] overflow-y-auto pr-1">
+              <div
+                *ngFor="let num of bingoNumbers(); let numIdx = index"
+                class="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-500 shadow-md flex flex-col items-center justify-center border-2 border-white/60 dark:border-slate-800 animate-scale-up select-none shrink-0"
+                [style.animation-delay]="(numIdx * 80) + 'ms'"
+              >
+                <span class="text-[7px] font-bold text-white/70 leading-none">BÓNG</span>
+                <span class="text-sm font-extrabold text-white leading-none mt-0.5">{{ num }}</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1702,8 +1721,10 @@
         </div>
 
         <!-- Khối chúc mừng bóng số -->
-        <div *ngIf="bingoDone() && bingoNumber() !== null" class="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 w-full max-w-sm text-center animate-fade-in">
-          <p class="text-xs text-amber-500 dark:text-amber-400 font-black">Chúc mừng bóng số {{ bingoNumber() }} đã xuất hiện!</p>
+        <div *ngIf="bingoDone()" class="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 w-full max-w-sm text-center animate-fade-in">
+          <p class="text-xs text-amber-500 dark:text-amber-400 font-black">
+            {{ bingoNumbers().length === 1 ? 'Chúc mừng bóng số ' + bingoNumber() + ' đã xuất hiện!' : 'Đã quay thành công bộ ' + bingoNumbers().length + ' bóng số Bingo!' }}
+          </p>
         </div>
       </div>
 

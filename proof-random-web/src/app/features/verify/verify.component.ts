@@ -216,6 +216,8 @@ export class VerifyComponent implements OnInit {
         labelPrefix = 'Xếp vào vị trí ghế thứ';
       } else if (details.skin === 'WhatToEat') {
         labelPrefix = 'Chọn món ăn thứ';
+      } else if (details.skin === 'Bingo') {
+        labelPrefix = 'Chọn bóng Bingo thứ';
       }
 
       for (let i = 0; i < k; i++) {
@@ -249,6 +251,8 @@ export class VerifyComponent implements OnInit {
           valueChosenText = `Hàng ${row}, Cột ${col} (Bàn số ${i + 1}) → ${name}`;
         } else if (details.skin === 'WhatToEat') {
           valueChosenText = `Chọn món ăn #${i + 1} → ${name}`;
+        } else if (details.skin === 'Bingo') {
+          valueChosenText = `Bóng số #${i + 1} → Bóng số ${candidate + 1}`;
         }
 
         steps.push({
@@ -414,5 +418,14 @@ export class VerifyComponent implements OnInit {
       9: 'Chia đội ngẫu nhiên',
     };
     return names[type] || 'Chưa xác định';
+  }
+
+  public getBingoWinnersFormatted(): string {
+    const details = this.sessionDetails();
+    if (!details || !details.result) return '';
+    if (details.drawType === 3) {
+      return details.result.split(',').map((x: string) => Number(x) + 1).join(', ');
+    }
+    return details.result;
   }
 }

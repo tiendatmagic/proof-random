@@ -220,7 +220,12 @@
             <h3
               class="text-2xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
             >
-              {{ clientResult().winners.join(', ') }}
+              <ng-container *ngIf="sessionDetails().skin === 'Bingo'">
+                {{ getBingoWinnersFormatted() }}
+              </ng-container>
+              <ng-container *ngIf="sessionDetails().skin !== 'Bingo'">
+                {{ clientResult().winners.join(', ') }}
+              </ng-container>
             </h3>
           </div>
         </div>

@@ -303,6 +303,8 @@ export class DetailComponent implements OnDestroy {
         labelPrefix = 'Xếp vào chỗ ngồi thứ';
       } else if (details.skin === 'WhatToEat') {
         labelPrefix = 'Chọn món ăn thứ';
+      } else if (details.skin === 'Bingo') {
+        labelPrefix = 'Chọn bóng Bingo thứ';
       }
 
       for (let i = 0; i < k; i++) {
@@ -327,6 +329,8 @@ export class DetailComponent implements OnDestroy {
           valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Xếp vào Hàng ${row}, Cột ${col} (Bàn ${i + 1}): "${name}"`;
         } else if (details.skin === 'WhatToEat') {
           valueChosenText = `Chọn từ pool vị trí ${poolIndex} (món thứ ${originalIndex}) → Món ăn: "${name}"`;
+        } else if (details.skin === 'Bingo') {
+          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Bóng số: ${originalIndex + 1}`;
         }
 
         steps.push({
@@ -889,6 +893,7 @@ export class DetailComponent implements OnDestroy {
   public readonly isBingoRunning = signal<boolean>(false);
   public readonly bingoDone = signal<boolean>(false);
   public readonly bingoNumber = signal<number | null>(null);
+  public readonly bingoNumbers = signal<number[]>([]);
   public readonly bingoBallList = signal<number[]>([]);
 
   private markAnimationsAsDone() {
@@ -1024,7 +1029,11 @@ export class DetailComponent implements OnDestroy {
 
       // Đồng bộ Bingo
       if (details.skin === 'Bingo') {
-        this.bingoNumber.set(Number(details.result));
+        const results = this.getBingoResults();
+        this.bingoNumbers.set(results);
+        if (results.length > 0) {
+          this.bingoNumber.set(results[results.length - 1]);
+        }
         this.bingoDone.set(true);
       }
     }
@@ -2216,10 +2225,20 @@ export class DetailComponent implements OnDestroy {
   // ================= 15. QUAY SỐ BINGO (BINGO) =================
   private bingoBallIntervalId: any = null;
 
+  public getBingoResults(): number[] {
+    const details = this.sessionDetails();
+    if (!details || !details.result) return [];
+    if (details.drawType === 3) {
+      return details.result.split(',').map((x: string) => Number(x) + 1);
+    }
+    return [Number(details.result)];
+  }
+
   public initBingo() {
     this.isBingoRunning.set(false);
     this.bingoDone.set(false);
     this.bingoNumber.set(null);
+    this.bingoNumbers.set([]);
     if (this.bingoBallIntervalId) clearInterval(this.bingoBallIntervalId);
     if (this.bingoTimeoutId) clearTimeout(this.bingoTimeoutId);
     this.bingoBallList.set([12, 25, 47, 88, 9, 36, 73, 52, 61, 80]);
@@ -2231,7 +2250,7 @@ export class DetailComponent implements OnDestroy {
 
     const details = this.sessionDetails();
     if (!details || !details.result) return;
-    const finalNumber = Number(details.result);
+    const results = this.getBingoResults();
 
     this.bingoBallIntervalId = setInterval(() => {
       const randomBalls = Array.from({ length: 10 }, () => Math.floor(Math.random() * 90) + 1);
@@ -2242,8 +2261,15 @@ export class DetailComponent implements OnDestroy {
       if (this.bingoBallIntervalId) clearInterval(this.bingoBallIntervalId);
       this.isBingoRunning.set(false);
       this.bingoDone.set(true);
-      this.bingoNumber.set(finalNumber);
-      this.toastService.showToast(`Bingo! Con số may mắn là: ${finalNumber}!`, 'success');
+      this.bingoNumbers.set(results);
+      if (results.length > 0) {
+        this.bingoNumber.set(results[results.length - 1]);
+      }
+      if (results.length === 1) {
+        this.toastService.showToast(`Bingo! Con số may mắn là: ${results[0]}!`, 'success');
+      } else {
+        this.toastService.showToast(`Bingo! Đã quay ra ${results.length} con số may mắn!`, 'success');
+      }
     }, 3000);
   }
 
@@ -2253,9 +2279,10 @@ export class DetailComponent implements OnDestroy {
     this.isBingoRunning.set(false);
     this.bingoDone.set(true);
 
-    const details = this.sessionDetails();
-    if (details && details.result) {
-      this.bingoNumber.set(Number(details.result));
+    const results = this.getBingoResults();
+    this.bingoNumbers.set(results);
+    if (results.length > 0) {
+      this.bingoNumber.set(results[results.length - 1]);
     }
   }
 }

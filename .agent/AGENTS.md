@@ -109,6 +109,8 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Sửa lỗi hiển thị méo mó của icon nút "Chia sẻ Link" ở trang Chi tiết (Detail), thay thế bằng icon dạng liên kết (Link) chuẩn từ Heroicons v2 rõ nét và cân đối.
 - [x] Thiết lập thuật toán Oản Tù Tì (Rock-Paper-Scissors) ngẫu nhiên 100% cho cả Người chơi (playerMod = randomWord % 3) và Máy (cpuMod = (randomWord / 3) % 3) giúp kết quả có thể Thắng, Thua hoặc Hòa thực tế mà không cần mặc định Người chơi luôn thắng. Cập nhật đồng bộ các text hiển thị kết quả và Timeline băm xác minh.
 - [x] Triển khai thành công tính năng chọn nhiều món ăn trong chế độ Hôm nay ăn gì? (What to Eat Picker): tích hợp cấu hình số lượng (numWinners) linh hoạt, tự động chuyển đổi drawType và mapping logic Multiple Winners giúp chọn ra danh sách món ăn độc lập không trùng lặp, đồng bộ hoàn hảo giao diện và timeline xác minh.
+- [x] Thiết kế và triển khai 2 chế độ bốc thăm mới: Rút bài Tarot (Tarot Card Reader) tự động điền 22 lá bài chính kèm giải nghĩa lật 3D, và Quay số Bingo (Bingo Caller) hỗ trợ mô phỏng lồng quay bóng ngẫu nhiên.
+- [x] Hỗ trợ quay số Bingo nâng cấp: Cho phép người dùng tùy chọn quay 1 bóng số (drawType = 1) hoặc quay bộ nhiều bóng số không trùng lặp (drawType = 3) cùng lúc từ 1-90 nhằm tiết kiệm gas tối đa, thiết kế giao diện dãy bóng Bingo Glassmorphism neon tuyệt đẹp khi kết quả hiển thị.
 
 
 
