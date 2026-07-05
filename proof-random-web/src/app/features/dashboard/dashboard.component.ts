@@ -280,12 +280,23 @@ export class DashboardComponent {
           return;
         }
       }
+    } else if (this.drawType === 8) { // Random Letter
+      if (this.numWinners <= 0 || this.numWinners > 26) {
+        this.toastService.showToast('Số lượng chữ cái cần quay phải từ 1 đến 26!', 'error');
+        return;
+      }
+    } else if (this.drawType === 5 && this.selectedSkin !== 'BauCua') { // Dice Roll
+      if (this.numWinners <= 0 || this.numWinners > this.diceSides) {
+        this.toastService.showToast(`Số lượng xúc xắc cần tung phải từ 1 đến ${this.diceSides}!`, 'error');
+        return;
+      }
     }
 
     // 4. Chuẩn bị tham số gửi lên contract
     let param1 = 0;
     let param2 = 0;
     let drawTypeToSend = this.drawType;
+    let skinToSend = this.selectedSkin;
 
     if (this.selectedSkin === 'WhatToEat') {
       if (this.numWinners > 1) {
@@ -335,8 +346,27 @@ export class DashboardComponent {
         param1 = participants.length;
         param2 = this.numWinners;
       } else if (this.drawType === 5) {
-        param1 = this.diceSides;
-        param2 = 0;
+        if (this.numWinners > 1) {
+          drawTypeToSend = 3;
+          param1 = this.diceSides;
+          param2 = this.numWinners;
+          participants = Array.from({ length: this.diceSides }, (_, i) => (i + 1).toString());
+          skinToSend = 'Dice';
+        } else {
+          param1 = this.diceSides;
+          param2 = 0;
+        }
+      } else if (this.drawType === 8) {
+        if (this.numWinners > 1) {
+          drawTypeToSend = 3;
+          param1 = 26;
+          param2 = this.numWinners;
+          participants = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+          skinToSend = 'RandomLetter';
+        } else {
+          param1 = 0;
+          param2 = 0;
+        }
       } else if (this.drawType === 9) {
         param1 = participants.length;
         param2 = this.numTeams;
@@ -345,8 +375,8 @@ export class DashboardComponent {
 
     // Gộp mô tả vào eventName ngăn cách bởi dấu | để tối ưu gas
     let eventNameToSend = this.eventName.trim();
-    if (this.selectedSkin) {
-      eventNameToSend = `[Skin:${this.selectedSkin}] ${eventNameToSend}`;
+    if (skinToSend) {
+      eventNameToSend = `[Skin:${skinToSend}] ${eventNameToSend}`;
     }
     const fullEventName = this.description.trim()
       ? `${eventNameToSend} | ${this.description.trim()}`

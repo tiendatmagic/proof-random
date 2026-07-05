@@ -253,7 +253,7 @@
   <!-- 5. Dice config -->
   <div *ngIf="drawType === 5 && selectedSkin !== 'BauCua'" class="space-y-4 animate-fade-in">
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Tung một quân xúc xắc ngẫu nhiên. Hỗ trợ loại 6 mặt chuẩn hoặc 20 mặt của game nhập vai.
+      Tung một hoặc nhiều quân xúc xắc ngẫu nhiên. Hỗ trợ loại 6 mặt chuẩn hoặc 20 mặt của game nhập vai.
     </p>
     <div class="space-y-2">
       <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
@@ -283,6 +283,21 @@
           Xúc xắc 20 mặt
         </button>
       </div>
+    </div>
+    <!-- Số lượng xúc xắc cần tung -->
+    <div class="space-y-1.5">
+      <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+        >Số lượng xúc xắc cần tung</label
+      >
+      <input
+        type="number"
+        [ngModel]="numWinners"
+        (ngModelChange)="numWinnersChange.emit($event)"
+        min="1"
+        [max]="diceSides"
+        class="form-input"
+        placeholder="Mặc định: 1"
+      />
     </div>
   </div>
 
@@ -330,8 +345,23 @@
   <!-- 8. Random Letter config -->
   <div *ngIf="drawType === 8" class="space-y-4 animate-fade-in">
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Chọn ngẫu nhiên 1 chữ cái trong bảng chữ cái tiếng Anh từ A đến Z.
+      Chọn ngẫu nhiên một hoặc nhiều chữ cái trong bảng chữ cái tiếng Anh từ A đến Z.
     </p>
+    <!-- Số lượng chữ cái cần quay -->
+    <div class="space-y-1.5">
+      <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
+        >Số lượng chữ cái cần quay</label
+      >
+      <input
+        type="number"
+        [ngModel]="numWinners"
+        (ngModelChange)="numWinnersChange.emit($event)"
+        min="1"
+        max="26"
+        class="form-input"
+        placeholder="Mặc định: 1"
+      />
+    </div>
   </div>
 
   <!-- 9. Random Team config -->

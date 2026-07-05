@@ -218,6 +218,10 @@ export class VerifyComponent implements OnInit {
         labelPrefix = 'Chọn món ăn thứ';
       } else if (details.skin === 'Bingo') {
         labelPrefix = 'Chọn bóng Bingo thứ';
+      } else if (details.skin === 'RandomLetter') {
+        labelPrefix = 'Chọn chữ cái thứ';
+      } else if (details.skin === 'Dice') {
+        labelPrefix = 'Tung xúc xắc thứ';
       }
 
       for (let i = 0; i < k; i++) {
@@ -253,6 +257,10 @@ export class VerifyComponent implements OnInit {
           valueChosenText = `Chọn món ăn #${i + 1} → ${name}`;
         } else if (details.skin === 'Bingo') {
           valueChosenText = `Bóng số #${i + 1} → Bóng số ${candidate + 1}`;
+        } else if (details.skin === 'RandomLetter') {
+          valueChosenText = `Chữ cái #${i + 1} → ${name}`;
+        } else if (details.skin === 'Dice') {
+          valueChosenText = `Xúc xắc #${i + 1} → Mặt số ${participants[candidate] || candidate + 1}`;
         }
 
         steps.push({

@@ -305,6 +305,10 @@ export class DetailComponent implements OnDestroy {
         labelPrefix = 'Chọn món ăn thứ';
       } else if (details.skin === 'Bingo') {
         labelPrefix = 'Chọn bóng Bingo thứ';
+      } else if (details.skin === 'RandomLetter') {
+        labelPrefix = 'Chọn chữ cái thứ';
+      } else if (details.skin === 'Dice') {
+        labelPrefix = 'Tung xúc xắc thứ';
       }
 
       for (let i = 0; i < k; i++) {
@@ -331,6 +335,10 @@ export class DetailComponent implements OnDestroy {
           valueChosenText = `Chọn từ pool vị trí ${poolIndex} (món thứ ${originalIndex}) → Món ăn: "${name}"`;
         } else if (details.skin === 'Bingo') {
           valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Bóng số: ${originalIndex + 1}`;
+        } else if (details.skin === 'RandomLetter') {
+          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Chữ cái: "${name}"`;
+        } else if (details.skin === 'Dice') {
+          valueChosenText = `Chọn từ pool vị trí ${poolIndex} → Xúc xắc: Mặt số ${name}`;
         }
 
         steps.push({
