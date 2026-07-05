@@ -123,3 +123,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Đồng bộ hóa trang Lịch sử (History) với tham số URL: tự động chuyển hướng gán ?page=1 nếu thiếu, và cập nhật URL query parameter tương ứng khi chuyển trang hoặc đổi bộ lọc.
 - [x] Tích hợp ô nhập số lượng kết quả cho chế độ Chữ cái (Random Letter, tối đa 26) và Xúc xắc (Dice, tối đa theo số mặt) trên bảng cấu hình Dashboard. Khi số lượng > 1, tự động chuyển sang drawType 3 với participants sinh tự động (A-Z hoặc 1-diceSides), gắn tag [Skin:RandomLetter] / [Skin:Dice]. Cập nhật đồng bộ timeline băm xác minh Detail và Verify.
 - [x] Triển khai hiệu ứng hoạt ảnh Lật đồng xu (Coin Flip) và Tung xúc xắc (Dice Roll) trong StandardGameComponent: nút BẮT ĐẦU + BỎ QUA, đồng xu quay 3D CSS perspective, xúc xắc animate-bounce, chốt kết quả sau 3 giây, hỗ trợ 1 và nhiều xúc xắc/chữ cái.
+- [x] Khắc phục lỗi đồng xu lật (Coin Flip) không hiển thị text kết quả do CSS 3D ẩn, đồng bộ lại layout các nút điều khiển Lật đồng xu / Tung xúc xắc theo chuẩn Racing game (luôn hiện nút, chỉ disabled khi đang lật/tung).
+- [x] Khắc phục lỗi hiển thị sai tên chế độ "Chọn nhiều người thắng" (Multiple Winners) đối với các phiên bốc thăm Chữ cái (Random Letter) hoặc Xúc xắc (Dice) có số lượng > 1 bằng cách bổ sung mapping 'Dice' và 'RandomLetter' vào danh sách skin trong hàm `getDrawTypeName` và `getDrawTypeBadgeClass` của Dashboard, Lịch sử, Chi tiết, Xác minh.
+
+

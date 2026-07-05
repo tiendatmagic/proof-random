@@ -236,7 +236,9 @@ export class HistoryComponent {
       Sequence:    'Thứ tự ngẫu nhiên',
       WhatToEat:   'Hôm nay ăn gì?',
       Tarot:       'Rút bài Tarot',
-      Bingo:       'Quay số Bingo'
+      Bingo:       'Quay số Bingo',
+      Dice:        'Quay xúc xắc',
+      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)'
     };
     if (skin && skins[skin]) return skins[skin];
 
@@ -266,6 +268,12 @@ export class HistoryComponent {
       }
 
       switch (skin) {
+        case 'Dice':
+          // Xúc xắc: Xanh ngọc may mắn
+          return 'bg-teal-500/10 dark:bg-teal-950/20 text-teal-600 dark:text-teal-400 border-teal-200/30 dark:border-teal-800/30';
+        case 'RandomLetter':
+          // Chữ cái: Tím Indigo sáng tạo
+          return 'bg-indigo-500/10 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border-indigo-200/30 dark:border-indigo-800/30';
         case 'Vietlott':
           // Vietlott: Đỏ cam nổi bật đặc trưng
           return 'bg-red-500/10 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-200/30 dark:border-red-800/30';

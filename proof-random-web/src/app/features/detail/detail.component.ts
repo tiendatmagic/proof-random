@@ -678,7 +678,9 @@ export class DetailComponent implements OnDestroy {
       Sequence:    'Thứ tự ngẫu nhiên',
       WhatToEat:   'Hôm nay ăn gì?',
       Tarot:       'Rút bài Tarot',
-      Bingo:       'Quay số Bingo'
+      Bingo:       'Quay số Bingo',
+      Dice:        'Quay xúc xắc',
+      RandomLetter:'Chữ cái ngẫu nhiên (A-Z)'
     };
     if (skin && skins[skin]) return skins[skin];
     const names: Record<number, string> = {
