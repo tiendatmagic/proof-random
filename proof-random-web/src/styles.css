@@ -51,6 +51,7 @@
   /* Cấu hình hệ màu sắc chủ đạo động của DApp */
   --color-primary: var(--dynamic-primary, #ff00dd);
   --color-secondary: var(--dynamic-secondary, #8000ff);
+  --color-primary-hover: color-mix(in srgb, var(--color-primary) 85%, black);
 
   --color-primary-50: color-mix(in srgb, var(--color-primary) 5%, white);
   --color-primary-100: color-mix(in srgb, var(--color-primary) 12%, white);
