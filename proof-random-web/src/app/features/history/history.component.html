@@ -30,7 +30,7 @@
           <input 
             type="text" 
             [ngModel]="filterSearch()" 
-            (ngModelChange)="filterSearch.set($event); currentPage.set(1)"
+            (ngModelChange)="filterSearch.set($event); setPage(1)"
             placeholder="Nhập từ khóa tìm kiếm..." 
             class="form-input form-input-icon"
           />
@@ -47,7 +47,7 @@
           <input 
             type="text" 
             [ngModel]="filterCreator()" 
-            (ngModelChange)="filterCreator.set($event); currentPage.set(1)"
+            (ngModelChange)="filterCreator.set($event); setPage(1)"
             placeholder="0x12a3..." 
             class="form-input form-input-icon"
           />
@@ -57,7 +57,7 @@
       <!-- Lọc theo Loại bốc thăm -->
       <div class="space-y-1.5">
         <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest min-h-[28px] flex items-end pb-0.5">Loại bốc thăm</label>
-        <app-select [value]="filterType()" (valueChange)="filterType.set($event); currentPage.set(1)" [options]="filterOptions" class="w-full"></app-select>
+        <app-select [value]="filterType()" (valueChange)="filterType.set($event); setPage(1)" [options]="filterOptions" class="w-full"></app-select>
       </div>
     </div>
   </app-card>

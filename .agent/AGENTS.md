@@ -120,3 +120,5 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Rút gọn tệp `detail.component.ts` chính xuống chỉ còn 768 dòng và `detail.component.html` xuống còn 735 dòng, import thành công GameShowcaseComponent và biên dịch dự án chạy thành công 100% không một lỗi cảnh báo nào.
 - [x] Dọn dẹp toàn bộ 15 dòng lệnh console.log debug, in thông tin thô (subInfo, subId) và cache log dư thừa ở các tệp verify.component.ts, detail.component.ts và web3.service.ts nhằm làm sạch console trình duyệt và tối ưu hóa hiệu năng debug.
 - [x] Khắc phục triệt để lỗi không hiển thị kết quả game (trắng màn hình) ở trang Chi tiết đối với tất cả 14 game con (Tarot, Lucky Wheel, Bingo, Racing, Plinko, Slot Machine, Card Draw, v.v.) bằng cách tích hợp constructor sử dụng Angular `effect` tự động kích hoạt hàm khởi tạo (init) hoặc reset trạng thái ngay khi nhận được dữ liệu phiên bốc thăm từ blockchain.
+- [x] Đồng bộ hóa trang Lịch sử (History) với tham số URL: tự động chuyển hướng gán ?page=1 nếu thiếu, và cập nhật URL query parameter tương ứng khi chuyển trang hoặc đổi bộ lọc.
+

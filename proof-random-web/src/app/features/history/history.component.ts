@@ -1,7 +1,7 @@
 import { Component, inject, signal, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { Web3Service } from '../../core/services/web3.service';
 import { CardComponent } from '../../shared/components/card/card.component';
 import { SkeletonLoaderComponent } from '../../shared/components/skeleton-loader/skeleton-loader.component';
@@ -16,6 +16,8 @@ import { PaginationComponent } from '../../shared/components/pagination/paginati
 })
 export class HistoryComponent {
   public readonly web3Service = inject(Web3Service);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   public readonly Math = Math;
 
   // Cấu hình các tùy chọn lọc loại bốc thăm cho Custom Select
@@ -125,6 +127,24 @@ export class HistoryComponent {
   });
 
   constructor() {
+    // Đăng ký queryParams để cập nhật currentPage từ URL
+    this.route.queryParams.subscribe(params => {
+      const page = Number(params['page']);
+      if (page && page > 0) {
+        if (this.currentPage() !== page) {
+          this.currentPage.set(page);
+        }
+      } else {
+        // Tự động gán param page=1 nếu chưa có
+        this.router.navigate([], {
+          relativeTo: this.route,
+          queryParams: { page: 1 },
+          queryParamsHandling: 'merge',
+          replaceUrl: true
+        });
+      }
+    });
+
     effect(() => {
       // Đăng ký các signal đổi giá trị để kích hoạt tải lại dữ liệu tương ứng
       this.currentPage();
@@ -176,21 +196,10 @@ export class HistoryComponent {
    */
   public async loadAllHistory() {
     this.web3Service.clearHistoryCache();
-    this.currentPage.set(1);
-    this.isLoading.set(true); // Bắt buộc hiện skeleton loader khi làm mới thủ công
-    try {
-      if (this.isFiltering()) {
-        const draws = await this.web3Service.getAllDrawSessionsFromEvents(true); // forceRefresh = true
-        this.rawDraws.set([...draws]);
-      } else {
-        const result = await this.web3Service.getDrawSessionsPaginated(1, this.pageSize, true); // forceRefresh = true
-        this.rawDraws.set(result.draws);
-        this.totalOnChainDraws.set(result.total);
-      }
-    } catch (err) {
-      console.warn('[History] Làm mới dữ liệu lỗi:', err);
-    } finally {
-      this.isLoading.set(false);
+    if (this.currentPage() !== 1) {
+      this.setPage(1);
+    } else {
+      await this.loadHistory();
     }
   }
 
@@ -199,7 +208,11 @@ export class HistoryComponent {
    */
   public setPage(page: number) {
     if (page < 1 || page > this.totalPages()) return;
-    this.currentPage.set(page);
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { page },
+      queryParamsHandling: 'merge'
+    });
   }
 
   /**
