@@ -1,6 +1,9 @@
 <div class="space-y-4">
   <!-- 1. Random Number config -->
-  <div *ngIf="drawType === 1 && selectedSkin !== 'ScratchCard' && selectedSkin !== 'Vietlott'" class="space-y-4 animate-fade-in">
+  <div
+    *ngIf="drawType === 1 && selectedSkin !== 'ScratchCard' && selectedSkin !== 'Vietlott'"
+    class="space-y-4 animate-fade-in"
+  >
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
       Quay ra một số ngẫu nhiên nằm trong khoảng số Min và Max của bạn.
     </p>
@@ -9,13 +12,23 @@
         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
           >Số tối thiểu (Min)</label
         >
-        <input type="number" [ngModel]="numMin" (ngModelChange)="numMinChange.emit($event)" class="form-input" />
+        <input
+          type="number"
+          [ngModel]="numMin"
+          (ngModelChange)="numMinChange.emit($event)"
+          class="form-input"
+        />
       </div>
       <div class="space-y-1.5">
         <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
           >Số tối đa (Max)</label
         >
-        <input type="number" [ngModel]="numMax" (ngModelChange)="numMaxChange.emit($event)" class="form-input" />
+        <input
+          type="number"
+          [ngModel]="numMax"
+          (ngModelChange)="numMaxChange.emit($event)"
+          class="form-input"
+        />
       </div>
     </div>
   </div>
@@ -25,7 +38,9 @@
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
       Tạo một vé cào may mắn. Số ngẫu nhiên on-chain (1-100) sẽ được dùng để cào mở thưởng.
     </p>
-    <div class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-[var(--color-primary)]">
+    <div
+      class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-[var(--color-primary)]"
+    >
       Khoảng số cào mặc định: 1 - 100
     </div>
   </div>
@@ -33,26 +48,44 @@
   <!-- 1c. Vietlott Config -->
   <div *ngIf="selectedSkin === 'Vietlott'" class="space-y-4 animate-fade-in">
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Mô phỏng xổ số Vietlott chuyên nghiệp. Bạn có thể chọn quay thưởng Power 6/55, Mega 6/45, hoặc Keno từ kết quả ngẫu nhiên của Chainlink VRF.
+      Mô phỏng xổ số Vietlott chuyên nghiệp. Bạn có thể chọn quay thưởng Power 6/55, Mega 6/45, hoặc
+      Keno từ kết quả ngẫu nhiên của Chainlink VRF.
     </p>
-    <div class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-[var(--color-primary)]">
+    <div
+      class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-[var(--color-primary)]"
+    >
       Tự động băm kết quả VRF để sinh bộ số xổ số minh bạch
     </div>
   </div>
 
   <!-- 2. Random Name config -->
   <div *ngIf="drawType === 2" class="space-y-4 animate-fade-in">
-    <p *ngIf="!selectedSkin" class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+    <p
+      *ngIf="!selectedSkin"
+      class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed"
+    >
       Chọn ngẫu nhiên 1 người may mắn duy nhất từ danh sách người tham gia ở cột bên trái.
     </p>
-    <p *ngIf="selectedSkin === 'LuckyWheel'" class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Vòng quay may mắn (Lucky Wheel): Chọn 1 người chiến thắng từ danh sách với hiệu ứng quay tròn trực quan.
+    <p
+      *ngIf="selectedSkin === 'LuckyWheel'"
+      class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed"
+    >
+      Vòng quay may mắn (Lucky Wheel): Chọn 1 người chiến thắng từ danh sách với hiệu ứng quay tròn
+      trực quan.
     </p>
-    <p *ngIf="selectedSkin === 'Racing'" class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Đua xe ngẫu nhiên (Random Racing): Mô phỏng cuộc đua trực quan giữa các thành viên để tìm người chạm đích đầu tiên.
+    <p
+      *ngIf="selectedSkin === 'Racing'"
+      class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed"
+    >
+      Đua xe ngẫu nhiên (Random Racing): Mô phỏng cuộc đua trực quan giữa các thành viên để tìm
+      người chạm đích đầu tiên.
     </p>
-    <p *ngIf="selectedSkin === 'MysteryBox'" class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Hộp quà bí ẩn (Mystery Box): Mở hộp quà/rương để rút ra phần thưởng ngẫu nhiên từ danh sách bạn nhập.
+    <p
+      *ngIf="selectedSkin === 'MysteryBox'"
+      class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed"
+    >
+      Hộp quà bí ẩn (Mystery Box): Mở hộp quà/rương để rút ra phần thưởng ngẫu nhiên từ danh sách
+      bạn nhập.
     </p>
     <div
       class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30"
@@ -60,9 +93,7 @@
       <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">
         Số lượng người thắng
       </div>
-      <div
-        class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2"
-      >
+      <div class="text-base font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
         <span class="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)]"></span>
         1 Người chiến thắng (Winner)
       </div>
@@ -78,7 +109,13 @@
       <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
         >Số lượng người thắng (K)</label
       >
-      <input type="number" [ngModel]="numWinners" (ngModelChange)="numWinnersChange.emit($event)" min="1" class="form-input" />
+      <input
+        type="number"
+        [ngModel]="numWinners"
+        (ngModelChange)="numWinnersChange.emit($event)"
+        min="1"
+        class="form-input"
+      />
     </div>
   </div>
 
@@ -104,8 +141,7 @@
   <!-- 5. Dice config -->
   <div *ngIf="drawType === 5 && selectedSkin !== 'BauCua'" class="space-y-4 animate-fade-in">
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Tung một quân xúc xắc ngẫu nhiên. Hỗ trợ loại 6 mặt chuẩn hoặc 20 mặt của game nhập
-      vai.
+      Tung một quân xúc xắc ngẫu nhiên. Hỗ trợ loại 6 mặt chuẩn hoặc 20 mặt của game nhập vai.
     </p>
     <div class="space-y-2">
       <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
@@ -143,7 +179,9 @@
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
       Lắc Bầu Cua Tôm Cá: Quay ngẫu nhiên 3 mặt xúc xắc linh vật dân gian Việt Nam.
     </p>
-    <div class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-[var(--color-primary)] flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+    <div
+      class="p-4 bg-slate-50 dark:bg-slate-950/20 rounded-xl border border-slate-200/30 dark:border-slate-800/30 text-center font-bold text-xs text-[var(--color-primary)] flex flex-wrap items-center justify-center gap-x-4 gap-y-1"
+    >
       <span>• Bầu</span>
       <span>• Cua</span>
       <span>• Tôm</span>
@@ -156,7 +194,7 @@
   <!-- 6. Even / Odd config -->
   <div *ngIf="drawType === 6" class="space-y-4 animate-fade-in">
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Sinh một kết quả ngẫu nhiên là Số Chẵn (Even) hoặc Số Lẻ (Odd).
+      Sinh một kết quả ngẫu nhiên là Số Chẵn hoặc Số Lẻ.
     </p>
     <div class="flex justify-center gap-3 py-2">
       <span
@@ -187,14 +225,20 @@
   <!-- 9. Random Team config -->
   <div *ngIf="drawType === 9" class="space-y-4 animate-fade-in">
     <p class="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
-      Tự động phân chia ngẫu nhiên danh sách người tham gia vào số lượng đội (team) cấu hình
-      dưới đây.
+      Tự động phân chia ngẫu nhiên danh sách người tham gia vào số lượng đội (team) cấu hình dưới
+      đây.
     </p>
     <div class="space-y-1.5">
       <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
         >Số lượng đội cần chia</label
       >
-      <input type="number" [ngModel]="numTeams" (ngModelChange)="numTeamsChange.emit($event)" min="2" class="form-input" />
+      <input
+        type="number"
+        [ngModel]="numTeams"
+        (ngModelChange)="numTeamsChange.emit($event)"
+        min="2"
+        class="form-input"
+      />
     </div>
   </div>
 </div>
