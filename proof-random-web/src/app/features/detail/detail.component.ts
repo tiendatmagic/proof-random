@@ -852,7 +852,8 @@ export class DetailComponent implements OnDestroy {
       this.pickedCardIdx.set(0);
       const cardsList = [{ name: winnerName, isWinner: true, flipped: true }];
       // Thêm các thẻ bài trượt giả
-      const others = details.participants.filter((p: string, idx: number) => idx !== winnerIdx).slice(0, 4);
+      const participantsList = Array.from(details.participants || []) as string[];
+      const others = participantsList.filter((p: string, idx: number) => idx !== winnerIdx).slice(0, 4);
       others.forEach((p: string) => {
         cardsList.push({ name: p, isWinner: false, flipped: true });
       });
@@ -1609,11 +1610,12 @@ export class DetailComponent implements OnDestroy {
   public initCardDraw() {
     const details = this.sessionDetails();
     if (!details || !details.participants) return;
+    const participantsList = Array.from(details.participants || []) as string[];
     const winnerIdx = Number(details.result);
-    const winnerName = details.participants[winnerIdx] || 'Winner';
+    const winnerName = participantsList[winnerIdx] || 'Winner';
 
     const cardsList = [{ name: winnerName, isWinner: true, flipped: false }];
-    const others = details.participants
+    const others = participantsList
       .filter((p: string, idx: number) => idx !== winnerIdx)
       .sort(() => Math.random() - 0.5)
       .slice(0, 4);
