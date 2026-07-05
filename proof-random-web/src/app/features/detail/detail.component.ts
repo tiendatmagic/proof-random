@@ -47,6 +47,15 @@ export class DetailComponent implements OnDestroy {
     const id = this.route.snapshot.paramMap.get('id') || '';
     this.requestId.set(id);
     
+    // Thiết lập dữ liệu tạm thời để giao diện hiển thị ngay màn hình chờ bốc thăm
+    this.sessionDetails.set({
+      requestId: id,
+      fulfilled: false,
+      eventName: 'Đang kết nối blockchain...',
+      participants: [],
+      drawType: 2
+    });
+    
     this.loadSessionDetails();
   }
 
@@ -83,10 +92,15 @@ export class DetailComponent implements OnDestroy {
           this.startPolling();
         }
       } else {
-        this.toastService.showToast('Không tìm thấy dữ liệu phiên bốc thăm!', 'error');
+        // Nếu không tìm thấy dữ liệu (thường do RPC lag chưa sync kịp block chứa draw mới), 
+        // ta vẫn chạy polling để tự động cập nhật khi blockchain đồng bộ xong.
+        console.log('[Detail] Chưa tìm thấy dữ liệu phiên bốc thăm. Sẽ tiếp tục polling...');
+        this.startPolling();
       }
     } catch (err) {
       console.error('[Detail] Tải chi tiết lỗi:', err);
+      // Tiếp tục polling đề phòng lỗi kết nối RPC tạm thời
+      this.startPolling();
     } finally {
       this.isLoading.set(false);
     }
@@ -377,20 +391,23 @@ export class DetailComponent implements OnDestroy {
       const id = this.requestId();
       const data = await this.web3Service.getDrawSessionDetails(id);
       
-      if (data && data.fulfilled) {
-        console.log('[Web3] Chainlink VRF đã trả kết quả. Dừng polling.');
+      if (data) {
         this.sessionDetails.set(data);
-        const res = this.web3Service.calculateResultClientSide(
-          data.drawType,
-          data.param1,
-          data.param2,
-          data.randomWord,
-          data.participants
-        );
-        this.clientResult.set(res);
-        this.toastService.showToast('Bốc thăm hoàn tất! Số ngẫu nhiên đã được trả về.', 'success');
-        this.stopPolling();
-        this.checkAndInitSkins(data);
+        
+        if (data.fulfilled) {
+          console.log('[Web3] Chainlink VRF đã trả kết quả. Dừng polling.');
+          const res = this.web3Service.calculateResultClientSide(
+            data.drawType,
+            data.param1,
+            data.param2,
+            data.randomWord,
+            data.participants
+          );
+          this.clientResult.set(res);
+          this.toastService.showToast('Bốc thăm hoàn tất! Số ngẫu nhiên đã được trả về.', 'success');
+          this.stopPolling();
+          this.checkAndInitSkins(data);
+        }
       }
     }, 5000); // Polling mỗi 5 giây
   }

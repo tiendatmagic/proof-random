@@ -318,7 +318,7 @@ export class DashboardComponent {
       this.isPendingTx.set(false);
       
       // Chuyển hướng sang trang chi tiết phiên bốc thăm để đợi kết quả từ Chainlink VRF
-      this.router.navigate(['/detail', requestId]);
+      this.router.navigate(['/detail', requestId], { queryParams: { fresh: 'true' } });
 
     } catch (err: any) {
       this.isPendingTx.set(false);
