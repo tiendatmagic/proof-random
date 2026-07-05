@@ -110,8 +110,21 @@ export class DashboardComponent {
   public async loadBlockchainStats() {
     this.isStatsLoading.set(true);
     try {
-      const draws = await this.web3Service.getAllDrawSessionsFromEvents();
-      this.totalSessions.set(draws.length);
+      const contract = this.web3Service.getContract(false);
+      
+      // 1. Đọc tổng số phiên trực tiếp từ Contract State
+      const totalSessionsBig = await contract['getSessionsCount']();
+      const totalSessionsCount = Number(totalSessionsBig);
+      this.totalSessions.set(totalSessionsCount);
+
+      // 2. Lấy danh sách sự kiện từ cache
+      let draws = await this.web3Service.getAllDrawSessionsFromEvents(false);
+      
+      // 3. Tự động kiểm tra và force refresh nếu phát hiện cache bị cũ so với chain state
+      if (draws.length < totalSessionsCount) {
+        console.log(`[Dashboard] Cache cũ (${draws.length} < ${totalSessionsCount}). Đang tự động quét lại sự kiện blockchain...`);
+        draws = await this.web3Service.getAllDrawSessionsFromEvents(true);
+      }
 
       // Lấy 5 phiên gần nhất làm Recent Draws
       // Gọi RPC sessions để kiểm tra xem đã fulfilled chưa
@@ -133,7 +146,6 @@ export class DashboardComponent {
       // Tính tổng số lượt quay đã hoàn thành (fulfilled)
       // Để tránh gọi RPC quá nhiều gây chậm, ta tạm thời lấy số lượng phiên có kết quả
       let completedCount = 0;
-      const contract = this.web3Service.getContract(false);
       
       // Quét các event DrawFulfilled để biết chính xác tổng số lần VRF callback thành công
       try {
@@ -143,6 +155,11 @@ export class DashboardComponent {
       } catch (err) {
         // Fallback đếm thủ công nếu RPC bị giới hạn range
         completedCount = recent.filter(r => r.fulfilled).length;
+      }
+
+      // Đảm bảo số lượt thành công không bao giờ vượt quá tổng số phiên (nếu có lỗi RPC tạm thời)
+      if (completedCount > totalSessionsCount) {
+        completedCount = totalSessionsCount;
       }
       this.totalDraws.set(completedCount);
 
