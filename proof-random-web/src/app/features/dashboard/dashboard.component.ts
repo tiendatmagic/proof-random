@@ -218,11 +218,14 @@ export class DashboardComponent {
       return;
     }
 
-    const participants = this.getProcessedParticipants();
+    let participants = this.getProcessedParticipants();
     
     // Tự động gán số người thắng bằng tổng số người tham gia đối với chế độ Hàng đợi và Sơ đồ chỗ ngồi
     if (this.selectedSkin === 'Sequence' || this.selectedSkin.startsWith('Seating')) {
       this.numWinners = participants.length;
+    } else if (this.selectedSkin === 'Bingo') {
+      // Tự động sinh danh sách 90 bóng: ["1", "2", ..., "90"] để hợp lệ hóa với yêu cầu contract đối với drawType = 3
+      participants = Array.from({ length: 90 }, (_, i) => (i + 1).toString());
     }
 
     // Validate theo từng chế độ quay

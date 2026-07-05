@@ -111,7 +111,7 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Triển khai thành công tính năng chọn nhiều món ăn trong chế độ Hôm nay ăn gì? (What to Eat Picker): tích hợp cấu hình số lượng (numWinners) linh hoạt, tự động chuyển đổi drawType và mapping logic Multiple Winners giúp chọn ra danh sách món ăn độc lập không trùng lặp, đồng bộ hoàn hảo giao diện và timeline xác minh.
 - [x] Thiết kế và triển khai 2 chế độ bốc thăm mới: Rút bài Tarot (Tarot Card Reader) tự động điền 22 lá bài chính kèm giải nghĩa lật 3D, và Quay số Bingo (Bingo Caller) hỗ trợ mô phỏng lồng quay bóng ngẫu nhiên.
 - [x] Hỗ trợ quay số Bingo nâng cấp: Cho phép người dùng tùy chọn quay 1 bóng số (drawType = 1) hoặc quay bộ nhiều bóng số không trùng lặp (drawType = 3) cùng lúc từ 1-90 nhằm tiết kiệm gas tối đa, thiết kế giao diện dãy bóng Bingo Glassmorphism neon tuyệt đẹp khi kết quả hiển thị.
-
+- [x] Khắc phục lỗi reverted InvalidInput() (0xb4fa3fb3) khi thực hiện quay số Bingo với số lượng bóng > 1 (drawType = 3) bằng cách tự động điền danh sách bóng ["1", "2", ..., "90"] khớp với độ dài param1 để đáp ứng xác thực dữ liệu đầu vào của Smart Contract.
 
 
 
