@@ -85,17 +85,17 @@ export class Web3Service {
 
   // Kiểm tra xem ví có đang kết nối lệch mạng so với dApp đang chọn hay không
   public readonly isWrongChain = computed(() => {
-    if (!this.walletConnected()) return false;
-    const connectedChain = this.chainId().toString().trim();
+    if (!this.walletConnected() || !this.currentAccount()) return false;
+    const connectedChain = this.getCleanChainId(this.chainId());
     if (!connectedChain) return false;
-    const configChain = this.configuredChainId().toString().trim();
+    const configChain = this.getCleanChainId(this.configuredChainId());
     return connectedChain !== configChain;
   });
 
   // Tên mạng đang được sử dụng
   public readonly networkName = computed(() => {
     const id = this.walletConnected() ? this.chainId() : this.configuredChainId();
-    const idStr = id.toString().trim();
+    const idStr = this.getCleanChainId(id);
     if (idStr === '42161') return 'Arbitrum One';
     if (idStr === '421614') return 'Arbitrum Sepolia';
     if (idStr === '31337' || idStr === '1337') return 'Hardhat Localhost';
@@ -138,14 +138,15 @@ export class Web3Service {
     effect(() => {
       const chain = this.configuredChainId();
       if (typeof window !== 'undefined' && chain) {
-        localStorage.setItem('proof_random_configured_chain_id', chain);
+        localStorage.setItem('proof_random_configured_chain_id', this.getCleanChainId(chain));
       }
     });
 
     // Tự động điều chỉnh chế độ gas mặc định dựa theo mạng lưới đang hoạt động
     effect(() => {
       const currentChain = this.walletConnected() ? this.chainId() : this.configuredChainId();
-      if (currentChain === '42161') {
+      const cleanChain = this.getCleanChainId(currentChain);
+      if (cleanChain === '42161') {
         // Nếu là Arbitrum One Mainnet, mặc định chọn 'default' (Mặc định) để tối ưu chi phí thực tế cho người dùng
         this.gasMode.set('default');
       } else {
@@ -154,6 +155,16 @@ export class Web3Service {
         this.gasMode.set(savedMode || 'fast');
       }
     }, { allowSignalWrites: true });
+  }
+
+  /**
+   * Làm sạch chainId để loại bỏ tiền tố eip155: của Reown AppKit
+   */
+  public getCleanChainId(rawChainId: any): string {
+    if (!rawChainId) return '';
+    const str = rawChainId.toString().trim();
+    const clean = str.split(':').pop() || '';
+    return clean.trim();
   }
 
   /**
@@ -177,7 +188,7 @@ export class Web3Service {
   private saveCacheToSessionStorage() {
     if (typeof window === 'undefined') return;
     try {
-      const chainId = this.configuredChainId().toString();
+      const chainId = this.getCleanChainId(this.configuredChainId());
       sessionStorage.setItem(`proof_random_history_cache_${chainId}`, JSON.stringify(this._allDrawsCache[chainId] || []));
       sessionStorage.setItem(`proof_random_has_full_scan_${chainId}`, JSON.stringify(!!this._hasFullScan[chainId]));
       sessionStorage.setItem(`proof_random_session_details_${chainId}`, JSON.stringify(this._drawSessionDetailsCache[chainId] || {}));
@@ -198,7 +209,7 @@ export class Web3Service {
   private loadCacheFromSessionStorage() {
     if (typeof window === 'undefined') return;
     try {
-      const chainId = this.configuredChainId().toString();
+      const chainId = this.getCleanChainId(this.configuredChainId());
 
       const drawsStr = sessionStorage.getItem(`proof_random_history_cache_${chainId}`);
       if (drawsStr) {
@@ -241,7 +252,7 @@ export class Web3Service {
    * Xóa toàn bộ bộ nhớ cache lịch sử bốc thăm của mạng hiện hành
    */
   public clearHistoryCache() {
-    const chainId = this.configuredChainId().toString();
+    const chainId = this.getCleanChainId(this.configuredChainId());
     this._allDrawsCache[chainId] = [];
     this._hasFullScan[chainId] = false;
     this._drawSessionDetailsCache[chainId] = {};
@@ -282,7 +293,7 @@ export class Web3Service {
    * Chuyển đổi chain ID sang đối tượng mạng tương ứng của Reown AppKit
    */
   private getAppKitNetworkByChainId(chainId: string | number): any {
-    const id = chainId.toString().trim();
+    const id = this.getCleanChainId(chainId);
     switch (id) {
       case '42161': return arbitrum;
       case '421614': return arbitrumSepolia;
@@ -301,7 +312,7 @@ export class Web3Service {
       const ethersAdapter = new EthersAdapter();
 
       const savedChainId = (typeof window !== 'undefined' && localStorage.getItem('proof_random_configured_chain_id')) || WEB3_CONFIG.defaultChainId;
-      const defaultNet = this.getAppKitNetworkByChainId(savedChainId);
+      const defaultNet = this.getAppKitNetworkByChainId(this.getCleanChainId(savedChainId));
 
       this.modal = createAppKit({
         adapters: [ethersAdapter],
@@ -337,33 +348,20 @@ export class Web3Service {
         const isConnected = accountState.isConnected;
 
         if (isConnected && address) {
+          // Lấy chainId sạch từ AppKit state trước khi gán walletConnected để triệt tiêu Race Condition
+          let cleanChainId = '';
+          const state = this.modal.getState();
+          if (state && state.selectedNetworkId) {
+            cleanChainId = this.getCleanChainId(state.selectedNetworkId);
+          }
+
+          if (cleanChainId) {
+            this.chainId.set(cleanChainId);
+          }
+
           this.currentAccount.set(address);
           this.walletConnected.set(true);
           this.appKitIsConnected = true;
-
-          // Đồng bộ chainId trực tiếp từ AppKit state hoặc provider ngay lập tức để tránh độ trễ gây ra Wrong Chain blocker
-          try {
-            const walletProvider = this.modal?.getWalletProvider();
-            if (walletProvider) {
-              const browserProvider = new BrowserProvider(walletProvider);
-              const network = await browserProvider.getNetwork();
-              const chainIdStr = network.chainId.toString();
-              this.chainId.set(chainIdStr);
-            } else {
-              const state = this.modal.getState();
-              if (state && state.selectedNetworkId) {
-                const cleanChainId = state.selectedNetworkId.toString().split(':').pop() || '';
-                this.chainId.set(cleanChainId);
-              }
-            }
-          } catch (e) {
-            console.warn('[Web3] Không thể lấy chainId trực tiếp khi kết nối:', e);
-            const state = this.modal.getState();
-            if (state && state.selectedNetworkId) {
-              const cleanChainId = state.selectedNetworkId.toString().split(':').pop() || '';
-              this.chainId.set(cleanChainId);
-            }
-          }
 
           // Sử dụng setTimeout để tránh xung đột RPC và nghẽn luồng trong quá trình bắt tay kết nối ví
           setTimeout(() => {
@@ -383,12 +381,11 @@ export class Web3Service {
         if (networkState) {
           let cleanChainId = '';
           if (networkState.selectedNetworkId) {
-            cleanChainId = networkState.selectedNetworkId.toString();
+            cleanChainId = this.getCleanChainId(networkState.selectedNetworkId);
           } else if (networkState.caipNetworkId) {
-            const caipId = networkState.caipNetworkId.toString();
-            cleanChainId = caipId.split(':').pop() || '';
+            cleanChainId = this.getCleanChainId(networkState.caipNetworkId);
           } else if (networkState.chainId) {
-            cleanChainId = networkState.chainId.toString();
+            cleanChainId = this.getCleanChainId(networkState.chainId);
           }
 
           if (cleanChainId) {
@@ -412,9 +409,9 @@ export class Web3Service {
             const walletProvider = this.modal.getWalletProvider();
             const state = this.modal.getState();
 
+            let cleanChainId = '';
             if (state && state.selectedNetworkId) {
-              const cleanChainId = state.selectedNetworkId.toString().split(':').pop() || '';
-              this.chainId.set(cleanChainId);
+              cleanChainId = this.getCleanChainId(state.selectedNetworkId);
             }
 
             if (walletProvider) {
@@ -422,15 +419,21 @@ export class Web3Service {
               const signer = await browserProvider.getSigner().catch(() => null);
               if (signer) {
                 const address = await signer.getAddress();
-                const network = await browserProvider.getNetwork();
-                const chainIdStr = network.chainId.toString();
+                const network = await browserProvider.getNetwork().catch(() => null);
+                const chainIdStr = network ? network.chainId.toString() : '';
+
+                const finalChainId = this.getCleanChainId(chainIdStr || cleanChainId);
+                if (finalChainId) {
+                  this.chainId.set(finalChainId);
+                }
 
                 this.currentAccount.set(address);
                 this.walletConnected.set(true);
-                this.chainId.set(chainIdStr);
                 this.appKitIsConnected = true;
                 this.updateBalanceAndStatus(address);
               }
+            } else if (cleanChainId) {
+              this.chainId.set(cleanChainId);
             }
           }
         } catch (e) {
@@ -463,14 +466,14 @@ export class Web3Service {
         if (browserProvider) {
           const network = await browserProvider.getNetwork();
           const activeChainId = network.chainId.toString();
-          this.chainId.set(activeChainId);
+          this.chainId.set(this.getCleanChainId(activeChainId));
         }
       } catch (netErr) {
         console.warn('[Web3] Không thể lấy chainId từ provider ví:', netErr);
         if (this.modal) {
           const selectedNetwork = this.modal.getSelectedNetwork();
           if (selectedNetwork && selectedNetwork.id) {
-            this.chainId.set(selectedNetwork.id.toString());
+            this.chainId.set(this.getCleanChainId(selectedNetwork.id));
           }
         }
       }
@@ -510,27 +513,43 @@ export class Web3Service {
   }
 
   /**
+   * Lấy BrowserProvider tương ứng từ ví đã kết nối (Ưu tiên hàng đầu AppKit provider, fallback window.ethereum giống michic)
+   */
+  public getBrowserProvider(): BrowserProvider | null {
+    if (typeof window === 'undefined') return null;
+
+    // Ưu tiên hàng đầu: Nếu đã kết nối ví qua AppKit modal, lấy provider của AppKit
+    if (this.modal && this.walletConnected()) {
+      const walletProvider = this.modal.getWalletProvider();
+      if (walletProvider) {
+        return new BrowserProvider(walletProvider);
+      }
+    }
+
+    // Fallback: window.ethereum trực tiếp (MetaMask extension hoặc In-App browser của ví)
+    if ((window as any).ethereum) {
+      return new BrowserProvider((window as any).ethereum);
+    }
+
+    return null;
+  }
+
+  /**
    * Kiểm tra và yêu cầu chuyển sang đúng mạng lưới được cấu hình
    */
   public async ensureCorrectNetwork(targetChainId?: string): Promise<boolean> {
     this.walletError.set('');
-    const chainIdToUse = targetChainId || this.configuredChainId();
+    const chainIdToUse = this.getCleanChainId(targetChainId || this.configuredChainId());
+
+    // Nếu ví đã ở đúng mạng đích sẵn rồi thì trả về true ngay lập tức, không gửi yêu cầu chuyển mạng làm lỗi ví
+    const connectedChain = this.getCleanChainId(this.chainId());
+    if (connectedChain === chainIdToUse) {
+      return true;
+    }
+
     const chainIdHex = `0x${BigInt(chainIdToUse).toString(16)}`;
 
-    // Lấy provider tương ứng (ưu tiên window.ethereum trực tiếp, sau đó tới AppKit provider)
-    let provider: any = null;
-    if (typeof window !== 'undefined' && (window as any).ethereum) {
-      provider = (window as any).ethereum;
-    } else if (this.modal && this.appKitIsConnected) {
-      provider = this.modal.getWalletProvider();
-    }
-
-    if (!provider) {
-      this.walletError.set('Không tìm thấy provider ví Web3!');
-      return false;
-    }
-
-    // 1. Thử switch qua AppKit switchNetwork nếu có modal và dùng AppKit
+    // 1. Thử switch qua AppKit switchNetwork nếu dùng AppKit modal để giữ đồng bộ tốt nhất
     if (this.modal && this.appKitIsConnected) {
       try {
         const net = this.getAppKitNetworkByChainId(chainIdToUse);
@@ -544,14 +563,25 @@ export class Web3Service {
       }
     }
 
-    // 2. Fallback switch trực tiếp qua provider request (chuẩn cho window.ethereum)
+    // Lấy provider tương ứng để thực hiện cuộc gọi trực tiếp
+    const browserProvider = this.getBrowserProvider();
+    if (!browserProvider) {
+      this.walletError.set('Không tìm thấy provider ví Web3!');
+      return false;
+    }
+
+    // 2. Fallback switch trực tiếp qua provider request
     try {
-      await provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: chainIdHex }],
-      });
-      this.chainId.set(chainIdToUse);
-      return true;
+      const provider = browserProvider.provider as any;
+      if (provider && typeof provider.request === 'function') {
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: chainIdHex }],
+        });
+        this.chainId.set(chainIdToUse);
+        return true;
+      }
+      return false;
     } catch (directSwitchError: any) {
       console.warn('Switch network failed, attempting to add network:', directSwitchError);
       const isNetworkNotAdded = directSwitchError.code === 4902 ||
@@ -560,26 +590,30 @@ export class Web3Service {
 
       if (isNetworkNotAdded) {
         try {
-          const netName = chainIdToUse === '42161' ? 'Arbitrum One' : 'Arbitrum Sepolia';
-          const rpcUrl = chainIdToUse === '42161' ? 'https://arb1.arbitrum.io/rpc' : 'https://sepolia-rollup.arbitrum.io/rpc';
-          const explorerUrl = chainIdToUse === '42161' ? 'https://arbiscan.io' : 'https://sepolia.arbiscan.io';
+          const provider = browserProvider.provider as any;
+          if (provider && typeof provider.request === 'function') {
+            const netName = chainIdToUse === '42161' ? 'Arbitrum One' : 'Arbitrum Sepolia';
+            const rpcUrl = chainIdToUse === '42161' ? 'https://arb1.arbitrum.io/rpc' : 'https://sepolia-rollup.arbitrum.io/rpc';
+            const explorerUrl = chainIdToUse === '42161' ? 'https://arbiscan.io' : 'https://sepolia.arbiscan.io';
 
-          await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: chainIdHex,
-              chainName: netName,
-              rpcUrls: [rpcUrl],
-              blockExplorerUrls: [explorerUrl],
-              nativeCurrency: {
-                name: 'ETH',
-                symbol: 'ETH',
-                decimals: 18
-              }
-            }],
-          });
-          this.chainId.set(chainIdToUse);
-          return true;
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: chainIdHex,
+                chainName: netName,
+                rpcUrls: [rpcUrl],
+                blockExplorerUrls: [explorerUrl],
+                nativeCurrency: {
+                  name: 'ETH',
+                  symbol: 'ETH',
+                  decimals: 18
+                }
+              }],
+            });
+            this.chainId.set(chainIdToUse);
+            return true;
+          }
+          return false;
         } catch (addError: any) {
           console.error('Add network failed:', addError);
           this.walletError.set('Không thể tự động thêm mạng mới vào ví!');
@@ -599,14 +633,12 @@ export class Web3Service {
    */
   public async switchNetwork(targetChainId: string): Promise<void> {
     try {
-      if (!this.walletConnected()) {
-        this.configuredChainId.set(targetChainId);
-        return;
-      }
+      const cleanTarget = this.getCleanChainId(targetChainId);
+      // Luôn luôn thiết lập cấu hình dApp sang mạng được chọn ngay lập tức để đồng bộ giao diện
+      this.configuredChainId.set(cleanTarget);
 
-      const success = await this.ensureCorrectNetwork(targetChainId);
-      if (success) {
-        this.configuredChainId.set(targetChainId);
+      if (this.walletConnected()) {
+        await this.ensureCorrectNetwork(cleanTarget);
       }
     } catch (err: any) {
       console.error('[Web3] Chuyển mạng thất bại:', err);
@@ -626,30 +658,6 @@ export class Web3Service {
     // Read-only: luôn dùng JsonRpcProvider
     const jsonRpcProvider = new JsonRpcProvider(this.rpcUrl());
     return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
-  }
-
-  /**
-   * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên window.ethereum)
-   */
-  private getBrowserProvider(): BrowserProvider | null {
-    if (typeof window === 'undefined') return null;
-
-    // Nếu chạy trong trình duyệt tích hợp của ví (In-App Browser) hoặc có window.ethereum injected,
-    // thì LUÔN ưu tiên dùng window.ethereum trực tiếp để đảm bảo đồng bộ hoàn hảo tài khoản và chain.
-    if ((window as any).ethereum) {
-      return new BrowserProvider((window as any).ethereum);
-    }
-
-    // Nếu không có window.ethereum (người dùng dùng ví mobile quét QR qua WalletConnect),
-    // thì mới sử dụng provider của AppKit modal.
-    if (this.modal && this.appKitIsConnected) {
-      const walletProvider = this.modal.getWalletProvider();
-      if (walletProvider) {
-        return new BrowserProvider(walletProvider);
-      }
-    }
-
-    return null;
   }
 
   /**
@@ -703,7 +711,7 @@ export class Web3Service {
    */
   public async getDrawSessionsPaginated(page: number, limit: number, forceRefresh = false): Promise<{ draws: any[], total: number }> {
     try {
-      const chainId = this.configuredChainId().toString();
+      const chainId = this.getCleanChainId(this.configuredChainId());
       if (!this._paginatedDrawsCache[chainId]) {
         this._paginatedDrawsCache[chainId] = {};
       }
@@ -854,12 +862,12 @@ export class Web3Service {
    * Tạo instance contract cho một chainId cụ thể (read-only)
    */
   public getContractForChain(chainId: string): Contract | null {
-    const address = WEB3_CONFIG.contracts[chainId];
+    const address = WEB3_CONFIG.contracts[this.getCleanChainId(chainId)];
     if (!address || address === '0x0000000000000000000000000000000000000000') {
       return null;
     }
 
-    const rpcUrl = WEB3_CONFIG.rpcs[chainId] || WEB3_CONFIG.rpcs[WEB3_CONFIG.defaultChainId];
+    const rpcUrl = WEB3_CONFIG.rpcs[this.getCleanChainId(chainId)] || WEB3_CONFIG.rpcs[WEB3_CONFIG.defaultChainId];
     const jsonRpcProvider = new JsonRpcProvider(rpcUrl);
     return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
   }
@@ -937,7 +945,7 @@ export class Web3Service {
    */
   public async getAllDrawSessionsFromEvents(forceRefresh = false): Promise<any[]> {
     try {
-      const chainId = this.configuredChainId().toString();
+      const chainId = this.getCleanChainId(this.configuredChainId());
 
       if (!this._allDrawsCache[chainId]) {
         this._allDrawsCache[chainId] = [];
@@ -996,7 +1004,7 @@ export class Web3Service {
       return reversedDraws;
     } catch (err) {
       console.error('[Web3] Lấy danh sách draw từ event logs lỗi:', err);
-      const chainId = this.configuredChainId().toString();
+      const chainId = this.getCleanChainId(this.configuredChainId());
       return this._allDrawsCache[chainId] || [];
     }
   }
@@ -1006,7 +1014,7 @@ export class Web3Service {
    */
   public async getDrawSessionDetails(requestId: string, forceRefresh = false): Promise<any> {
     try {
-      const chainId = this.configuredChainId().toString();
+      const chainId = this.getCleanChainId(this.configuredChainId());
       if (!this._drawSessionDetailsCache[chainId]) {
         this._drawSessionDetailsCache[chainId] = {};
       }
@@ -1063,7 +1071,7 @@ export class Web3Service {
       return detailedData;
     } catch (err) {
       console.error('[Web3] Lấy chi tiết bốc thăm lỗi:', err);
-      const chainId = this.configuredChainId().toString();
+      const chainId = this.getCleanChainId(this.configuredChainId());
       const cached = this._drawSessionDetailsCache[chainId]?.[requestId];
       if (cached) {
         return cached;
@@ -1230,7 +1238,7 @@ export class Web3Service {
    */
   public async getDashboardStats(forceRefresh = false): Promise<DashboardStats | null> {
     try {
-      const chainId = this.configuredChainId().toString();
+      const chainId = this.getCleanChainId(this.configuredChainId());
       const cache = this._dashboardStatsCache[chainId];
       const CACHE_DURATION = 180000;
 
@@ -1296,7 +1304,7 @@ export class Web3Service {
       return stats;
     } catch (err) {
       console.error('[Web3] Tải dashboard stats lỗi:', err);
-      const chainId = this.configuredChainId().toString();
+      const chainId = this.getCleanChainId(this.configuredChainId());
       return this._dashboardStatsCache[chainId]?.stats || null;
     }
   }
@@ -1321,7 +1329,7 @@ export class Web3Service {
   }
 
   public hasPaginatedDrawsCache(page: number, limit: number): boolean {
-    const chainId = this.configuredChainId().toString();
+    const chainId = this.getCleanChainId(this.configuredChainId());
     const cache = this._paginatedDrawsCache[chainId]?.[page];
     const CACHE_DURATION = 180000;
     return !!(cache && (Date.now() - cache.timestamp < CACHE_DURATION) && cache.draws.length > 0);
