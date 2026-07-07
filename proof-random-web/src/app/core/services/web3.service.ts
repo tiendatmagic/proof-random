@@ -31,6 +31,7 @@ export class Web3Service {
   public readonly walletBalance = signal<string>('0.00');
   public readonly chainId = signal<string>('');
   public readonly walletError = signal<string>('');
+  public readonly isInitializing = signal<boolean>(true);
 
   // Trạng thái cấu hình Gas của dApp (mặc định, nhanh x2, tùy chỉnh)
   public readonly gasMode = signal<'default' | 'fast' | 'custom'>('fast');
@@ -86,6 +87,7 @@ export class Web3Service {
   // Kiểm tra xem ví có đang kết nối lệch mạng so với dApp đang chọn hay không
   // AN TOÀN: Nếu chainId ví đang rỗng "", tạm thời coi là không lệch mạng để tránh blocker modal che phủ lúc tải trang
   public readonly isWrongChain = computed(() => {
+    if (this.isInitializing()) return false;
     if (!this.walletConnected()) return false;
     const connectedChain = this.chainId().toString().trim();
     const configChain = this.configuredChainId().toString().trim();
@@ -128,6 +130,11 @@ export class Web3Service {
     this.loadGasSettings();
     this.initAppKit();
     this.setupEthereumListeners();
+
+    // Hoàn tất giai đoạn khởi tạo AppKit sau 2 giây để tránh nháy sai chain blocker
+    setTimeout(() => {
+      this.isInitializing.set(false);
+    }, 2000);
 
     // Tự động nạp cache từ sessionStorage khi configuredChainId thay đổi
     effect(() => {
@@ -645,10 +652,14 @@ export class Web3Service {
   public getBrowserProvider(): BrowserProvider | null {
     if (typeof window === 'undefined') return null;
 
-    if (this.modal && this.appKitIsConnected) {
-      const walletProvider = this.modal.getWalletProvider();
-      if (walletProvider) {
-        return new BrowserProvider(walletProvider);
+    if (this.modal) {
+      try {
+        const walletProvider = this.modal.getWalletProvider();
+        if (walletProvider) {
+          return new BrowserProvider(walletProvider);
+        }
+      } catch (e) {
+        console.warn('[Web3] getWalletProvider từ AppKit lỗi:', e);
       }
     }
 
@@ -660,8 +671,25 @@ export class Web3Service {
   }
 
   /**
+   * Lấy BrowserProvider với retry – chờ tối đa 3 giây để AppKit WalletConnect provider sẵn sàng
+   * Cần thiết trên Mobile: WalletConnect provider chỉ có sau khi handshake hoàn tất
+   */
+  private async getBrowserProviderWithRetry(maxWaitMs = 3000): Promise<BrowserProvider | null> {
+    const interval = 300;
+    let waited = 0;
+    while (waited <= maxWaitMs) {
+      const provider = this.getBrowserProvider();
+      if (provider) return provider;
+      await new Promise(res => setTimeout(res, interval));
+      waited += interval;
+    }
+    return null;
+  }
+
+  /**
    * Lấy contract với signer để gửi transaction (Write)
    * ethers.js v6: getSigner(address) tránh lỗi "no such account"
+   * Có retry logic để chờ AppKit WalletConnect provider sẵn sàng trên mobile
    */
   public async getContractWithSigner(): Promise<Contract> {
     const contractAddr = this.contractAddress();
@@ -677,19 +705,19 @@ export class Web3Service {
       throw new Error('Không tìm thấy địa chỉ ví. Vui lòng kết nối lại.');
     }
 
-    // Thử lấy signer từ AppKit provider trước
-    const browserProvider = this.getBrowserProvider();
+    // Chờ provider sẵn sàng (quan trọng với WalletConnect/mobile)
+    const browserProvider = await this.getBrowserProviderWithRetry(3000);
     if (browserProvider) {
       try {
         // getSigner(address) tường minh để tránh lỗi "no such account"
         const signer = await browserProvider.getSigner(walletAddress);
         return new Contract(contractAddr, PROOF_RANDOM_ABI, signer);
       } catch (appKitErr: any) {
-        console.warn('[Web3] getSigner từ AppKit provider lỗi, thử fallback:', appKitErr);
+        console.warn('[Web3] getSigner từ AppKit provider lỗi, thử fallback window.ethereum:', appKitErr);
       }
     }
 
-    // Fallback: dùng window.ethereum trực tiếp
+    // Fallback: dùng window.ethereum trực tiếp (MetaMask desktop)
     if (typeof window !== 'undefined' && (window as any).ethereum) {
       try {
         const fallbackProvider = new BrowserProvider((window as any).ethereum);
@@ -702,8 +730,9 @@ export class Web3Service {
       }
     }
 
-    throw new Error('Không tìm thấy provider của ví. Vui lòng cài đặt MetaMask hoặc ví Web3.');
+    throw new Error('Không tìm thấy provider ví. Vui lòng mở lại ứng dụng ví và thử lại.');
   }
+
 
   /**
    * Lấy danh sách các phiên bốc thăm phân trang trực tiếp từ Contract State (có sử dụng Cache)
