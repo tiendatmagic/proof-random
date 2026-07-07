@@ -405,6 +405,11 @@ export class DashboardComponent {
       ? `${eventNameToSend} | ${this.description.trim()}`
       : eventNameToSend;
 
+    // Đảm bảo không gửi mảng participants lên contract đối với các drawType không yêu cầu để tránh lỗi InvalidInput và tối ưu gas
+    if ([1, 4, 5, 6, 7, 8].includes(drawTypeToSend)) {
+      participants = [];
+    }
+
     // 5. Thực hiện gửi Transaction Web3
     this.isPendingTx.set(true);
     this.pendingTxHash.set('');
