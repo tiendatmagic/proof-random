@@ -171,6 +171,17 @@ export class Web3Service {
         this.gasMode.set(savedMode || 'fast');
       }
     }, { allowSignalWrites: true });
+
+    // Tự động đồng bộ configuredChainId xuống AppKit modal để modal gọi đúng chain khi bấm connect
+    effect(() => {
+      const targetChainId = this.configuredChainId();
+      if (this.modal && !this.walletConnected()) {
+        const net = this.getAppKitNetworkByChainId(targetChainId);
+        if (net) {
+          this.modal.switchNetwork(net).catch(() => {});
+        }
+      }
+    });
   }
 
   /**
