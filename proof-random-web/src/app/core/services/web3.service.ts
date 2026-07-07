@@ -787,11 +787,18 @@ export class Web3Service {
     const browserProvider = await this.getBrowserProviderWithRetry(3000);
     if (browserProvider) {
       try {
-        // getSigner(address) tường minh để tránh lỗi "no such account"
+        // Cố gắng getSigner với địa chỉ cụ thể trước
         const signer = await browserProvider.getSigner(walletAddress);
         return new Contract(contractAddr, PROOF_RANDOM_ABI, signer);
       } catch (appKitErr: any) {
-        console.warn('[Web3] getSigner từ AppKit provider lỗi, thử fallback window.ethereum:', appKitErr);
+        console.warn('[Web3] getSigner(address) lỗi, thử getSigner() mặc định:', appKitErr);
+        try {
+          // Fallback: Lấy signer mặc định đầu tiên nếu provider bị lệch case địa chỉ hoặc không đồng bộ tài khoản testnet
+          const defaultSigner = await browserProvider.getSigner();
+          return new Contract(contractAddr, PROOF_RANDOM_ABI, defaultSigner);
+        } catch (secondErr: any) {
+          console.warn('[Web3] Cả 2 cách getSigner từ AppKit đều lỗi:', secondErr);
+        }
       }
     }
 
