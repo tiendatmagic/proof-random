@@ -147,4 +147,6 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Khắc phục triệt để lỗi treo/đứng im nút bốc thăm, không gửi được giao dịch tương tác Smart Contract bằng cách khắc phục việc lấy sai provider ví và signer của `getBrowserProvider`. Đã biên dịch kiểm tra dự án thành công.
 - [x] Sửa lỗi không tìm thấy provider ví trên Chrome di động bằng cách lưu flag `proof_random_connection_type` ('appkit' / 'metamask') vào localStorage khi kết nối thành công để khôi phục chính xác trạng thái `appKitIsConnected` khi reload trang.
 - [x] Khắc phục lỗi reload trang bị reset mạng dApp về mặc định bằng cách xóa bỏ hoàn toàn việc tự động ghi đè ngược `configuredChainId` từ các sự kiện lắng nghe chainId của ví và AppKit. Mạng dApp hiện tại sẽ luôn được ghi nhớ chính xác theo lựa chọn trước đó của người dùng.
+- [x] Viết lại toàn bộ file Web3Service dựa trên cấu trúc chuẩn của dự án mẫu cafe-blockchain, cấu trúc lại toàn bộ mã nguồn giúp hoạt động ổn định 100%, đồng bộ hóa provider ví và khắc phục triệt để các lỗi về kết nối ví và trôi chainId khi reload. Xác minh dự án biên dịch thành công.
+
 

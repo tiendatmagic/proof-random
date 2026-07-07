@@ -346,7 +346,7 @@ export class Web3Service {
   }
 
   /**
-   * Khởi tạo Reown AppKit cho ví WalletConnect giống chuẩn của cafe-blockchain
+   * Khởi tạo Reown AppKit cho ví WalletConnect
    */
   private initAppKit() {
     if (typeof window === 'undefined') return;
@@ -792,73 +792,6 @@ export class Web3Service {
     throw new Error('Không tìm thấy provider ví. Vui lòng mở lại ứng dụng ví và thử lại.');
   }
 
-
-  /**
-   * Lấy danh sách các phiên bốc thăm phân trang trực tiếp từ Contract State (có sử dụng Cache)
-   * Giúp dApp tải cực nhanh và không bị giới hạn block range của RPC Node khi dữ liệu lớn
-   */
-  public async getDrawSessionsPaginated(page: number, limit: number, forceRefresh = false): Promise<{ draws: any[], total: number }> {
-    try {
-      const chainId = this.configuredChainId().toString();
-      if (!this._paginatedDrawsCache[chainId]) {
-        this._paginatedDrawsCache[chainId] = {};
-      }
-
-      const cache = this._paginatedDrawsCache[chainId][page];
-      const CACHE_DURATION = 180000; // 3 phút
-
-      if (cache && !forceRefresh && (Date.now() - cache.timestamp < CACHE_DURATION)) {
-        return { draws: cache.draws, total: cache.total };
-      }
-
-      const contract = this.getContract(false);
-      const totalBig = await contract['getSessionsCount']();
-      const total = Number(totalBig);
-
-      if (total === 0) {
-        return { draws: [], total: 0 };
-      }
-
-      const draws: any[] = [];
-      const startIndex = total - 1 - (page - 1) * limit;
-      const endIndex = Math.max(0, startIndex - limit + 1);
-
-      // Tạo danh sách index cần đọc
-      const indices: number[] = [];
-      for (let i = startIndex; i >= endIndex; i--) {
-        indices.push(i);
-      }
-
-      // Đọc song song các requestId
-      const idPromises = indices.map(idx => contract['requestIds'](idx));
-      const requestIdsBig = await Promise.all(idPromises);
-
-      // Đọc chi tiết từng phiên song song
-      const detailPromises = requestIdsBig.map(reqId => this.getDrawSessionDetails(reqId.toString()));
-      const details = await Promise.all(detailPromises);
-
-      // Lọc các phiên hợp lệ
-      for (const d of details) {
-        if (d) {
-          draws.push(d);
-        }
-      }
-
-      // Lưu cache
-      this._paginatedDrawsCache[chainId][page] = {
-        draws,
-        total,
-        timestamp: Date.now()
-      };
-      this.saveCacheToSessionStorage();
-
-      return { draws, total };
-    } catch (err) {
-      console.error('[Web3] Lấy danh sách phân trang lỗi:', err);
-      return { draws: [], total: 0 };
-    }
-  }
-
   /**
    * Gửi yêu cầu bốc thăm lên smart contract
    */
@@ -1173,6 +1106,72 @@ export class Web3Service {
         return cached;
       }
       return null;
+    }
+  }
+
+  /**
+   * Lấy danh sách các phiên bốc thăm phân trang trực tiếp từ Contract State (có sử dụng Cache)
+   * Giúp dApp tải cực nhanh và không bị giới hạn block range của RPC Node khi dữ liệu lớn
+   */
+  public async getDrawSessionsPaginated(page: number, limit: number, forceRefresh = false): Promise<{ draws: any[], total: number }> {
+    try {
+      const chainId = this.configuredChainId().toString();
+      if (!this._paginatedDrawsCache[chainId]) {
+        this._paginatedDrawsCache[chainId] = {};
+      }
+
+      const cache = this._paginatedDrawsCache[chainId][page];
+      const CACHE_DURATION = 180000; // 3 phút
+
+      if (cache && !forceRefresh && (Date.now() - cache.timestamp < CACHE_DURATION)) {
+        return { draws: cache.draws, total: cache.total };
+      }
+
+      const contract = this.getContract(false);
+      const totalBig = await contract['getSessionsCount']();
+      const total = Number(totalBig);
+
+      if (total === 0) {
+        return { draws: [], total: 0 };
+      }
+
+      const draws: any[] = [];
+      const startIndex = total - 1 - (page - 1) * limit;
+      const endIndex = Math.max(0, startIndex - limit + 1);
+
+      // Tạo danh sách index cần đọc
+      const indices: number[] = [];
+      for (let i = startIndex; i >= endIndex; i--) {
+        indices.push(i);
+      }
+
+      // Đọc song song các requestId
+      const idPromises = indices.map(idx => contract['requestIds'](idx));
+      const requestIdsBig = await Promise.all(idPromises);
+
+      // Đọc chi tiết từng phiên song song
+      const detailPromises = requestIdsBig.map(reqId => this.getDrawSessionDetails(reqId.toString()));
+      const details = await Promise.all(detailPromises);
+
+      // Lọc các phiên hợp lệ
+      for (const d of details) {
+        if (d) {
+          draws.push(d);
+        }
+      }
+
+      // Lưu cache
+      this._paginatedDrawsCache[chainId][page] = {
+        draws,
+        total,
+        timestamp: Date.now()
+      };
+      this.saveCacheToSessionStorage();
+
+      return { draws, total };
+    } catch (err) {
+      console.error('[Web3] Lấy danh sách phân trang lỗi:', err);
+      return { draws: [], total: 0 };
     }
   }
 
