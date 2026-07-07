@@ -93,19 +93,19 @@
             <button
               type="button"
               (click)="switchNetwork('42161')"
-              class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
               [class.bg-purple-50]="web3Service.configuredChainId() === '42161'"
               [class.dark:bg-purple-950/20]="web3Service.configuredChainId() === '42161'"
               [class.text-[var(--color-primary)]]="web3Service.configuredChainId() === '42161'"
             >
               <div class="flex items-center gap-3">
                 <span class="w-3 h-3 rounded-full bg-sky-500 shrink-0"></span>
-                <span class="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[var(--color-primary)]">Arbitrum One Mainnet</span>
+                <span class="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[var(--color-primary)]">Arbitrum One</span>
               </div>
               <span
-                class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
+                class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
               >
-                ID: 42161
+                42161
               </span>
             </button>
 
@@ -113,7 +113,7 @@
             <button
               type="button"
               (click)="switchNetwork('421614')"
-              class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
+              class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
               [class.bg-purple-50]="web3Service.configuredChainId() === '421614'"
               [class.dark:bg-purple-950/20]="web3Service.configuredChainId() === '421614'"
               [class.text-[var(--color-primary)]]="web3Service.configuredChainId() === '421614'"
@@ -123,9 +123,9 @@
                 <span class="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[var(--color-primary)]">Arbitrum Sepolia</span>
               </div>
               <span
-                class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
+                class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
               >
-                ID: 421614
+                421614
               </span>
             </button>
           </div>
@@ -648,7 +648,7 @@
           <!-- Dropdown Menu Mạng lưới -->
           <div
             *ngIf="isChainDropdownOpen()"
-            class="absolute right-0 mt-2 w-64 md:mt-2 z-[9995] rounded-[15px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 overflow-hidden animate-fadeIn"
+            class="absolute right-0 mt-2 w-72 md:w-80 md:mt-2 z-[9995] rounded-[15px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 overflow-hidden animate-fadeIn"
           >
             <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60">
               <p
@@ -663,19 +663,19 @@
               <button
                 type="button"
                 (click)="switchNetwork('42161')"
-                class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
+                class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
                 [class.bg-purple-50]="web3Service.configuredChainId() === '42161'"
                 [class.dark:bg-purple-950/20]="web3Service.configuredChainId() === '42161'"
                 [class.text-[var(--color-primary)]]="web3Service.configuredChainId() === '42161'"
               >
                 <div class="flex items-center gap-3">
                   <span class="w-3 h-3 rounded-full bg-sky-500 shrink-0"></span>
-                  <span class="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[var(--color-primary)]">Arbitrum One Mainnet</span>
+                  <span class="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[var(--color-primary)]">Arbitrum One</span>
                 </div>
                 <span
-                  class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
+                  class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
                 >
-                  ID: 42161
+                  42161
                 </span>
               </button>
 
@@ -683,7 +683,7 @@
               <button
                 type="button"
                 (click)="switchNetwork('421614')"
-                class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
+                class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
                 [class.bg-purple-50]="web3Service.configuredChainId() === '421614'"
                 [class.dark:bg-purple-950/20]="web3Service.configuredChainId() === '421614'"
                 [class.text-[var(--color-primary)]]="web3Service.configuredChainId() === '421614'"
@@ -693,9 +693,9 @@
                   <span class="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[var(--color-primary)]">Arbitrum Sepolia</span>
                 </div>
                 <span
-                  class="text-xs font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
+                  class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
                 >
-                  ID: 421614
+                  421614
                 </span>
               </button>
             </div>
@@ -874,17 +874,12 @@
             Sai mạng lưới blockchain!
           </h2>
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-            ProofRandom chỉ hỗ trợ bốc thăm minh bạch trên mạng **Arbitrum One (Mainnet)** và
-            **Arbitrum Sepolia (Testnet)**. Vui lòng chuyển ví về đúng mạng lưới hỗ trợ để tiếp tục
-            sử dụng.
+            Ví đang kết nối ở mạng khác với mạng được chọn trên dApp. Vui lòng chuyển ví sang mạng **{{ web3Service.networkName() }}** để tiếp tục sử dụng.
           </p>
         </div>
         <div class="flex flex-col gap-2 pt-2">
-          <button (click)="switchNetwork('421614')" class="btn-primary w-full cursor-pointer">
-            Chuyển sang Arbitrum Sepolia (Testnet)
-          </button>
-          <button (click)="switchNetwork('42161')" class="btn-secondary w-full cursor-pointer">
-            Chuyển sang Arbitrum One (Mainnet)
+          <button (click)="switchNetwork(web3Service.configuredChainId())" class="btn-primary w-full cursor-pointer">
+            Chuyển ví sang mạng {{ web3Service.networkName() }}
           </button>
           <button (click)="disconnectWallet()" class="btn-cancel w-full cursor-pointer mt-1">
             Ngắt kết nối ví

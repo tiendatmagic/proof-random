@@ -8,17 +8,17 @@ export const WEB3_CONFIG = {
   defaultChainId: environment.defaultChainId, 
 
   contracts: {
-    arbitrumSepolia: environment.contracts.arbitrumSepolia,
-    arbitrum: environment.contracts.arbitrum
-  },
+    '42161': environment.contracts.arbitrum,
+    '421614': environment.contracts.arbitrumSepolia
+  } as Record<string, string>,
 
   rpcs: {
-    arbitrumSepolia: "https://sepolia-rollup.arbitrum.io/rpc",
-    arbitrum: "https://arb1.arbitrum.io/rpc"
-  },
+    '42161': "https://arb1.arbitrum.io/rpc",
+    '421614': "https://sepolia-rollup.arbitrum.io/rpc"
+  } as Record<string, string>,
 
   explorers: {
-    arbitrumSepolia: "https://sepolia.arbiscan.io",
-    arbitrum: "https://arbiscan.io"
-  }
+    '42161': "https://arbiscan.io",
+    '421614': "https://sepolia.arbiscan.io"
+  } as Record<string, string>
 };

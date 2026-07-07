@@ -28,7 +28,7 @@ export interface DashboardStats {
 // Tích hợp Reown AppKit cho WalletConnect
 import { createAppKit } from '@reown/appkit';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
-import { arbitrum, arbitrumSepolia } from '@reown/appkit/networks';
+import { arbitrum, arbitrumSepolia, bsc, bscTestnet, mainnet, sepolia, base, baseSepolia } from '@reown/appkit/networks';
 
 @Injectable({
   providedIn: 'root'
@@ -50,25 +50,27 @@ export class Web3Service {
     (typeof window !== 'undefined' && localStorage.getItem('proof_random_configured_chain_id')) || WEB3_CONFIG.defaultChainId
   );
   public readonly activeNetwork = computed(() => {
-    return this.configuredChainId() === '42161' ? 'arbitrum' : 'arbitrumSepolia';
+    const chainId = this.configuredChainId();
+    switch (chainId) {
+      case '42161': return 'arbitrum';
+      case '421614': return 'arbitrumSepolia';
+      default: return 'arbitrumSepolia';
+    }
   });
 
   public readonly contractAddress = computed(() => {
-    return this.configuredChainId() === '42161'
-      ? WEB3_CONFIG.contracts.arbitrum
-      : WEB3_CONFIG.contracts.arbitrumSepolia;
+    const chainId = this.configuredChainId();
+    return WEB3_CONFIG.contracts[chainId] || '0x0000000000000000000000000000000000000000';
   });
 
   public readonly rpcUrl = computed(() => {
-    return this.configuredChainId() === '42161'
-      ? WEB3_CONFIG.rpcs.arbitrum
-      : WEB3_CONFIG.rpcs.arbitrumSepolia;
+    const chainId = this.configuredChainId();
+    return WEB3_CONFIG.rpcs[chainId] || WEB3_CONFIG.rpcs[WEB3_CONFIG.defaultChainId];
   });
 
   public readonly explorerUrl = computed(() => {
-    return this.configuredChainId() === '42161'
-      ? WEB3_CONFIG.explorers.arbitrum
-      : WEB3_CONFIG.explorers.arbitrumSepolia;
+    const chainId = this.configuredChainId();
+    return WEB3_CONFIG.explorers[chainId] || WEB3_CONFIG.explorers[WEB3_CONFIG.defaultChainId];
   });
 
   // Getters lấy cache lịch sử bốc thăm phục vụ cho components
@@ -100,18 +102,15 @@ export class Web3Service {
   // Tên mạng đang được sử dụng
   public readonly networkName = computed(() => {
     const id = this.walletConnected() ? this.chainId() : this.configuredChainId();
-    if (id.toString() === '42161') return 'Arbitrum One';
-    if (id.toString() === '421614') return 'Arbitrum Sepolia';
-    if (id.toString() === '31337' || id.toString() === '1337') return 'Hardhat Localhost';
+    const idStr = id.toString().trim();
+    if (idStr === '42161') return 'Arbitrum One';
+    if (idStr === '421614') return 'Arbitrum Sepolia';
+    if (idStr === '31337' || idStr === '1337') return 'Hardhat Localhost';
     return `Mạng EVM khác (ID: ${id})`;
   });
 
   // Ký hiệu token của mạng đang sử dụng (ETH, BNB, POL, v.v.)
   public readonly networkSymbol = computed(() => {
-    const id = this.walletConnected() ? this.chainId() : this.configuredChainId();
-    const idStr = id.toString();
-    if (idStr === '56' || idStr === '97') return 'BNB';
-    if (idStr === '137' || idStr === '80001' || idStr === '80002') return 'POL';
     return 'ETH';
   });
 
@@ -288,6 +287,18 @@ export class Web3Service {
   }
 
   /**
+   * Chuyển đổi chain ID sang đối tượng mạng tương ứng của Reown AppKit
+   */
+  private getAppKitNetworkByChainId(chainId: string | number): any {
+    const id = chainId.toString().trim();
+    switch (id) {
+      case '42161': return arbitrum;
+      case '421614': return arbitrumSepolia;
+      default: return arbitrumSepolia;
+    }
+  }
+
+  /**
    * Khởi tạo Reown AppKit cho ví WalletConnect
    */
   private initAppKit() {
@@ -298,7 +309,7 @@ export class Web3Service {
       const ethersAdapter = new EthersAdapter();
 
       const savedChainId = (typeof window !== 'undefined' && localStorage.getItem('proof_random_configured_chain_id')) || WEB3_CONFIG.defaultChainId;
-      const defaultNet = savedChainId === '42161' ? arbitrum : arbitrumSepolia;
+      const defaultNet = this.getAppKitNetworkByChainId(savedChainId);
 
       this.modal = createAppKit({
         adapters: [ethersAdapter],
@@ -356,6 +367,12 @@ export class Web3Service {
           const caipId = networkState.caipNetworkId.toString();
           const cleanChainId = caipId.split(':').pop() || '';
           this.chainId.set(cleanChainId);
+
+          // Cập nhật configuredChainId sang chain của ví nếu mạng được hỗ trợ
+          const supportedChains = ['42161', '421614'];
+          if (supportedChains.includes(cleanChainId)) {
+            this.configuredChainId.set(cleanChainId);
+          }
 
           // Khi đổi chain, cập nhật lại số dư ví sau một khoảng trễ nhỏ
           const currentAddr = this.currentAccount();
@@ -421,12 +438,12 @@ export class Web3Service {
   }
 
   /**
-   * Chuyển đổi mạng lưới về Arbitrum hoặc Arbitrum Sepolia
+   * Chuyển đổi mạng lưới về chain mong muốn
    */
   public async switchNetwork(targetChainId: string): Promise<void> {
     try {
       if (this.modal) {
-        const net = targetChainId === '42161' ? arbitrum : arbitrumSepolia;
+        const net = this.getAppKitNetworkByChainId(targetChainId);
         if (this.walletConnected()) {
           await this.modal.switchNetwork(net);
         }
@@ -672,38 +689,31 @@ export class Web3Service {
    * Tạo instance contract cho một chainId cụ thể (read-only)
    */
   public getContractForChain(chainId: string): Contract | null {
-    const address = chainId === '42161'
-      ? WEB3_CONFIG.contracts.arbitrum
-      : WEB3_CONFIG.contracts.arbitrumSepolia;
-
+    const address = WEB3_CONFIG.contracts[chainId];
     if (!address || address === '0x0000000000000000000000000000000000000000') {
       return null;
     }
 
-    const rpcUrl = chainId === '42161'
-      ? WEB3_CONFIG.rpcs.arbitrum
-      : WEB3_CONFIG.rpcs.arbitrumSepolia;
-
+    const rpcUrl = WEB3_CONFIG.rpcs[chainId] || WEB3_CONFIG.rpcs[WEB3_CONFIG.defaultChainId];
     const jsonRpcProvider = new JsonRpcProvider(rpcUrl);
     return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
   }
 
   /**
-   * Tự động dò tìm xem query (RequestID hoặc Tx Hash) thuộc về mạng lưới nào (Sepolia hay Mainnet)
+   * Tự động dò tìm xem query (RequestID hoặc Tx Hash) thuộc về mạng lưới nào
    * và cập nhật cấu hình dApp (configuredChainId) sang mạng đó.
    */
   public async detectAndSwitchChain(query: string): Promise<string | null> {
     if (!query) return null;
     const cleanQuery = query.trim();
+    const chains = Object.keys(WEB3_CONFIG.contracts);
 
     // 1. Nếu là Tx Hash (bắt đầu bằng 0x và dài 66 ký tự)
     if (cleanQuery.startsWith('0x') && cleanQuery.length === 66) {
-      const chains = ['421614', '42161'];
       for (const cid of chains) {
         try {
-          const rpcUrl = cid === '42161'
-            ? WEB3_CONFIG.rpcs.arbitrum
-            : WEB3_CONFIG.rpcs.arbitrumSepolia;
+          const rpcUrl = WEB3_CONFIG.rpcs[cid];
+          if (!rpcUrl) continue;
           const provider = new JsonRpcProvider(rpcUrl);
           const tx = await provider.getTransaction(cleanQuery);
           if (tx) {
@@ -716,7 +726,6 @@ export class Web3Service {
       }
     } else {
       // 2. Nếu là Request ID
-      const chains = ['421614', '42161'];
       for (const cid of chains) {
         try {
           const contract = this.getContractForChain(cid);
