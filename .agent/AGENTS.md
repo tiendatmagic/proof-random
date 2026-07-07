@@ -141,3 +141,5 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Tích hợp cơ chế đồng bộ phiên kết nối cưỡng bức (setTimeout 1 giây) sau khi load trang từ dự án michic, giúp nạp và khôi phục trạng thái ví, tài khoản, chainId chính xác từ ví đã liên kết trước đó mà không bị đứng im do trễ sự kiện của AppKit.
 - [x] Khắc phục triệt để lỗi báo "Sai mạng lưới blockchain" và lỗi bị chặn không thể thực hiện quay số, bốc thăm (do định dạng chainId dạng CAIP-2 eip155: từ Reown AppKit và xung đột provider giữa AppKit và window.ethereum). Viết lại file web3.service.ts tương ứng và ưu tiên provider của AppKit.
 - [x] Viết mới hoàn toàn Web3Service từ đầu dựa trên cấu trúc dự án cafe-blockchain. Sửa logic computed isWrongChain an toàn (không chặn khi chainId của ví đang rỗng ""), loại bỏ hoàn toàn cơ chế JWT Auth Token dư thừa và đồng bộ trạng thái trực tiếp từ Reown AppKit làm nguồn chân lý duy nhất.
+- [x] Viết mới hoàn toàn file Web3Service dựa trên mã nguồn sao lưu hoàn chỉnh nhất, tích hợp tối ưu kết nối ví và tương tác blockchain.
+- [x] Xác minh biên dịch Angular thành công 100% không phát sinh lỗi cú pháp hay TypeScript.

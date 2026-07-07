@@ -385,7 +385,7 @@ export class Web3Service {
         }
       });
 
-      // Đồng bộ phiên kết nối cưỡng bức sau khi load trang (Timeout 1 giây tương tự michic/cafe-blockchain)
+      // Đồng bộ phiên kết nối cưỡng bức sau khi load trang (Timeout 1 giây)
       setTimeout(async () => {
         try {
           if (this.modal) {
@@ -433,7 +433,6 @@ export class Web3Service {
 
   /**
    * Thiết lập lắng nghe các sự kiện đổi tài khoản và mạng lưới trực tiếp từ window.ethereum
-   * Kế thừa cấu trúc chuẩn của cafe-blockchain
    */
   private setupEthereumListeners() {
     if (typeof window === 'undefined' || !(window as any).ethereum) return;
@@ -637,7 +636,7 @@ export class Web3Service {
   }
 
   /**
-   * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên qua AppKit provider giống cafe-blockchain)
+   * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên qua AppKit provider)
    */
   public getBrowserProvider(): BrowserProvider | null {
     if (typeof window === 'undefined') return null;
@@ -1340,9 +1339,6 @@ export class Web3Service {
     }
   }
 
-  /**
-   * Xóa bộ nhớ cache dashboard stats
-   */
   public clearDashboardStatsCache(chainId?: string) {
     if (chainId) {
       delete this._dashboardStatsCache[chainId];
@@ -1362,9 +1358,6 @@ export class Web3Service {
     }
   }
 
-  /**
-   * Kiểm tra xem đã có cache phân trang hợp lệ
-   */
   public hasPaginatedDrawsCache(page: number, limit: number): boolean {
     const chainId = this.configuredChainId().toString();
     const cache = this._paginatedDrawsCache[chainId]?.[page];
