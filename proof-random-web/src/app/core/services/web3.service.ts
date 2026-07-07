@@ -1,6 +1,5 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
 import { BrowserProvider, Contract, JsonRpcProvider, formatEther, Interface, solidityPackedKeccak256 } from 'ethers';
-import { Subject } from 'rxjs';
 import { WEB3_CONFIG } from '../config/web3.config';
 import { PROOF_RANDOM_ABI } from './proof-random-abi';
 
@@ -85,9 +84,11 @@ export class Web3Service {
   });
 
   // Kiểm tra xem ví có đang kết nối lệch mạng so với dApp đang chọn hay không
+  // Bổ sung điều kiện chặn hiển thị blocker khi chainId của ví rỗng (chưa đồng bộ xong)
   public readonly isWrongChain = computed(() => {
     if (!this.walletConnected()) return false;
     const connectedChain = this.chainId().toString().trim();
+    if (!connectedChain) return false; // Chưa đọc được chain ví, tạm thời coi như đúng mạng để tránh giật giao diện
     const configChain = this.configuredChainId().toString().trim();
     return connectedChain !== configChain;
   });
@@ -343,6 +344,16 @@ export class Web3Service {
           this.walletConnected.set(true);
           this.appKitIsConnected = true;
 
+          // Thử lấy chainId trực tiếp từ AppKit state
+          if (this.modal) {
+            try {
+              const selectedNetwork = this.modal.getSelectedNetwork();
+              if (selectedNetwork && selectedNetwork.id) {
+                this.chainId.set(selectedNetwork.id.toString());
+              }
+            } catch (e) {}
+          }
+
           // Sử dụng setTimeout để tránh xung đột RPC và nghẽn luồng trong quá trình bắt tay kết nối ví
           setTimeout(() => {
             this.updateBalanceAndStatus(address);
@@ -352,6 +363,7 @@ export class Web3Service {
           this.walletConnected.set(false);
           this.currentAccount.set('');
           this.walletBalance.set('0.00');
+          this.chainId.set('');
         }
       });
 
@@ -364,6 +376,8 @@ export class Web3Service {
           } else if (networkState.caipNetworkId) {
             const caipId = networkState.caipNetworkId.toString();
             cleanChainId = caipId.split(':').pop() || '';
+          } else if (networkState.chainId) {
+            cleanChainId = networkState.chainId.toString();
           }
 
           if (cleanChainId) {
@@ -442,6 +456,7 @@ export class Web3Service {
         this.walletConnected.set(false);
         this.currentAccount.set('');
         this.walletBalance.set('0.00');
+        this.chainId.set('');
       }
     });
 
@@ -501,6 +516,7 @@ export class Web3Service {
       this.walletConnected.set(false);
       this.currentAccount.set('');
       this.walletBalance.set('0.00');
+      this.chainId.set('');
     }
   }
 
