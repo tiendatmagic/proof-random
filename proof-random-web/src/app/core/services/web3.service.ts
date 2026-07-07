@@ -152,6 +152,23 @@ export class Web3Service {
       }
     });
 
+    // Tự động đồng bộ configuredChainId (dApp context) với chainId thực tế của ví nếu đó là chain hợp lệ
+    // Giải quyết lỗi popup "Sai mạng lưới" khi user đang dùng chain được hỗ trợ (vd: Sepolia) nhưng dApp lại lưu cache của chain khác (vd: One)
+    effect(() => {
+      const connectedChain = this.chainId().toString().trim();
+      const configChain = this.configuredChainId().toString().trim();
+      const supportedChains = ['42161', '421614', '31337', '1337'];
+      
+      if (this.walletConnected() && supportedChains.includes(connectedChain)) {
+        if (configChain !== connectedChain) {
+          this.configuredChainId.set(connectedChain);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('proof_random_configured_chain_id', connectedChain);
+          }
+        }
+      }
+    }, { allowSignalWrites: true });
+
     // Tự động điều chỉnh chế độ gas mặc định dựa theo mạng lưới đang hoạt động
     effect(() => {
       const currentChain = this.walletConnected() ? this.chainId() : this.configuredChainId();
