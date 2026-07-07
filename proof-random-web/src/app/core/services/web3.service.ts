@@ -357,17 +357,25 @@ export class Web3Service {
 
       // Lắng nghe thay đổi chain mạng lưới
       this.modal.subscribeNetwork((networkState: any) => {
-        if (networkState && networkState.caipNetworkId) {
-          const caipId = networkState.caipNetworkId.toString();
-          const cleanChainId = caipId.split(':').pop() || '';
-          this.chainId.set(cleanChainId);
+        if (networkState) {
+          let cleanChainId = '';
+          if (networkState.selectedNetworkId) {
+            cleanChainId = networkState.selectedNetworkId.toString();
+          } else if (networkState.caipNetworkId) {
+            const caipId = networkState.caipNetworkId.toString();
+            cleanChainId = caipId.split(':').pop() || '';
+          }
 
-          // Khi đổi chain, cập nhật lại số dư ví sau một khoảng trễ nhỏ
-          const currentAddr = this.currentAccount();
-          if (currentAddr) {
-            setTimeout(() => {
-              this.updateBalanceAndStatus(currentAddr);
-            }, 250);
+          if (cleanChainId) {
+            this.chainId.set(cleanChainId);
+
+            // Khi đổi chain, cập nhật lại số dư ví sau một khoảng trễ nhỏ
+            const currentAddr = this.currentAccount();
+            if (currentAddr) {
+              setTimeout(() => {
+                this.updateBalanceAndStatus(currentAddr);
+              }, 250);
+            }
           }
         }
       });
@@ -392,15 +400,26 @@ export class Web3Service {
       const balance = formatEther(balanceBigInt);
       this.walletBalance.set(parseFloat(balance).toFixed(4));
 
-      // 2. Cập nhật chainId thực tế của ví
-      const browserProvider = this.getBrowserProvider();
-      if (browserProvider) {
-        const network = await browserProvider.getNetwork();
-        const activeChainId = network.chainId.toString();
-        this.chainId.set(activeChainId);
+      // 2. Cập nhật chainId thực tế của ví (bọc try-catch riêng biệt để tránh timeout làm crash luồng)
+      try {
+        const browserProvider = this.getBrowserProvider();
+        if (browserProvider) {
+          const network = await browserProvider.getNetwork();
+          const activeChainId = network.chainId.toString();
+          this.chainId.set(activeChainId);
+        }
+      } catch (netErr) {
+        console.warn('[Web3] Không thể lấy chainId từ provider ví:', netErr);
+        // Fallback: Lấy trực tiếp từ AppKit state
+        if (this.modal) {
+          const selectedNetwork = this.modal.getSelectedNetwork();
+          if (selectedNetwork && selectedNetwork.id) {
+            this.chainId.set(selectedNetwork.id.toString());
+          }
+        }
       }
     } catch (err) {
-      console.warn('[Web3] Lấy số dư ví hoặc chainId lỗi:', err);
+      console.warn('[Web3] Lấy số dư ví lỗi:', err);
     }
   }
 
