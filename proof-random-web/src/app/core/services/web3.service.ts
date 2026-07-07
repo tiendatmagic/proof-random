@@ -128,15 +128,7 @@ export class Web3Service {
 
   constructor() {
     this.loadGasSettings();
-    this.initAppKit();
-    this.setupEthereumListeners();
-    this.restoreSessionFromStorage();
-    this.checkConnectedAccounts();
-
-    // Hoàn tất giai đoạn khởi tạo AppKit sau 2 giây để tránh nháy sai chain blocker
-    setTimeout(() => {
-      this.isInitializing.set(false);
-    }, 2000);
+    this.bootstrapAppKit();
 
     // Tự động nạp cache từ sessionStorage khi configuredChainId thay đổi
     effect(() => {
@@ -180,6 +172,57 @@ export class Web3Service {
       }
     }, { allowSignalWrites: true });
   }
+
+  /**
+   * Khởi tạo các thành phần Web3 bất đồng bộ để đảm bảo có thể dọn dẹp cache rác trước khi boot AppKit
+   */
+  private async bootstrapAppKit() {
+    await this.cleanWalletConnectCache();
+    this.initAppKit();
+    this.setupEthereumListeners();
+    this.restoreSessionFromStorage();
+    this.checkConnectedAccounts();
+
+    // Hoàn tất giai đoạn khởi tạo AppKit sau 2 giây để tránh nháy sai chain blocker
+    setTimeout(() => {
+      this.isInitializing.set(false);
+    }, 2000);
+  }
+
+  /**
+   * Tính năng tự chữa lành (Self-healing): Dọn dẹp triệt để các phiên (session) bị kẹt của WalletConnect
+   * Chỉ thực hiện khi người dùng KHÔNG CÓ phiên kết nối hợp lệ (chưa đăng nhập), để không làm mất session đang dùng.
+   */
+  private async cleanWalletConnectCache(): Promise<void> {
+    if (typeof window === 'undefined') return;
+    try {
+      const savedAccount = localStorage.getItem('proof_random_connected_account');
+      if (!savedAccount) {
+        // 1. Dọn dẹp LocalStorage
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('wc@2') || key.startsWith('@w3m') || key.startsWith('@appkit')) {
+            localStorage.removeItem(key);
+          }
+        });
+        
+        // 2. Dọn dẹp IndexedDB (nơi WalletConnect lưu state)
+        if (typeof window.indexedDB !== 'undefined') {
+          await new Promise<void>((resolve) => {
+            const req = window.indexedDB.deleteDatabase('WALLET_CONNECT_V2_INDEXED_DB');
+            req.onsuccess = () => resolve();
+            req.onerror = () => resolve(); // Bỏ qua lỗi nếu database bị lock
+            req.onblocked = () => resolve();
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('[Web3] Dọn dẹp cache WalletConnect lỗi:', e);
+    }
+  }
+
+
+
+
 
   /**
    * Đọc cấu hình cài đặt gas từ localStorage
