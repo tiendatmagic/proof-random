@@ -844,7 +844,7 @@ export class Web3Service {
     }
 
     try {
-      const contract = await this.getContractWithSigner();
+      let tx: any;
       const overrides: any = {};
 
       if (this.gasMode() !== 'default') {
@@ -883,7 +883,43 @@ export class Web3Service {
         }
       }
 
-      const tx = await contract['requestDraw'](drawType, param1, param2, eventName, participants, overrides);
+      try {
+        const contract = await this.getContractWithSigner();
+        tx = await contract['requestDraw'](drawType, param1, param2, eventName, participants, overrides);
+      } catch (signerErr: any) {
+        console.warn('[Web3] Lỗi getContractWithSigner, thử gửi raw tx qua provider:', signerErr);
+        const walletProvider = this.modal?.getWalletProvider();
+        if (!walletProvider) {
+          throw signerErr; // Ném lỗi cũ nếu không có raw provider (AppKit không sẵn sàng)
+        }
+        
+        const iface = new Interface(PROOF_RANDOM_ABI);
+        const data = iface.encodeFunctionData('requestDraw', [drawType, param1, param2, eventName, participants]);
+        
+        const txParam: any = {
+          from: this.currentAccount(),
+          to: this.contractAddress(),
+          data: data,
+          value: '0x0'
+        };
+        if (overrides.gasLimit) txParam.gas = '0x' + overrides.gasLimit.toString(16);
+        if (overrides.maxFeePerGas) txParam.maxFeePerGas = '0x' + overrides.maxFeePerGas.toString(16);
+        if (overrides.maxPriorityFeePerGas) txParam.maxPriorityFeePerGas = '0x' + overrides.maxPriorityFeePerGas.toString(16);
+        if (overrides.gasPrice) txParam.gasPrice = '0x' + overrides.gasPrice.toString(16);
+
+        const txHash = await walletProvider.request({
+          method: 'eth_sendTransaction',
+          params: [txParam]
+        });
+
+        // Chờ giao dịch hoàn tất bằng JsonRpcProvider công cộng (Timeout 2 phút)
+        const rpcProvider = new JsonRpcProvider(this.rpcUrl());
+        const receipt = await rpcProvider.waitForTransaction(txHash, 1, 120000);
+        if (!receipt) throw new Error('Không nhận được biên lai giao dịch.');
+        
+        tx = { wait: () => Promise.resolve(receipt) };
+      }
+
       const receipt = await tx.wait();
 
       // Tìm requestId từ Event logs
