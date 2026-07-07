@@ -65,7 +65,7 @@ export class Web3Service {
     return WEB3_CONFIG.explorers[chainId] || WEB3_CONFIG.explorers[WEB3_CONFIG.defaultChainId];
   });
 
-  // Getters lấy cache lịch sử bốc thăm phục vụ cho components
+  // Getters lấy cache lịch sử bốc thăm phục vụ cho các components
   public get historyCacheDraws(): any[] {
     const chainId = this.configuredChainId().toString();
     return this._allDrawsCache[chainId] || [];
@@ -84,10 +84,12 @@ export class Web3Service {
   });
 
   // Kiểm tra xem ví có đang kết nối lệch mạng so với dApp đang chọn hay không
+  // AN TOÀN: Nếu chainId ví đang rỗng "", tạm thời coi là không lệch mạng để tránh blocker modal che phủ lúc tải trang
   public readonly isWrongChain = computed(() => {
     if (!this.walletConnected()) return false;
     const connectedChain = this.chainId().toString().trim();
     const configChain = this.configuredChainId().toString().trim();
+    if (!connectedChain) return false;
     return connectedChain !== configChain;
   });
 
@@ -101,7 +103,7 @@ export class Web3Service {
     return `Mạng EVM khác (ID: ${id})`;
   });
 
-  // Ký hiệu token của mạng đang sử dụng (ETH, BNB, POL, v.v.)
+  // Ký hiệu native token
   public readonly networkSymbol = computed(() => {
     return 'ETH';
   });
@@ -125,6 +127,7 @@ export class Web3Service {
   constructor() {
     this.loadGasSettings();
     this.initAppKit();
+    this.setupEthereumListeners();
 
     // Tự động nạp cache từ sessionStorage khi configuredChainId thay đổi
     effect(() => {
@@ -132,7 +135,7 @@ export class Web3Service {
       this.loadCacheFromSessionStorage();
     });
 
-    // Tự động lưu chain ID được chọn vào localStorage để không bị mất khi reload
+    // Tự động lưu configuredChainId được chọn vào localStorage để không bị mất khi reload
     effect(() => {
       const chain = this.configuredChainId();
       if (typeof window !== 'undefined' && chain) {
@@ -144,10 +147,8 @@ export class Web3Service {
     effect(() => {
       const currentChain = this.walletConnected() ? this.chainId() : this.configuredChainId();
       if (currentChain === '42161') {
-        // Nếu là Arbitrum One Mainnet, mặc định chọn 'default' (Mặc định) để tối ưu chi phí thực tế cho người dùng
         this.gasMode.set('default');
       } else {
-        // Nếu là mạng khác (ví dụ Arbitrum Sepolia), khôi phục từ localStorage hoặc mặc định là 'fast' (Nhanh)
         const savedMode = localStorage.getItem('proof_random_gas_mode') as 'default' | 'fast' | 'custom' | null;
         this.gasMode.set(savedMode || 'fast');
       }
@@ -289,7 +290,7 @@ export class Web3Service {
   }
 
   /**
-   * Khởi tạo Reown AppKit cho ví WalletConnect
+   * Khởi tạo Reown AppKit cho ví WalletConnect giống chuẩn của cafe-blockchain
    */
   private initAppKit() {
     if (typeof window === 'undefined') return;
@@ -297,7 +298,6 @@ export class Web3Service {
     try {
       const projectId = WEB3_CONFIG.walletConnectProjectId;
       const ethersAdapter = new EthersAdapter();
-
       const savedChainId = (typeof window !== 'undefined' && localStorage.getItem('proof_random_configured_chain_id')) || WEB3_CONFIG.defaultChainId;
       const defaultNet = this.getAppKitNetworkByChainId(savedChainId);
 
@@ -333,60 +333,33 @@ export class Web3Service {
       this.modal.subscribeAccount(async (accountState: any) => {
         const address = accountState.address;
         const isConnected = accountState.isConnected;
+        this.appKitIsConnected = isConnected || false;
 
         if (isConnected && address) {
           this.currentAccount.set(address);
           this.walletConnected.set(true);
-          this.appKitIsConnected = true;
 
-          // Cập nhật chainId trực tiếp từ provider của ví ngay khi kết nối để đảm bảo độ chính xác tuyệt đối
-          try {
-            const walletProvider = this.modal?.getWalletProvider();
-            if (walletProvider) {
-              const browserProvider = new BrowserProvider(walletProvider);
-              const network = await browserProvider.getNetwork();
-              const chainIdStr = network.chainId.toString();
-              this.chainId.set(chainIdStr);
-              if (chainIdStr === '42161' || chainIdStr === '421614') {
-                this.configuredChainId.set(chainIdStr);
-              }
-            } else {
-              const state = this.modal.getState();
-              if (state && state.selectedNetworkId) {
-                const selectedIdStr = state.selectedNetworkId.toString();
-                const cleanChainId = selectedIdStr.includes(':') ? selectedIdStr.split(':').pop() || '' : selectedIdStr;
-                this.chainId.set(cleanChainId);
-                if (cleanChainId === '42161' || cleanChainId === '421614') {
-                  this.configuredChainId.set(cleanChainId);
-                }
-              }
-            }
-          } catch (e) {
-            console.warn('[Web3] Không thể lấy chainId trực tiếp từ walletProvider:', e);
-            const state = this.modal.getState();
-            if (state && state.selectedNetworkId) {
-              const selectedIdStr = state.selectedNetworkId.toString();
-              const cleanChainId = selectedIdStr.includes(':') ? selectedIdStr.split(':').pop() || '' : selectedIdStr;
-              this.chainId.set(cleanChainId);
-              if (cleanChainId === '42161' || cleanChainId === '421614') {
-                this.configuredChainId.set(cleanChainId);
-              }
+          // Cập nhật chainId đồng bộ trực tiếp từ AppKit state trước
+          const state = this.modal.getState();
+          if (state && state.selectedNetworkId) {
+            const selectedIdStr = state.selectedNetworkId.toString();
+            const cleanChainId = selectedIdStr.includes(':') ? selectedIdStr.split(':').pop() || '' : selectedIdStr;
+            this.chainId.set(cleanChainId);
+            if (cleanChainId === '42161' || cleanChainId === '421614') {
+              this.configuredChainId.set(cleanChainId);
             }
           }
 
-          // Cập nhật số dư ví sau một khoảng trễ nhỏ
-          setTimeout(() => {
-            this.updateBalanceAndStatus(address);
-          }, 150);
+          // Cập nhật chi tiết số dư và chainId thực tế bất đồng bộ
+          await this.updateBalanceAndStatus(address);
         } else {
-          this.appKitIsConnected = false;
           this.walletConnected.set(false);
           this.currentAccount.set('');
           this.walletBalance.set('0.00');
         }
       });
 
-      // Lắng nghe thay đổi chain mạng lưới
+      // Lắng nghe thay đổi chain mạng lưới từ AppKit
       this.modal.subscribeNetwork((networkState: any) => {
         if (networkState) {
           let cleanChainId = '';
@@ -404,25 +377,21 @@ export class Web3Service {
               this.configuredChainId.set(cleanChainId);
             }
 
-            // Khi đổi chain, cập nhật lại số dư ví sau một khoảng trễ nhỏ
             const currentAddr = this.currentAccount();
             if (currentAddr) {
-              setTimeout(() => {
-                this.updateBalanceAndStatus(currentAddr);
-              }, 250);
+              this.updateBalanceAndStatus(currentAddr);
             }
           }
         }
       });
 
-      // Đồng bộ phiên kết nối cưỡng bức sau khi load trang (tránh trễ callback của AppKit khi ở sai chain)
+      // Đồng bộ phiên kết nối cưỡng bức sau khi load trang (Timeout 1 giây tương tự michic/cafe-blockchain)
       setTimeout(async () => {
         try {
           if (this.modal) {
             const walletProvider = this.modal.getWalletProvider();
             const state = this.modal.getState();
             
-            // Đồng bộ chainId trước từ state
             if (state && state.selectedNetworkId) {
               const selectedIdStr = state.selectedNetworkId.toString();
               const cleanChainId = selectedIdStr.includes(':') ? selectedIdStr.split(':').pop() || '' : selectedIdStr;
@@ -463,42 +432,60 @@ export class Web3Service {
   }
 
   /**
+   * Thiết lập lắng nghe các sự kiện đổi tài khoản và mạng lưới trực tiếp từ window.ethereum
+   * Kế thừa cấu trúc chuẩn của cafe-blockchain
+   */
+  private setupEthereumListeners() {
+    if (typeof window === 'undefined' || !(window as any).ethereum) return;
+
+    const eth = (window as any).ethereum;
+
+    eth.on('accountsChanged', (accounts: string[]) => {
+      if (accounts && accounts.length > 0) {
+        const account = accounts[0];
+        this.currentAccount.set(account);
+        this.walletConnected.set(true);
+        this.updateBalanceAndStatus(account);
+      } else {
+        this.walletConnected.set(false);
+        this.currentAccount.set('');
+        this.walletBalance.set('0.00');
+      }
+    });
+
+    eth.on('chainChanged', (chainIdHex: string) => {
+      const decimalChainId = BigInt(chainIdHex).toString();
+      this.chainId.set(decimalChainId);
+
+      const account = this.currentAccount();
+      if (account) {
+        this.updateBalanceAndStatus(account);
+      }
+    });
+  }
+
+  /**
    * Cập nhật số dư ví và trạng thái
    */
   private async updateBalanceAndStatus(address: string) {
     try {
       if (typeof window === 'undefined') return;
 
-      // 1. Sử dụng JsonRpcProvider công cộng thay vì truy vấn qua ví đối với tác vụ đọc số dư
-      // Điều này loại bỏ hoàn toàn các xung đột RPC (previous request is still active) khi kết nối ví
+      // Đọc số dư bằng JsonRpcProvider công cộng để tránh nghẽn RPC ví
       const rpc = this.rpcUrl();
       const tempProvider = new JsonRpcProvider(rpc);
       const balanceBigInt = await tempProvider.getBalance(address);
       const balance = formatEther(balanceBigInt);
       this.walletBalance.set(parseFloat(balance).toFixed(4));
 
-      // 2. Cập nhật chainId thực tế của ví (bọc try-catch riêng biệt để tránh timeout làm crash luồng)
-      try {
-        const browserProvider = this.getBrowserProvider();
-        if (browserProvider) {
-          const network = await browserProvider.getNetwork();
-          const activeChainId = network.chainId.toString();
-          this.chainId.set(activeChainId);
-        }
-      } catch (netErr) {
-        console.warn('[Web3] Không thể lấy chainId từ provider ví:', netErr);
-        // Fallback: Lấy trực tiếp từ AppKit state
-        if (this.modal) {
-          const state = this.modal.getState();
-          if (state && state.selectedNetworkId) {
-            const selectedIdStr = state.selectedNetworkId.toString();
-            const cleanChainId = selectedIdStr.includes(':') ? selectedIdStr.split(':').pop() || '' : selectedIdStr;
-            this.chainId.set(cleanChainId);
-          }
-        }
+      // Lấy chainId thực tế từ provider
+      const browserProvider = this.getBrowserProvider();
+      if (browserProvider) {
+        const network = await browserProvider.getNetwork();
+        this.chainId.set(network.chainId.toString());
       }
     } catch (err) {
-      console.warn('[Web3] Lấy số dư ví lỗi:', err);
+      console.warn('[Web3] Cập nhật số dư và trạng thái lỗi:', err);
     }
   }
 
@@ -510,36 +497,46 @@ export class Web3Service {
     }
   }
 
-  /**
-   * Mở modal chi tiết tài khoản ví
-   */
   public async openWalletModal(): Promise<void> {
     if (this.modal) {
       await this.modal.open({ view: 'Account' });
     }
   }
 
-  /**
-   * Ngắt kết nối ví
-   */
   public async disconnectWallet(): Promise<void> {
     if (this.modal) {
       await this.modal.disconnect();
-      this.walletConnected.set(false);
-      this.currentAccount.set('');
-      this.walletBalance.set('0.00');
     }
+    this.walletConnected.set(false);
+    this.currentAccount.set('');
+    this.walletBalance.set('0.00');
   }
 
   /**
-   * Kiểm tra và yêu cầu chuyển sang đúng mạng lưới được cấu hình
+   * Kiểm tra và yêu cầu chuyển mạng ví đồng bộ với dApp
    */
   public async ensureCorrectNetwork(targetChainId?: string): Promise<boolean> {
     this.walletError.set('');
     const chainIdToUse = targetChainId || this.configuredChainId();
     const chainIdHex = `0x${BigInt(chainIdToUse).toString(16)}`;
 
-    // Lấy provider tương ứng (ưu tiên qua AppKit provider khi ví đang kết nối, fallback window.ethereum)
+    // Ưu tiên dùng switchNetwork của AppKit để đồng bộ trạng thái an toàn
+    if (this.modal && this.appKitIsConnected) {
+      try {
+        const net = this.getAppKitNetworkByChainId(chainIdToUse);
+        if (net) {
+          await this.modal.switchNetwork(net);
+          this.chainId.set(chainIdToUse);
+          const addr = this.currentAccount();
+          if (addr) await this.updateBalanceAndStatus(addr);
+          return true;
+        }
+      } catch (appKitSwitchError) {
+        console.warn('Switch network via AppKit failed, attempting direct request:', appKitSwitchError);
+      }
+    }
+
+    // Fallback switch trực tiếp qua provider request
     let provider: any = null;
     if (this.modal && this.appKitIsConnected) {
       provider = this.modal.getWalletProvider();
@@ -553,27 +550,14 @@ export class Web3Service {
       return false;
     }
 
-    // 1. Thử switch qua AppKit switchNetwork nếu có modal và dùng AppKit
-    if (this.modal && this.appKitIsConnected) {
-      try {
-        const net = this.getAppKitNetworkByChainId(chainIdToUse);
-        if (net) {
-          await this.modal.switchNetwork(net);
-          this.chainId.set(chainIdToUse);
-          return true;
-        }
-      } catch (appKitSwitchError) {
-        console.warn('Switch network via AppKit failed, attempting fallback direct request:', appKitSwitchError);
-      }
-    }
-
-    // 2. Fallback switch trực tiếp qua provider request (chuẩn cho window.ethereum)
     try {
       await provider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: chainIdHex }],
       });
       this.chainId.set(chainIdToUse);
+      const addr = this.currentAccount();
+      if (addr) await this.updateBalanceAndStatus(addr);
       return true;
     } catch (directSwitchError: any) {
       console.warn('Switch network failed, attempting to add network:', directSwitchError);
@@ -602,6 +586,8 @@ export class Web3Service {
             }],
           });
           this.chainId.set(chainIdToUse);
+          const addr = this.currentAccount();
+          if (addr) await this.updateBalanceAndStatus(addr);
           return true;
         } catch (addError: any) {
           console.error('Add network failed:', addError);
@@ -646,19 +632,17 @@ export class Web3Service {
     if (!address || address === '0x0000000000000000000000000000000000000000') {
       throw new Error('Địa chỉ Smart Contract chưa được cấu hình. Vui lòng deploy và cập nhật web3.config.ts.');
     }
-    // Read-only: luôn dùng JsonRpcProvider
     const jsonRpcProvider = new JsonRpcProvider(this.rpcUrl());
     return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
   }
 
   /**
-   * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên qua AppKit provider)
+   * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên qua AppKit provider giống cafe-blockchain)
    */
-  private getBrowserProvider(): BrowserProvider | null {
+  public getBrowserProvider(): BrowserProvider | null {
     if (typeof window === 'undefined') return null;
 
-    // Ưu tiên dùng provider từ AppKit nếu ví đã kết nối thành công để đồng bộ hoàn hảo tài khoản
-    if (this.modal && this.walletConnected()) {
+    if (this.modal && this.appKitIsConnected) {
       const walletProvider = this.modal.getWalletProvider();
       if (walletProvider) {
         return new BrowserProvider(walletProvider);
@@ -691,7 +675,6 @@ export class Web3Service {
     }
 
     try {
-      // Yêu cầu ví cấp/đồng bộ tài khoản hiện hành trước khi lấy signer để tránh lỗi "no such account"
       await browserProvider.send("eth_requestAccounts", []);
     } catch (reqAccErr) {
       console.warn('[Web3] Cảnh báo eth_requestAccounts:', reqAccErr);
@@ -708,7 +691,7 @@ export class Web3Service {
           await fallbackProvider.send("eth_requestAccounts", []);
           signer = await fallbackProvider.getSigner();
         } catch (fallbackErr) {
-          throw signerErr; // Nếu fallback cũng lỗi, ném lỗi gốc
+          throw signerErr;
         }
       } else {
         throw signerErr;
@@ -805,17 +788,14 @@ export class Web3Service {
     }
 
     try {
-      // Dùng getContractWithSigner() để đảm bảo được await getSigner() đúng cách (ethers v6)
       const contract = await this.getContractWithSigner();
-
-      // Cấu hình Gas Overrides
       const overrides: any = {};
 
       if (this.gasMode() !== 'default') {
         const mult = this.gasMode() === 'fast' ? 2.0 : this.gasMultiplier();
         const multBig = BigInt(Math.round(mult * 100));
 
-        // 1. Ước tính gasLimit bằng contract read-only (JsonRpcProvider công cộng)
+        // 1. Ước tính gasLimit bằng contract read-only
         try {
           const readOnlyContract = this.getContract(false);
           const estimatedGas = await readOnlyContract['requestDraw'].estimateGas(
@@ -831,7 +811,7 @@ export class Web3Service {
           console.warn('[Web3] Không thể ước tính gasLimit qua RPC công cộng:', e);
         }
 
-        // 2. Lấy dữ liệu phí gas và nhân thêm hệ số từ JsonRpcProvider công cộng
+        // 2. Lấy dữ liệu phí gas và nhân thêm hệ số
         try {
           const publicProvider = new JsonRpcProvider(this.rpcUrl());
           const feeData = await publicProvider.getFeeData();
@@ -850,7 +830,7 @@ export class Web3Service {
       const tx = await contract['requestDraw'](drawType, param1, param2, eventName, participants, overrides);
       const receipt = await tx.wait();
 
-      // Tìm requestId từ Event logs của giao dịch
+      // Tìm requestId từ Event logs
       let requestId = '';
       const iface = new Interface(PROOF_RANDOM_ABI);
       for (const log of receipt.logs) {
@@ -861,14 +841,13 @@ export class Web3Service {
             break;
           }
         } catch (e) {
-          // Log không khớp ABI, bỏ qua
+          // Log không khớp ABI
         }
       }
 
       return requestId || receipt.hash;
     } catch (err: any) {
       console.error('[Web3] Gửi yêu cầu bốc thăm thất bại:', err);
-      // Trích xuất thông báo lỗi của Solidity revert nếu có
       let cleanMsg = err.message || 'Lỗi giao dịch';
       if (err.data && err.data.message) {
         cleanMsg = err.data.message;
@@ -895,14 +874,12 @@ export class Web3Service {
 
   /**
    * Tự động dò tìm xem query (RequestID hoặc Tx Hash) thuộc về mạng lưới nào
-   * và cập nhật cấu hình dApp (configuredChainId) sang mạng đó.
    */
   public async detectAndSwitchChain(query: string): Promise<string | null> {
     if (!query) return null;
     const cleanQuery = query.trim();
     const chains = Object.keys(WEB3_CONFIG.contracts);
 
-    // 1. Nếu là Tx Hash (bắt đầu bằng 0x và dài 66 ký tự)
     if (cleanQuery.startsWith('0x') && cleanQuery.length === 66) {
       for (const cid of chains) {
         try {
@@ -919,7 +896,6 @@ export class Web3Service {
         }
       }
     } else {
-      // 2. Nếu là Request ID
       for (const cid of chains) {
         try {
           const contract = this.getContractForChain(cid);
@@ -939,7 +915,7 @@ export class Web3Service {
   }
 
   /**
-   * Đọc dữ liệu thô của 1 phiên bốc thăm từ mapping sessions
+   * Đọc dữ liệu thô của 1 phiên bốc thăm
    */
   public async getDrawSession(requestId: string): Promise<any> {
     try {
@@ -969,25 +945,22 @@ export class Web3Service {
   }
 
   /**
-   * Quét sự kiện DrawCreated để khôi phục lịch sử bốc thăm và danh sách người tham gia (có sử dụng Cache)
+   * Quét sự kiện DrawCreated để khôi phục lịch sử bốc thăm
    */
   public async getAllDrawSessionsFromEvents(forceRefresh = false): Promise<any[]> {
     try {
       const chainId = this.configuredChainId().toString();
 
-      // Khởi tạo cache nếu chưa có
       if (!this._allDrawsCache[chainId]) {
         this._allDrawsCache[chainId] = [];
         this._hasFullScan[chainId] = false;
         this._drawSessionDetailsCache[chainId] = {};
       }
 
-      // Khôi phục từ sessionStorage nếu cache trong RAM trống
       if (this._allDrawsCache[chainId].length === 0 && !this._hasFullScan[chainId]) {
         this.loadCacheFromSessionStorage();
       }
 
-      // Trả về cache nếu đã quét full và không yêu cầu làm mới
       if (this._hasFullScan[chainId] && !forceRefresh) {
         return this._allDrawsCache[chainId];
       }
@@ -1014,7 +987,6 @@ export class Web3Service {
           param2: Number(args.param2),
           txHash: event.transactionHash,
           blockNumber: event.blockNumber,
-          // Đồng bộ các trường kết quả nếu có cache chi tiết
           fulfilled: cachedDetail ? cachedDetail.fulfilled : false,
           randomWord: cachedDetail ? cachedDetail.randomWord : '0',
           result: cachedDetail ? cachedDetail.result : []
@@ -1025,7 +997,6 @@ export class Web3Service {
       this._allDrawsCache[chainId] = reversedDraws;
       this._hasFullScan[chainId] = true;
 
-      // Đồng bộ thông tin thô vào cache chi tiết
       for (const draw of reversedDraws) {
         const reqId = draw.requestId;
         if (!this._drawSessionDetailsCache[chainId][reqId]) {
@@ -1043,7 +1014,7 @@ export class Web3Service {
   }
 
   /**
-   * Lấy chi tiết phiên bốc thăm bao gồm cả mảng người tham gia và Tx Hash (có sử dụng Cache)
+   * Lấy chi tiết phiên bốc thăm bao gồm cả mảng người tham gia và Tx Hash
    */
   public async getDrawSessionDetails(requestId: string, forceRefresh = false): Promise<any> {
     try {
@@ -1052,7 +1023,6 @@ export class Web3Service {
         this._drawSessionDetailsCache[chainId] = {};
       }
 
-      // Khôi phục từ sessionStorage nếu cache RAM trống
       if (Object.keys(this._drawSessionDetailsCache[chainId]).length === 0) {
         this.loadCacheFromSessionStorage();
       }
@@ -1066,8 +1036,6 @@ export class Web3Service {
       if (!sessionData) return null;
 
       const contract = this.getContract(false);
-
-      // Quét event DrawCreated cụ thể của requestId này để lấy danh sách người tham gia
       const filter = contract['filters']['DrawCreated'](requestId);
       const events = await contract.queryFilter(filter, 0, 'latest');
 
@@ -1089,10 +1057,8 @@ export class Web3Service {
         blockNumber
       };
 
-      // Cập nhật cache chi tiết
       this._drawSessionDetailsCache[chainId][requestId] = detailedData;
 
-      // Nếu sự kiện quét full đã có, cập nhật lại phần tử tương ứng trong mảng cache full
       if (this._allDrawsCache[chainId]) {
         const idx = this._allDrawsCache[chainId].findIndex(d => d.requestId === requestId);
         if (idx !== -1) {
@@ -1120,7 +1086,6 @@ export class Web3Service {
 
   /**
    * Tính toán kết quả bốc thăm deterministic trên Client-side dựa trên randomWord (giống hệt Smart Contract)
-   * Sử dụng để xác minh tính minh bạch của kết quả
    */
   public calculateResultClientSide(
     drawType: number,
@@ -1133,7 +1098,6 @@ export class Web3Service {
 
     const seed = BigInt(randomWord);
 
-    // 1. Random Number
     if (drawType === 1) {
       const min = BigInt(param1);
       const max = BigInt(param2);
@@ -1143,7 +1107,6 @@ export class Web3Service {
         winners: [resultVal.toString()]
       };
     }
-    // 2. Random Name
     else if (drawType === 2) {
       const idx = Number(seed % BigInt(param1));
       const winnerName = participants && participants[idx] ? participants[idx] : `Index: ${idx}`;
@@ -1152,7 +1115,6 @@ export class Web3Service {
         winners: [winnerName]
       };
     }
-    // 3. Multiple Winners (Chọn K người không trùng)
     else if (drawType === 3) {
       const total = param1;
       const k = param2;
@@ -1162,12 +1124,10 @@ export class Web3Service {
       let tempRandom = seed;
 
       for (let i = 0; i < k; i++) {
-        // Hash deterministic bằng cách băm chuỗi keccak256
         const hashHex = this.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), i.toString()]);
         tempRandom = BigInt(hashHex);
         let candidate = Number(tempRandom % BigInt(total));
 
-        // Check trùng
         let duplicate = winnerIndices.includes(candidate);
         if (duplicate) {
           let attempt = 0;
@@ -1189,51 +1149,42 @@ export class Web3Service {
         winners: winners
       };
     }
-    // 4. Coin Flip
     else if (drawType === 4) {
       const res = seed % 2n === 0n ? 'Heads' : 'Tails';
       return { result: res, winners: [res] };
     }
-    // 5. Dice
     else if (drawType === 5) {
       const sides = BigInt(param1);
       const resVal = 1n + (seed % sides);
       return { result: resVal.toString(), winners: [`Mặt ${resVal}`] };
     }
-    // 6. Even / Odd
     else if (drawType === 6) {
       const res = seed % 2n === 0n ? 'Even' : 'Odd';
       return { result: res, winners: [res] };
     }
-    // 7. Random Color
     else if (drawType === 7) {
       const hashHex = this.solidityKeccak256(['uint256'], [seed.toString()]);
-      // Solidity lấy 3 byte cuối từ phải sang trái (hash[31], hash[30], hash[29])
       const byte31 = hashHex.substring(hashHex.length - 2);
       const byte30 = hashHex.substring(hashHex.length - 4, hashHex.length - 2);
       const byte29 = hashHex.substring(hashHex.length - 6, hashHex.length - 4);
       const color = ('#' + byte31 + byte30 + byte29).toUpperCase();
       return { result: color, winners: [color] };
     }
-    // 8. Random Letter
     else if (drawType === 8) {
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
       const idx = Number(seed % 26n);
       const letter = letters[idx];
       return { result: letter, winners: [letter] };
     }
-    // 9. Random Team (Chia người tham gia vào các đội)
     else if (drawType === 9) {
       const total = param1;
       const numTeams = param2;
       const teams: { name: string; members: string[] }[] = [];
 
-      // Tạo các đội
       for (let t = 0; t < numTeams; t++) {
-        teams.push({ name: `Team ${String.fromCharCode(65 + t)}`, members: [] }); // Team A, B, C...
+        teams.push({ name: `Team ${String.fromCharCode(65 + t)}`, members: [] });
       }
 
-      // Xáo trộn chỉ số người tham gia dựa trên seed (Fisher-Yates)
       const indices = Array.from({ length: total }, (_, i) => i);
       let tempRandom = seed;
 
@@ -1242,13 +1193,11 @@ export class Web3Service {
         tempRandom = BigInt(hashHex);
         const swapIdx = Number(tempRandom % BigInt(i + 1));
 
-        // Swap
         const temp = indices[i];
         indices[i] = indices[swapIdx];
         indices[swapIdx] = temp;
       }
 
-      // Chia tuần tự vào các đội
       for (let i = 0; i < total; i++) {
         const memberIdx = indices[i];
         const memberName = participants && participants[memberIdx] ? participants[memberIdx] : `Index: ${memberIdx}`;
@@ -1266,36 +1215,25 @@ export class Web3Service {
   }
 
   /**
-   * Lấy số dư LINK trong Chainlink VRF Subscription của contract
-   * Đọc cả s_vrfCoordinator và s_subscriptionId trực tiếp từ contract
+   * Lấy số dư LINK trong Chainlink VRF Subscription
    */
   public async getLinkSubscriptionBalance(): Promise<{ balance: string; subscriptionId: string } | null> {
     try {
       const rpcProvider = new JsonRpcProvider(this.rpcUrl());
       const proofContract = new Contract(this.contractAddress(), PROOF_RANDOM_ABI, rpcProvider);
 
-      // Đọc cả hai giá trị song song để tiết kiệm RPC round-trip
       const [subId, coordinatorAddress]: [bigint, string] = await Promise.all([
         proofContract['s_subscriptionId'](),
         proofContract['s_vrfCoordinator']()
       ]);
 
-      if (!subId || subId === 0n) {
-        console.warn('[Web3] s_subscriptionId = 0, bỏ qua');
-        return null;
-      }
-      if (!coordinatorAddress || coordinatorAddress === '0x0000000000000000000000000000000000000000') {
-        console.warn('[Web3] s_vrfCoordinator rỗng, bỏ qua');
-        return null;
-      }
+      if (!subId || subId === 0n) return null;
+      if (!coordinatorAddress || coordinatorAddress === '0x0000000000000000000000000000000000000000') return null;
 
-      // Truy vấn Chainlink VRF Coordinator để lấy balance
       const coordinator = new Contract(coordinatorAddress, VRF_COORDINATOR_ABI, rpcProvider);
       const subInfo = await coordinator['getSubscription'](subId);
 
-      // getSubscription trả về tuple/struct - truy cập theo tên trường
       const balanceJuels: bigint = subInfo.balance ?? subInfo[0];
-
       const balanceLink = parseFloat(formatEther(balanceJuels)).toFixed(4);
       return { balance: balanceLink, subscriptionId: subId.toString() };
     } catch (err) {
@@ -1329,28 +1267,22 @@ export class Web3Service {
     try {
       const chainId = this.configuredChainId().toString();
       const cache = this._dashboardStatsCache[chainId];
-      const CACHE_DURATION = 180000; // 3 phút (180.000 ms)
+      const CACHE_DURATION = 180000;
 
-      // Trả về cache nếu hợp lệ và không forceRefresh
       if (cache && !forceRefresh && (Date.now() - cache.timestamp < CACHE_DURATION)) {
         return cache.stats;
       }
 
       const contract = this.getContract(false);
-
-      // 1. Đọc tổng số phiên bốc thăm trực tiếp từ Contract State
       const totalSessionsBig = await contract['getSessionsCount']();
       const totalSessionsCount = Number(totalSessionsBig);
 
-      // 2. Lấy danh sách sự kiện từ cache hoặc blockchain
       let draws = await this.getAllDrawSessionsFromEvents(forceRefresh);
 
-      // Tự động kiểm tra và force refresh nếu phát hiện cache bị cũ so với chain state
       if (draws.length < totalSessionsCount) {
         draws = await this.getAllDrawSessionsFromEvents(true);
       }
 
-      // 3. Lấy 5 phiên gần nhất làm Recent Draws
       const recent = [];
       const limit = Math.min(draws.length, 5);
 
@@ -1365,14 +1297,12 @@ export class Web3Service {
         });
       }
 
-      // 4. Tính tổng số lượt quay đã hoàn thành (fulfilled)
       let completedCount = 0;
       try {
         const filter = contract['filters']['DrawFulfilled']();
         const fulfilledEvents = await contract.queryFilter(filter, 0, 'latest');
         completedCount = fulfilledEvents.length;
       } catch (err) {
-        // Fallback đếm thủ công nếu RPC bị giới hạn range
         completedCount = recent.filter(r => r.fulfilled).length;
       }
 
@@ -1380,7 +1310,6 @@ export class Web3Service {
         completedCount = totalSessionsCount;
       }
 
-      // 5. Lấy số dư LINK từ VRF Subscription
       let balanceStr = 'N/A';
       let subscriptionIdStr = '';
       const linkInfo = await this.getLinkSubscriptionBalance();
@@ -1397,7 +1326,6 @@ export class Web3Service {
         recentDraws: recent
       };
 
-      // Cập nhật cache
       this._dashboardStatsCache[chainId] = {
         stats,
         timestamp: Date.now()
@@ -1407,14 +1335,13 @@ export class Web3Service {
       return stats;
     } catch (err) {
       console.error('[Web3] Tải dashboard stats lỗi:', err);
-      // Trả về cache cũ nếu có lỗi
       const chainId = this.configuredChainId().toString();
       return this._dashboardStatsCache[chainId]?.stats || null;
     }
   }
 
   /**
-   * Xóa bộ nhớ cache dashboard stats của một hoặc tất cả mạng lưới
+   * Xóa bộ nhớ cache dashboard stats
    */
   public clearDashboardStatsCache(chainId?: string) {
     if (chainId) {
@@ -1436,12 +1363,12 @@ export class Web3Service {
   }
 
   /**
-   * Kiểm tra xem đã có cache phân trang hợp lệ cho page và limit chưa
+   * Kiểm tra xem đã có cache phân trang hợp lệ
    */
   public hasPaginatedDrawsCache(page: number, limit: number): boolean {
     const chainId = this.configuredChainId().toString();
     const cache = this._paginatedDrawsCache[chainId]?.[page];
-    const CACHE_DURATION = 180000; // 3 phút
+    const CACHE_DURATION = 180000;
     return !!(cache && (Date.now() - cache.timestamp < CACHE_DURATION) && cache.draws.length > 0);
   }
 
