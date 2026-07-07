@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
-import { BrowserProvider, Contract, JsonRpcProvider, formatEther, Interface, solidityPackedKeccak256 } from 'ethers';
+import { BrowserProvider, Contract, JsonRpcProvider, formatEther, Interface, solidityPackedKeccak256, getAddress } from 'ethers';
 import { Subject } from 'rxjs';
 import { WEB3_CONFIG } from '../config/web3.config';
 import { PROOF_RANDOM_ABI } from './proof-random-abi';
@@ -44,8 +44,10 @@ export class Web3Service {
   public readonly gasMode = signal<'default' | 'fast' | 'custom'>('fast');
   public readonly gasMultiplier = signal<number>(2.0);
 
-  // Cấu hình mạng mặc định và contract hiện hành
-  public readonly configuredChainId = signal<string>(WEB3_CONFIG.defaultChainId);
+  // Cấu hình mạng mặc định và contract hiện hành (Khôi phục từ localStorage để tránh reload bị reset mạng)
+  public readonly configuredChainId = signal<string>(
+    (typeof window !== 'undefined' && localStorage.getItem('proof_random_configured_chain_id')) || WEB3_CONFIG.defaultChainId
+  );
   public readonly activeNetwork = computed(() => {
     return this.configuredChainId() === '42161' ? 'arbitrum' : 'arbitrumSepolia';
   });
@@ -148,6 +150,14 @@ export class Web3Service {
     effect(() => {
       this.configuredChainId();
       this.loadCacheFromSessionStorage();
+    });
+
+    // Tự động lưu chain ID được chọn vào localStorage để không bị mất khi reload
+    effect(() => {
+      const chain = this.configuredChainId();
+      if (typeof window !== 'undefined' && chain) {
+        localStorage.setItem('proof_random_configured_chain_id', chain);
+      }
     });
   }
 
@@ -436,6 +446,18 @@ export class Web3Service {
     return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
   }
 
+  private getSignerAddress(): string | undefined {
+    const addr = this.currentAccount();
+    if (!addr || !addr.startsWith('0x') || addr.length !== 42) {
+      return undefined;
+    }
+    try {
+      return getAddress(addr);
+    } catch (e) {
+      return undefined;
+    }
+  }
+
   /**
    * Lấy contract với signer để gửi transaction (Write)
    * ethers.js v6: getSigner() là async, phải await
@@ -449,19 +471,21 @@ export class Web3Service {
       throw new Error('Vui lòng kết nối ví điện tử trước khi thực hiện.');
     }
     
+    const accountAddress = this.getSignerAddress();
+    
     // Ưu tiên sử dụng provider thực tế của WalletConnect AppKit nếu khả dụng
     const walletProvider = this.modal?.getWalletProvider();
     if (!walletProvider) {
       if (typeof window !== 'undefined' && (window as any).ethereum) {
         const browserProvider = new BrowserProvider((window as any).ethereum);
-        const signer = await browserProvider.getSigner(this.currentAccount());
+        const signer = await browserProvider.getSigner(accountAddress);
         return new Contract(address, PROOF_RANDOM_ABI, signer);
       }
       throw new Error('Không thể tìm thấy provider của ví.');
     }
     
     const browserProvider = new BrowserProvider(walletProvider);
-    const signer = await browserProvider.getSigner(this.currentAccount());
+    const signer = await browserProvider.getSigner(accountAddress);
     return new Contract(address, PROOF_RANDOM_ABI, signer);
   }
 
