@@ -1,21 +1,13 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
-import { BrowserProvider, Contract, JsonRpcProvider, formatEther, Interface, solidityPackedKeccak256, getAddress } from 'ethers';
+import { BrowserProvider, Contract, JsonRpcProvider, formatEther, Interface, solidityPackedKeccak256 } from 'ethers';
 import { Subject } from 'rxjs';
 import { WEB3_CONFIG } from '../config/web3.config';
 import { PROOF_RANDOM_ABI } from './proof-random-abi';
 
-
 // ABI tối giản của Chainlink VRF Coordinator V2Plus để đọc thông tin subscription
-// Dùng human-readable ABI string để ethers.js v6 decode result object đúng tên trường
 const VRF_COORDINATOR_ABI = [
   'function getSubscription(uint256 subId) view returns (uint96 balance, uint96 nativeBalance, uint64 reqCount, address owner, address[] consumers)'
 ];
-
-// Địa chỉ VRF Coordinator V2.5 chính xác trên từng mạng (fallback nếu cần)
-const VRF_COORDINATORS: Record<string, string> = {
-  '42161': '0x5C210e48983947b7F8Ee713D9b1E003565e3F030', // Arbitrum One
-  '421614': '0x5CE801a2c317E05C558F87353f2257D5f25a3D61', // Arbitrum Sepolia
-};
 
 export interface DashboardStats {
   totalSessions: number;
@@ -28,7 +20,7 @@ export interface DashboardStats {
 // Tích hợp Reown AppKit cho WalletConnect
 import { createAppKit } from '@reown/appkit';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
-import { arbitrum, arbitrumSepolia, bsc, bscTestnet, mainnet, sepolia, base, baseSepolia } from '@reown/appkit/networks';
+import { arbitrum, arbitrumSepolia } from '@reown/appkit/networks';
 
 @Injectable({
   providedIn: 'root'
@@ -49,6 +41,7 @@ export class Web3Service {
   public readonly configuredChainId = signal<string>(
     (typeof window !== 'undefined' && localStorage.getItem('proof_random_configured_chain_id')) || WEB3_CONFIG.defaultChainId
   );
+
   public readonly activeNetwork = computed(() => {
     const chainId = this.configuredChainId();
     switch (chainId) {
@@ -135,19 +128,6 @@ export class Web3Service {
     this.loadGasSettings();
     this.initAppKit();
 
-    // Tự động điều chỉnh chế độ gas mặc định dựa theo mạng lưới đang hoạt động
-    effect(() => {
-      const currentChain = this.walletConnected() ? this.chainId() : this.configuredChainId();
-      if (currentChain === '42161') {
-        // Nếu là Arbitrum One Mainnet, mặc định chọn 'default' (Mặc định) để tối ưu chi phí thực tế cho người dùng
-        this.gasMode.set('default');
-      } else {
-        // Nếu là mạng khác (ví dụ Arbitrum Sepolia), khôi phục từ localStorage hoặc mặc định là 'fast' (Nhanh)
-        const savedMode = localStorage.getItem('proof_random_gas_mode') as 'default' | 'fast' | 'custom' | null;
-        this.gasMode.set(savedMode || 'fast');
-      }
-    }, { allowSignalWrites: true });
-
     // Tự động nạp cache từ sessionStorage khi configuredChainId thay đổi
     effect(() => {
       this.configuredChainId();
@@ -161,6 +141,19 @@ export class Web3Service {
         localStorage.setItem('proof_random_configured_chain_id', chain);
       }
     });
+
+    // Tự động điều chỉnh chế độ gas mặc định dựa theo mạng lưới đang hoạt động
+    effect(() => {
+      const currentChain = this.walletConnected() ? this.chainId() : this.configuredChainId();
+      if (currentChain === '42161') {
+        // Nếu là Arbitrum One Mainnet, mặc định chọn 'default' (Mặc định) để tối ưu chi phí thực tế cho người dùng
+        this.gasMode.set('default');
+      } else {
+        // Nếu là mạng khác (ví dụ Arbitrum Sepolia), khôi phục từ localStorage hoặc mặc định là 'fast' (Nhanh)
+        const savedMode = localStorage.getItem('proof_random_gas_mode') as 'default' | 'fast' | 'custom' | null;
+        this.gasMode.set(savedMode || 'fast');
+      }
+    }, { allowSignalWrites: true });
   }
 
   /**
@@ -265,7 +258,6 @@ export class Web3Service {
     }
   }
 
-
   /**
    * Thay đổi chế độ gas
    */
@@ -368,12 +360,6 @@ export class Web3Service {
           const cleanChainId = caipId.split(':').pop() || '';
           this.chainId.set(cleanChainId);
 
-          // Cập nhật configuredChainId sang chain của ví nếu mạng được hỗ trợ VÀ ví đang thực sự kết nối
-          const supportedChains = ['42161', '421614'];
-          if (this.walletConnected() && supportedChains.includes(cleanChainId)) {
-            this.configuredChainId.set(cleanChainId);
-          }
-
           // Khi đổi chain, cập nhật lại số dư ví sau một khoảng trễ nhỏ
           const currentAddr = this.currentAccount();
           if (currentAddr) {
@@ -438,15 +424,102 @@ export class Web3Service {
   }
 
   /**
+   * Kiểm tra và yêu cầu chuyển sang đúng mạng lưới được cấu hình
+   */
+  public async ensureCorrectNetwork(targetChainId?: string): Promise<boolean> {
+    this.walletError.set('');
+    const chainIdToUse = targetChainId || this.configuredChainId();
+    const chainIdHex = `0x${BigInt(chainIdToUse).toString(16)}`;
+
+    // Lấy provider tương ứng (ưu tiên window.ethereum trực tiếp, sau đó tới AppKit provider)
+    let provider: any = null;
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      provider = (window as any).ethereum;
+    } else if (this.modal && this.appKitIsConnected) {
+      provider = this.modal.getWalletProvider();
+    }
+
+    if (!provider) {
+      this.walletError.set('Không tìm thấy provider ví Web3!');
+      return false;
+    }
+
+    // 1. Thử switch qua AppKit switchNetwork nếu có modal và dùng AppKit
+    if (this.modal && this.appKitIsConnected) {
+      try {
+        const net = this.getAppKitNetworkByChainId(chainIdToUse);
+        if (net) {
+          await this.modal.switchNetwork(net);
+          this.chainId.set(chainIdToUse);
+          return true;
+        }
+      } catch (appKitSwitchError) {
+        console.warn('Switch network via AppKit failed, attempting fallback direct request:', appKitSwitchError);
+      }
+    }
+
+    // 2. Fallback switch trực tiếp qua provider request (chuẩn cho window.ethereum)
+    try {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: chainIdHex }],
+      });
+      this.chainId.set(chainIdToUse);
+      return true;
+    } catch (directSwitchError: any) {
+      console.warn('Switch network failed, attempting to add network:', directSwitchError);
+      const isNetworkNotAdded = directSwitchError.code === 4902 ||
+        directSwitchError.data?.originalError?.code === 4902 ||
+        directSwitchError.message?.includes('4902');
+
+      if (isNetworkNotAdded) {
+        try {
+          const netName = chainIdToUse === '42161' ? 'Arbitrum One' : 'Arbitrum Sepolia';
+          const rpcUrl = chainIdToUse === '42161' ? 'https://arb1.arbitrum.io/rpc' : 'https://sepolia-rollup.arbitrum.io/rpc';
+          const explorerUrl = chainIdToUse === '42161' ? 'https://arbiscan.io' : 'https://sepolia.arbiscan.io';
+
+          await provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: chainIdHex,
+              chainName: netName,
+              rpcUrls: [rpcUrl],
+              blockExplorerUrls: [explorerUrl],
+              nativeCurrency: {
+                name: 'ETH',
+                symbol: 'ETH',
+                decimals: 18
+              }
+            }],
+          });
+          this.chainId.set(chainIdToUse);
+          return true;
+        } catch (addError: any) {
+          console.error('Add network failed:', addError);
+          this.walletError.set('Không thể tự động thêm mạng mới vào ví!');
+          return false;
+        }
+      } else if (directSwitchError.code === 4001 || directSwitchError.message?.includes('user rejected') || directSwitchError.message?.includes('rejected')) {
+        this.walletError.set('Giao dịch chuyển mạng bị hủy bởi người dùng.');
+        return false;
+      }
+      this.walletError.set(directSwitchError.message || 'Lỗi chuyển mạng.');
+      return false;
+    }
+  }
+
+  /**
    * Chuyển đổi mạng lưới về chain mong muốn
    */
   public async switchNetwork(targetChainId: string): Promise<void> {
     try {
-      if (this.modal) {
-        const net = this.getAppKitNetworkByChainId(targetChainId);
-        if (this.walletConnected()) {
-          await this.modal.switchNetwork(net);
-        }
+      if (!this.walletConnected()) {
+        this.configuredChainId.set(targetChainId);
+        return;
+      }
+
+      const success = await this.ensureCorrectNetwork(targetChainId);
+      if (success) {
         this.configuredChainId.set(targetChainId);
       }
     } catch (err: any) {
@@ -456,7 +529,7 @@ export class Web3Service {
   }
 
   /**
-   * Khởi tạo đối tượng Smart Contract của FairDraw
+   * Khởi tạo đối tượng Smart Contract của ProofRandom
    * Hỗ trợ read-only qua RPC công cộng nếu ví chưa kết nối
    */
   public getContract(withSigner: boolean = false): Contract {
@@ -470,23 +543,24 @@ export class Web3Service {
   }
 
   /**
-   * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên AppKit provider)
-   * Áp dụng pattern giống cafe-blockchain: dùng cờ appKitIsConnected
+   * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên window.ethereum)
    */
   private getBrowserProvider(): BrowserProvider | null {
     if (typeof window === 'undefined') return null;
 
-    // Nếu có AppKit modal và đã kết nối, lấy provider từ AppKit
+    // Nếu chạy trong trình duyệt tích hợp của ví (In-App Browser) hoặc có window.ethereum injected,
+    // thì LUÔN ưu tiên dùng window.ethereum trực tiếp để đảm bảo đồng bộ hoàn hảo tài khoản và chain.
+    if ((window as any).ethereum) {
+      return new BrowserProvider((window as any).ethereum);
+    }
+
+    // Nếu không có window.ethereum (người dùng dùng ví mobile quét QR qua WalletConnect),
+    // thì mới sử dụng provider của AppKit modal.
     if (this.modal && this.appKitIsConnected) {
       const walletProvider = this.modal.getWalletProvider();
       if (walletProvider) {
         return new BrowserProvider(walletProvider);
       }
-    }
-
-    // Fallback về window.ethereum
-    if ((window as any).ethereum) {
-      return new BrowserProvider((window as any).ethereum);
     }
 
     return null;
@@ -599,26 +673,13 @@ export class Web3Service {
 
       return { draws, total };
     } catch (err) {
-      console.error('[Web3] Phân trang bốc thăm lỗi:', err);
-      const chainId = this.configuredChainId().toString();
-      const cache = this._paginatedDrawsCache[chainId]?.[page];
-      return cache ? { draws: cache.draws, total: cache.total } : { draws: [], total: 0 };
+      console.error('[Web3] Lấy danh sách phân trang lỗi:', err);
+      return { draws: [], total: 0 };
     }
   }
 
   /**
-   * Kiểm tra xem đã có cache phân trang hợp lệ cho trang hiện tại hay chưa
-   */
-  public hasPaginatedDrawsCache(page: number, limit: number): boolean {
-    const chainId = this.configuredChainId().toString();
-    const cache = this._paginatedDrawsCache[chainId]?.[page];
-    const CACHE_DURATION = 180000; // 3 phút
-    return !!(cache && (Date.now() - cache.timestamp < CACHE_DURATION));
-  }
-
-
-  /**
-   * Gửi yêu cầu bốc thăm lên blockchain (Write)
+   * Gửi yêu cầu bốc thăm lên smart contract
    */
   public async requestDraw(
     drawType: number,
@@ -630,8 +691,11 @@ export class Web3Service {
     if (!this.walletConnected()) {
       throw new Error('Vui lòng kết nối ví trước khi thực hiện.');
     }
-    if (this.isWrongChain()) {
-      throw new Error('Ví đang kết nối sai mạng. Vui lòng chuyển sang Arbitrum hoặc Arbitrum Sepolia.');
+
+    // Đảm bảo ví ở đúng mạng cấu hình trước khi gửi giao dịch
+    const hasCorrectNetwork = await this.ensureCorrectNetwork();
+    if (!hasCorrectNetwork) {
+      throw new Error(this.walletError() || 'Vui lòng chuyển mạng ví sang đúng mạng cấu hình!');
     }
 
     try {
@@ -645,7 +709,7 @@ export class Web3Service {
         const mult = this.gasMode() === 'fast' ? 2.0 : this.gasMultiplier();
         const multBig = BigInt(Math.round(mult * 100));
 
-        // 1. Ước tính gasLimit bằng contract read-only (JsonRpcProvider công cộng) để tránh ví chặn RPC eth_estimateGas
+        // 1. Ước tính gasLimit bằng contract read-only (JsonRpcProvider công cộng)
         try {
           const readOnlyContract = this.getContract(false);
           const estimatedGas = await readOnlyContract['requestDraw'].estimateGas(
@@ -948,7 +1012,6 @@ export class Web3Service {
     }
   }
 
-
   /**
    * Tính toán kết quả bốc thăm deterministic trên Client-side dựa trên randomWord (giống hệt Smart Contract)
    * Sử dụng để xác minh tính minh bạch của kết quả
@@ -991,7 +1054,6 @@ export class Web3Service {
       const winnerIndices: number[] = [];
 
       let tempRandom = seed;
-      const selected = new Array<number>(k);
 
       for (let i = 0; i < k; i++) {
         // Hash deterministic bằng cách băm chuỗi keccak256
@@ -1265,6 +1327,16 @@ export class Web3Service {
         }
       }
     }
+  }
+
+  /**
+   * Kiểm tra xem đã có cache phân trang hợp lệ cho page và limit chưa
+   */
+  public hasPaginatedDrawsCache(page: number, limit: number): boolean {
+    const chainId = this.configuredChainId().toString();
+    const cache = this._paginatedDrawsCache[chainId]?.[page];
+    const CACHE_DURATION = 180000; // 3 phút
+    return !!(cache && (Date.now() - cache.timestamp < CACHE_DURATION) && cache.draws.length > 0);
   }
 
   public solidityKeccak256(types: string[], values: any[]): string {
