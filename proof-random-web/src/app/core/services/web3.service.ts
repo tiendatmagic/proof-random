@@ -467,24 +467,28 @@ export class Web3Service {
    * Cập nhật số dư ví và trạng thái
    */
   private async updateBalanceAndStatus(address: string) {
+    if (typeof window === 'undefined') return;
+
+    // Lấy chainId thực tế từ BrowserProvider (ví)
     try {
-      if (typeof window === 'undefined') return;
-
-      // Đọc số dư bằng JsonRpcProvider công cộng để tránh nghẽn RPC ví
-      const rpc = this.rpcUrl();
-      const tempProvider = new JsonRpcProvider(rpc);
-      const balanceBigInt = await tempProvider.getBalance(address);
-      const balance = formatEther(balanceBigInt);
-      this.walletBalance.set(parseFloat(balance).toFixed(4));
-
-      // Lấy chainId thực tế từ provider
       const browserProvider = this.getBrowserProvider();
       if (browserProvider) {
         const network = await browserProvider.getNetwork();
         this.chainId.set(network.chainId.toString());
       }
     } catch (err) {
-      console.warn('[Web3] Cập nhật số dư và trạng thái lỗi:', err);
+      console.warn('[Web3] Không thể lấy chainId từ BrowserProvider:', err);
+    }
+
+    // Đọc số dư bằng JsonRpcProvider công cộng để tránh nghẽn RPC ví
+    try {
+      const rpc = this.rpcUrl();
+      const tempProvider = new JsonRpcProvider(rpc);
+      const balanceBigInt = await tempProvider.getBalance(address);
+      const balance = formatEther(balanceBigInt);
+      this.walletBalance.set(parseFloat(balance).toFixed(4));
+    } catch (err) {
+      console.warn('[Web3] Không thể lấy số dư qua RPC công cộng:', err);
     }
   }
 
@@ -657,47 +661,48 @@ export class Web3Service {
 
   /**
    * Lấy contract với signer để gửi transaction (Write)
-   * ethers.js v6: getSigner() là async, phải await
+   * ethers.js v6: getSigner(address) tránh lỗi "no such account"
    */
   public async getContractWithSigner(): Promise<Contract> {
-    const address = this.contractAddress();
-    if (!address || address === '0x0000000000000000000000000000000000000000') {
+    const contractAddr = this.contractAddress();
+    if (!contractAddr || contractAddr === '0x0000000000000000000000000000000000000000') {
       throw new Error('Địa chỉ Smart Contract chưa được cấu hình.');
     }
     if (!this.walletConnected()) {
       throw new Error('Vui lòng kết nối ví điện tử trước khi thực hiện.');
     }
 
+    const walletAddress = this.currentAccount();
+    if (!walletAddress) {
+      throw new Error('Không tìm thấy địa chỉ ví. Vui lòng kết nối lại.');
+    }
+
+    // Thử lấy signer từ AppKit provider trước
     const browserProvider = this.getBrowserProvider();
-    if (!browserProvider) {
-      throw new Error('Không thể tìm thấy provider của ví.');
-    }
-
-    try {
-      await browserProvider.send("eth_requestAccounts", []);
-    } catch (reqAccErr) {
-      console.warn('[Web3] Cảnh báo eth_requestAccounts:', reqAccErr);
-    }
-
-    let signer: any;
-    try {
-      signer = await browserProvider.getSigner();
-    } catch (signerErr: any) {
-      console.warn('[Web3] getSigner từ primary provider lỗi, thử fallback window.ethereum:', signerErr);
-      if (typeof window !== 'undefined' && (window as any).ethereum) {
-        try {
-          const fallbackProvider = new BrowserProvider((window as any).ethereum);
-          await fallbackProvider.send("eth_requestAccounts", []);
-          signer = await fallbackProvider.getSigner();
-        } catch (fallbackErr) {
-          throw signerErr;
-        }
-      } else {
-        throw signerErr;
+    if (browserProvider) {
+      try {
+        // getSigner(address) tường minh để tránh lỗi "no such account"
+        const signer = await browserProvider.getSigner(walletAddress);
+        return new Contract(contractAddr, PROOF_RANDOM_ABI, signer);
+      } catch (appKitErr: any) {
+        console.warn('[Web3] getSigner từ AppKit provider lỗi, thử fallback:', appKitErr);
       }
     }
 
-    return new Contract(address, PROOF_RANDOM_ABI, signer);
+    // Fallback: dùng window.ethereum trực tiếp
+    if (typeof window !== 'undefined' && (window as any).ethereum) {
+      try {
+        const fallbackProvider = new BrowserProvider((window as any).ethereum);
+        await fallbackProvider.send('eth_requestAccounts', []);
+        const signer = await fallbackProvider.getSigner(walletAddress);
+        return new Contract(contractAddr, PROOF_RANDOM_ABI, signer);
+      } catch (fallbackErr: any) {
+        console.warn('[Web3] Fallback getSigner thất bại:', fallbackErr);
+        throw new Error('Không thể lấy Signer từ ví. Vui lòng thử lại hoặc kết nối lại ví.');
+      }
+    }
+
+    throw new Error('Không tìm thấy provider của ví. Vui lòng cài đặt MetaMask hoặc ví Web3.');
   }
 
   /**
