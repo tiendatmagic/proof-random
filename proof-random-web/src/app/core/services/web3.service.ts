@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import { WEB3_CONFIG } from '../config/web3.config';
 import { PROOF_RANDOM_ABI } from './proof-random-abi';
 
+
 // ABI tối giản của Chainlink VRF Coordinator V2Plus để đọc thông tin subscription
 // Dùng human-readable ABI string để ethers.js v6 decode result object đúng tên trường
 const VRF_COORDINATOR_ABI = [
@@ -12,8 +13,8 @@ const VRF_COORDINATOR_ABI = [
 
 // Địa chỉ VRF Coordinator V2.5 chính xác trên từng mạng (fallback nếu cần)
 const VRF_COORDINATORS: Record<string, string> = {
-  '42161':   '0x5C210e48983947b7F8Ee713D9b1E003565e3F030', // Arbitrum One
-  '421614':  '0x5CE801a2c317E05C558F87353f2257D5f25a3D61', // Arbitrum Sepolia
+  '42161': '0x5C210e48983947b7F8Ee713D9b1E003565e3F030', // Arbitrum One
+  '421614': '0x5CE801a2c317E05C558F87353f2257D5f25a3D61', // Arbitrum Sepolia
 };
 
 export interface DashboardStats {
@@ -53,8 +54,8 @@ export class Web3Service {
   });
 
   public readonly contractAddress = computed(() => {
-    return this.configuredChainId() === '42161' 
-      ? WEB3_CONFIG.contracts.arbitrum 
+    return this.configuredChainId() === '42161'
+      ? WEB3_CONFIG.contracts.arbitrum
       : WEB3_CONFIG.contracts.arbitrumSepolia;
   });
 
@@ -206,14 +207,14 @@ export class Web3Service {
     if (typeof window === 'undefined') return;
     try {
       const chainId = this.configuredChainId().toString();
-      
+
       const drawsStr = sessionStorage.getItem(`proof_random_history_cache_${chainId}`);
       if (drawsStr) {
         this._allDrawsCache[chainId] = JSON.parse(drawsStr);
       } else {
         this._allDrawsCache[chainId] = [];
       }
-      
+
       const fullScanStr = sessionStorage.getItem(`proof_random_has_full_scan_${chainId}`);
       if (fullScanStr) {
         this._hasFullScan[chainId] = JSON.parse(fullScanStr);
@@ -336,7 +337,7 @@ export class Web3Service {
           this.currentAccount.set(address);
           this.walletConnected.set(true);
           this.appKitIsConnected = true;
-          
+
           // Sử dụng setTimeout để tránh xung đột RPC và nghẽn luồng trong quá trình bắt tay kết nối ví
           setTimeout(() => {
             this.updateBalanceAndStatus(address);
@@ -355,7 +356,7 @@ export class Web3Service {
           const caipId = networkState.caipNetworkId.toString();
           const cleanChainId = caipId.split(':').pop() || '';
           this.chainId.set(cleanChainId);
-          
+
           // Khi đổi chain, cập nhật lại số dư ví sau một khoảng trễ nhỏ
           const currentAddr = this.currentAccount();
           if (currentAddr) {
@@ -377,7 +378,7 @@ export class Web3Service {
   private async updateBalanceAndStatus(address: string) {
     try {
       if (typeof window === 'undefined') return;
-      
+
       // Sử dụng JsonRpcProvider công cộng thay vì truy vấn qua ví đối với tác vụ đọc số dư
       // Điều này loại bỏ hoàn toàn các xung đột RPC (previous request is still active) khi kết nối ví
       const rpc = this.rpcUrl();
@@ -517,29 +518,29 @@ export class Web3Service {
       const contract = this.getContract(false);
       const totalBig = await contract['getSessionsCount']();
       const total = Number(totalBig);
-      
+
       if (total === 0) {
         return { draws: [], total: 0 };
       }
-      
+
       const draws: any[] = [];
       const startIndex = total - 1 - (page - 1) * limit;
       const endIndex = Math.max(0, startIndex - limit + 1);
-      
+
       // Tạo danh sách index cần đọc
       const indices: number[] = [];
       for (let i = startIndex; i >= endIndex; i--) {
         indices.push(i);
       }
-      
+
       // Đọc song song các requestId
       const idPromises = indices.map(idx => contract['requestIds'](idx));
       const requestIdsBig = await Promise.all(idPromises);
-      
+
       // Đọc chi tiết từng phiên song song
       const detailPromises = requestIdsBig.map(reqId => this.getDrawSessionDetails(reqId.toString()));
       const details = await Promise.all(detailPromises);
-      
+
       // Lọc các phiên hợp lệ
       for (const d of details) {
         if (d) {
@@ -554,7 +555,7 @@ export class Web3Service {
         timestamp: Date.now()
       };
       this.saveCacheToSessionStorage();
-      
+
       return { draws, total };
     } catch (err) {
       console.error('[Web3] Phân trang bốc thăm lỗi:', err);
@@ -598,11 +599,11 @@ export class Web3Service {
 
       // Cấu hình Gas Overrides
       const overrides: any = {};
-      
+
       if (this.gasMode() !== 'default') {
         const mult = this.gasMode() === 'fast' ? 2.0 : this.gasMultiplier();
         const multBig = BigInt(Math.round(mult * 100));
-        
+
         // 1. Ước tính gasLimit bằng contract read-only (JsonRpcProvider công cộng) để tránh ví chặn RPC eth_estimateGas
         try {
           const readOnlyContract = this.getContract(false);
@@ -618,12 +619,12 @@ export class Web3Service {
         } catch (e) {
           console.warn('[Web3] Không thể ước tính gasLimit qua RPC công cộng:', e);
         }
-        
+
         // 2. Lấy dữ liệu phí gas và nhân thêm hệ số từ JsonRpcProvider công cộng
         try {
           const publicProvider = new JsonRpcProvider(this.rpcUrl());
           const feeData = await publicProvider.getFeeData();
-          
+
           if (feeData.maxFeePerGas && feeData.maxPriorityFeePerGas) {
             overrides.maxFeePerGas = (feeData.maxFeePerGas * multBig) / 100n;
             overrides.maxPriorityFeePerGas = (feeData.maxPriorityFeePerGas * multBig) / 100n;
@@ -637,7 +638,7 @@ export class Web3Service {
 
       const tx = await contract['requestDraw'](drawType, param1, param2, eventName, participants, overrides);
       const receipt = await tx.wait();
-      
+
       // Tìm requestId từ Event logs của giao dịch
       let requestId = '';
       const iface = new Interface(PROOF_RANDOM_ABI);
@@ -671,18 +672,18 @@ export class Web3Service {
    * Tạo instance contract cho một chainId cụ thể (read-only)
    */
   public getContractForChain(chainId: string): Contract | null {
-    const address = chainId === '42161' 
-      ? WEB3_CONFIG.contracts.arbitrum 
+    const address = chainId === '42161'
+      ? WEB3_CONFIG.contracts.arbitrum
       : WEB3_CONFIG.contracts.arbitrumSepolia;
-      
+
     if (!address || address === '0x0000000000000000000000000000000000000000') {
       return null;
     }
-    
+
     const rpcUrl = chainId === '42161'
       ? WEB3_CONFIG.rpcs.arbitrum
       : WEB3_CONFIG.rpcs.arbitrumSepolia;
-      
+
     const jsonRpcProvider = new JsonRpcProvider(rpcUrl);
     return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
   }
@@ -720,7 +721,7 @@ export class Web3Service {
         try {
           const contract = this.getContractForChain(cid);
           if (!contract) continue;
-          
+
           const session = await contract['sessions'](cleanQuery);
           if (session && session.creator !== '0x0000000000000000000000000000000000000000') {
             this.configuredChainId.set(cid);
@@ -770,7 +771,7 @@ export class Web3Service {
   public async getAllDrawSessionsFromEvents(forceRefresh = false): Promise<any[]> {
     try {
       const chainId = this.configuredChainId().toString();
-      
+
       // Khởi tạo cache nếu chưa có
       if (!this._allDrawsCache[chainId]) {
         this._allDrawsCache[chainId] = [];
@@ -791,14 +792,14 @@ export class Web3Service {
       const contract = this.getContract(false);
       const filter = contract['filters']['DrawCreated']();
       const events = await contract.queryFilter(filter, 0, 'latest');
-      
+
       const draws: any[] = [];
       for (const event of events) {
         const args = (event as any).args;
         const parsed = this.parseEventNameAndSkin(args.eventName);
         const reqIdStr = args.requestId.toString();
         const cachedDetail = this._drawSessionDetailsCache[chainId]?.[reqIdStr];
-        
+
         draws.push({
           requestId: reqIdStr,
           creator: args.creator,
@@ -820,7 +821,7 @@ export class Web3Service {
       const reversedDraws = draws.reverse();
       this._allDrawsCache[chainId] = reversedDraws;
       this._hasFullScan[chainId] = true;
-      
+
       // Đồng bộ thông tin thô vào cache chi tiết
       for (const draw of reversedDraws) {
         const reqId = draw.requestId;
@@ -862,7 +863,7 @@ export class Web3Service {
       if (!sessionData) return null;
 
       const contract = this.getContract(false);
-      
+
       // Quét event DrawCreated cụ thể của requestId này để lấy danh sách người tham gia
       const filter = contract['filters']['DrawCreated'](requestId);
       const events = await contract.queryFilter(filter, 0, 'latest');
@@ -887,7 +888,7 @@ export class Web3Service {
 
       // Cập nhật cache chi tiết
       this._drawSessionDetailsCache[chainId][requestId] = detailedData;
-      
+
       // Nếu sự kiện quét full đã có, cập nhật lại phần tử tương ứng trong mảng cache full
       if (this._allDrawsCache[chainId]) {
         const idx = this._allDrawsCache[chainId].findIndex(d => d.requestId === requestId);
@@ -955,7 +956,7 @@ export class Web3Service {
       const k = param2;
       const winners: string[] = [];
       const winnerIndices: number[] = [];
-      
+
       let tempRandom = seed;
       const selected = new Array<number>(k);
 
@@ -1025,7 +1026,7 @@ export class Web3Service {
       const total = param1;
       const numTeams = param2;
       const teams: { name: string; members: string[] }[] = [];
-      
+
       // Tạo các đội
       for (let t = 0; t < numTeams; t++) {
         teams.push({ name: `Team ${String.fromCharCode(65 + t)}`, members: [] }); // Team A, B, C...
@@ -1039,7 +1040,7 @@ export class Web3Service {
         const hashHex = this.solidityKeccak256(['uint256', 'uint256'], [tempRandom.toString(), i.toString()]);
         tempRandom = BigInt(hashHex);
         const swapIdx = Number(tempRandom % BigInt(i + 1));
-        
+
         // Swap
         const temp = indices[i];
         indices[i] = indices[swapIdx];
@@ -1135,14 +1136,14 @@ export class Web3Service {
       }
 
       const contract = this.getContract(false);
-      
+
       // 1. Đọc tổng số phiên bốc thăm trực tiếp từ Contract State
       const totalSessionsBig = await contract['getSessionsCount']();
       const totalSessionsCount = Number(totalSessionsBig);
 
       // 2. Lấy danh sách sự kiện từ cache hoặc blockchain
       let draws = await this.getAllDrawSessionsFromEvents(forceRefresh);
-      
+
       // Tự động kiểm tra và force refresh nếu phát hiện cache bị cũ so với chain state
       if (draws.length < totalSessionsCount) {
         draws = await this.getAllDrawSessionsFromEvents(true);
@@ -1151,7 +1152,7 @@ export class Web3Service {
       // 3. Lấy 5 phiên gần nhất làm Recent Draws
       const recent = [];
       const limit = Math.min(draws.length, 5);
-      
+
       for (let i = 0; i < limit; i++) {
         const d = draws[i];
         const status = await this.getDrawSession(d.requestId);
