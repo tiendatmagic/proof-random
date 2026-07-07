@@ -194,15 +194,11 @@
         >
           <!-- Header thông tin ví -->
           <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60">
-            <p
-              class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1"
-            >
+            <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">
               Ví đang kết nối
             </p>
-            <p
-              class="text-xs font-mono font-extrabold text-slate-700 dark:text-slate-200 select-all"
-            >
-              {{ web3Service.shortAddress() }}
+            <p class="text-xs font-mono font-extrabold text-slate-700 dark:text-slate-200 select-all break-all">
+              {{ web3Service.currentAccount() }}
             </p>
             <p class="text-xs font-black text-[var(--color-primary)] dark:text-[var(--color-primary)] mt-0.5">
               {{ web3Service.walletBalance() }} {{ web3Service.networkSymbol() }}
@@ -765,15 +761,11 @@
           >
             <!-- Header thông tin ví -->
             <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60">
-              <p
-                class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1"
-              >
+              <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mb-1">
                 Ví đang kết nối
               </p>
-              <p
-                class="text-xs font-mono font-extrabold text-slate-700 dark:text-slate-200 select-all"
-              >
-                {{ web3Service.shortAddress() }}
+              <p class="text-xs font-mono font-extrabold text-slate-700 dark:text-slate-200 select-all break-all">
+                {{ web3Service.currentAccount() }}
               </p>
               <p class="text-xs font-black text-[var(--color-primary)] dark:text-[var(--color-primary)] mt-0.5">
                 {{ web3Service.walletBalance() }} {{ web3Service.networkSymbol() }}

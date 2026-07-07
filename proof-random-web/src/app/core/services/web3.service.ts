@@ -88,11 +88,12 @@ export class Web3Service {
     return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
   });
 
-  // Kiểm tra xem ví có đang kết nối sai mạng hay không (chỉ chấp nhận 42161 và 421614)
+  // Kiểm tra xem ví có đang kết nối lệch mạng so với dApp đang chọn hay không
   public readonly isWrongChain = computed(() => {
     if (!this.walletConnected()) return false;
     const connectedChain = this.chainId().toString().trim();
-    return connectedChain !== '42161' && connectedChain !== '421614';
+    const configChain = this.configuredChainId().toString().trim();
+    return connectedChain !== configChain;
   });
 
   // Tên mạng đang được sử dụng
@@ -294,10 +295,13 @@ export class Web3Service {
       const projectId = WEB3_CONFIG.walletConnectProjectId;
       const ethersAdapter = new EthersAdapter();
 
+      const savedChainId = (typeof window !== 'undefined' && localStorage.getItem('proof_random_configured_chain_id')) || WEB3_CONFIG.defaultChainId;
+      const defaultNet = savedChainId === '42161' ? arbitrum : arbitrumSepolia;
+
       this.modal = createAppKit({
         adapters: [ethersAdapter],
         networks: [arbitrum, arbitrumSepolia],
-        defaultNetwork: arbitrum,
+        defaultNetwork: defaultNet,
         allowUnsupportedChain: true,
         themeMode: 'dark',
         themeVariables: {
@@ -423,8 +427,13 @@ export class Web3Service {
     try {
       if (this.modal) {
         const net = targetChainId === '42161' ? arbitrum : arbitrumSepolia;
-        await this.modal.switchNetwork(net);
-        this.configuredChainId.set(targetChainId);
+        if (this.walletConnected()) {
+          // Nếu ví đã kết nối, gọi ví switch và đợi sự kiện subscribeNetwork cập nhật configuredChainId
+          await this.modal.switchNetwork(net);
+        } else {
+          // Nếu ví chưa kết nối, tự cập nhật cấu hình mạng mặc định của dApp
+          this.configuredChainId.set(targetChainId);
+        }
       }
     } catch (err: any) {
       console.error('[Web3] Chuyển mạng thất bại:', err);

@@ -118,4 +118,13 @@ export class App {
       this.web3Service.setGasMultiplier(value);
     }
   }
+
+  public formatBalance(val: string, decimals = 2): string {
+    if (!val) return '0.00';
+    const num = parseFloat(val);
+    return isNaN(num) ? '0.00' : num.toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  }
 }
