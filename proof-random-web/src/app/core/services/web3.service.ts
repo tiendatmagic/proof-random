@@ -158,7 +158,7 @@ export class Web3Service {
       const connectedChain = this.chainId().toString().trim();
       const configChain = this.configuredChainId().toString().trim();
       const supportedChains = ['42161', '421614', '31337', '1337'];
-      
+
       if (this.walletConnected() && supportedChains.includes(connectedChain)) {
         if (configChain !== connectedChain) {
           this.configuredChainId.set(connectedChain);
@@ -225,7 +225,7 @@ export class Web3Service {
       const accounts = await provider.listAccounts();
       if (accounts && accounts.length > 0) {
         const address = await accounts[0].getAddress();
-        
+
         // Chỉ tự động kết nối nếu tài khoản trùng khớp với tài khoản đã kết nối lần cuối
         const savedAccount = localStorage.getItem('proof_random_connected_account');
         if (savedAccount && savedAccount.toLowerCase() === address.toLowerCase()) {
@@ -467,7 +467,7 @@ export class Web3Service {
           if (this.modal && this.appKitIsConnected) {
             const walletProvider = this.modal.getWalletProvider();
             const state = this.modal.getState();
-            
+
             if (state && state.selectedNetworkId) {
               const selectedIdStr = state.selectedNetworkId.toString();
               const cleanChainId = selectedIdStr.includes(':') ? selectedIdStr.split(':').pop() || '' : selectedIdStr;
@@ -481,12 +481,12 @@ export class Web3Service {
                 const address = await signer.getAddress();
                 const network = await browserProvider.getNetwork();
                 const chainIdStr = network.chainId.toString();
-                
+
                 this.currentAccount.set(address);
                 this.walletConnected.set(true);
                 this.appKitIsConnected = true;
                 this.chainId.set(chainIdStr);
-                
+
                 this.updateBalanceAndStatus(address);
               }
             }
@@ -892,10 +892,10 @@ export class Web3Service {
         if (!walletProvider) {
           throw signerErr; // Ném lỗi cũ nếu không có raw provider (AppKit không sẵn sàng)
         }
-        
+
         const iface = new Interface(PROOF_RANDOM_ABI);
         const data = iface.encodeFunctionData('requestDraw', [drawType, param1, param2, eventName, participants]);
-        
+
         const txParam: any = {
           from: this.currentAccount(),
           to: this.contractAddress(),
@@ -916,7 +916,7 @@ export class Web3Service {
         } catch (rawErr: any) {
           const errMsg = rawErr.message || '';
           if (errMsg.includes('Missing or invalid') && errMsg.includes('chainId')) {
-            throw new Error('Trust Wallet chưa cấp quyền cho mạng Testnet này! Vui lòng NGẮT KẾT NỐI ví trên dApp, mở app Trust Wallet chuyển mạng sang Arbitrum Sepolia, sau đó kết nối lại!');
+            throw new Error('Ví chưa cấp quyền cho mạng Testnet này! Vui lòng NGẮT KẾT NỐI ví trên dApp, mở app chuyển mạng sang Arbitrum Sepolia, sau đó kết nối lại!');
           }
           throw rawErr;
         }
@@ -925,7 +925,7 @@ export class Web3Service {
         const rpcProvider = new JsonRpcProvider(this.rpcUrl());
         const receipt = await rpcProvider.waitForTransaction(txHash, 1, 120000);
         if (!receipt) throw new Error('Không nhận được biên lai giao dịch.');
-        
+
         tx = { wait: () => Promise.resolve(receipt) };
       }
 
