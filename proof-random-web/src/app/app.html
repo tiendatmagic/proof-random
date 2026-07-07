@@ -873,13 +873,22 @@
           <h2 class="text-xl font-black text-slate-800 dark:text-white">
             Sai mạng lưới blockchain!
           </h2>
-          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-            Ví đang kết nối ở mạng khác với mạng được chọn trên dApp. Vui lòng chuyển ví sang mạng **{{ web3Service.networkName() }}** để tiếp tục sử dụng.
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed font-semibold">
+            Ví đang kết nối ở mạng khác với mạng được dApp hỗ trợ. Vui lòng chuyển ví sang mạng **Arbitrum One** hoặc **Arbitrum Sepolia** để tiếp tục sử dụng.
           </p>
         </div>
         <div class="flex flex-col gap-2 pt-2">
-          <button (click)="switchNetwork(web3Service.configuredChainId())" class="btn-primary w-full cursor-pointer">
-            Chuyển ví sang mạng {{ web3Service.networkName() }}
+          <button 
+            (click)="switchNetwork('42161')" 
+            [class]="web3Service.configuredChainId() === '42161' ? 'btn-primary w-full cursor-pointer' : 'w-full cursor-pointer py-2.5 px-4 rounded-xl border border-pink-500/30 text-pink-500 font-bold bg-white/5 hover:bg-pink-500/10 transition-all'"
+          >
+            Chuyển ví sang mạng Arbitrum One
+          </button>
+          <button 
+            (click)="switchNetwork('421614')" 
+            [class]="web3Service.configuredChainId() === '421614' ? 'btn-primary w-full cursor-pointer' : 'w-full cursor-pointer py-2.5 px-4 rounded-xl border border-pink-500/30 text-pink-500 font-bold bg-white/5 hover:bg-pink-500/10 transition-all'"
+          >
+            Chuyển ví sang mạng Arbitrum Sepolia
           </button>
           <button (click)="disconnectWallet()" class="btn-cancel w-full cursor-pointer mt-1">
             Ngắt kết nối ví
