@@ -907,10 +907,19 @@ export class Web3Service {
         if (overrides.maxPriorityFeePerGas) txParam.maxPriorityFeePerGas = '0x' + overrides.maxPriorityFeePerGas.toString(16);
         if (overrides.gasPrice) txParam.gasPrice = '0x' + overrides.gasPrice.toString(16);
 
-        const txHash = await walletProvider.request({
-          method: 'eth_sendTransaction',
-          params: [txParam]
-        });
+        let txHash: string;
+        try {
+          txHash = await walletProvider.request({
+            method: 'eth_sendTransaction',
+            params: [txParam]
+          });
+        } catch (rawErr: any) {
+          const errMsg = rawErr.message || '';
+          if (errMsg.includes('Missing or invalid') && errMsg.includes('chainId')) {
+            throw new Error('Trust Wallet chưa cấp quyền cho mạng Testnet này! Vui lòng NGẮT KẾT NỐI ví trên dApp, mở app Trust Wallet chuyển mạng sang Arbitrum Sepolia, sau đó kết nối lại!');
+          }
+          throw rawErr;
+        }
 
         // Chờ giao dịch hoàn tất bằng JsonRpcProvider công cộng (Timeout 2 phút)
         const rpcProvider = new JsonRpcProvider(this.rpcUrl());
