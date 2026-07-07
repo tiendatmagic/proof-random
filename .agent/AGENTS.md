@@ -1,0 +1,6 @@
+# Nhật ký hoạt động (Proof-Random)
+
+- Khắc phục các vấn đề liên quan đến AppKit và WalletConnect trên thiết bị di động (Chrome).
+- Chỉnh sửa lỗi ứng dụng bị đặt sai chain khi reload lại trang do Provider.
+- **Ngày 07/07/2026**: Viết lại hoàn toàn file `web3.service.ts` để đồng bộ lại với cơ chế lấy provider mới nhất, lấy cảm hứng từ cấu trúc của `cafe-blockchain`. Đã biên dịch Angular thành công. Cải thiện độ mượt khi kết nối Smart Contract trên cả web và app di động.
+- **Bổ sung (07/07/2026)**: Chặn lỗi fallback sang `window.ethereum` khi đang kết nối bằng AppKit WalletConnect. Việc này giúp fix triệt để lỗi reload bị nhảy sang mạng lưới `1` (Mainnet) và lỗi ký giao dịch báo sai chain trên trình duyệt dApp In-App của thiết bị di động.

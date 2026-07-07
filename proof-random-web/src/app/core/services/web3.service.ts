@@ -720,6 +720,8 @@ export class Web3Service {
       } catch (e) {
         console.warn('[Web3] getWalletProvider từ AppKit lỗi:', e);
       }
+      // Không fallback sang window.ethereum nếu đang dùng AppKit để tránh sai chainId
+      return null;
     }
 
     if ((window as any).ethereum) {
@@ -774,6 +776,11 @@ export class Web3Service {
       } catch (appKitErr: any) {
         console.warn('[Web3] getSigner từ AppKit provider lỗi, thử fallback window.ethereum:', appKitErr);
       }
+    }
+
+    // Nếu đang dùng AppKit, không fallback sang window.ethereum để tránh ký trên sai provider
+    if (this.appKitIsConnected) {
+      throw new Error('WalletConnect provider chưa sẵn sàng hoặc bị lỗi. Vui lòng kết nối lại ví.');
     }
 
     // Fallback: dùng window.ethereum trực tiếp (MetaMask desktop)
