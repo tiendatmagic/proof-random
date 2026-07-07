@@ -116,6 +116,7 @@ export class Web3Service {
 
   private provider: BrowserProvider | null = null;
   private modal: any = null;
+  private appKitIsConnected = false;
 
   // Cache lưu trữ lịch sử bốc thăm đã quét theo chainId
   private _allDrawsCache: Record<string, any[]> = {};
@@ -334,12 +335,14 @@ export class Web3Service {
         if (isConnected && address) {
           this.currentAccount.set(address);
           this.walletConnected.set(true);
+          this.appKitIsConnected = true;
           
           // Sử dụng setTimeout để tránh xung đột RPC và nghẽn luồng trong quá trình bắt tay kết nối ví
           setTimeout(() => {
             this.updateBalanceAndStatus(address);
           }, 150);
         } else {
+          this.appKitIsConnected = false;
           this.walletConnected.set(false);
           this.currentAccount.set('');
           this.walletBalance.set('0.00');
@@ -352,10 +355,6 @@ export class Web3Service {
           const caipId = networkState.caipNetworkId.toString();
           const cleanChainId = caipId.split(':').pop() || '';
           this.chainId.set(cleanChainId);
-          // Cập nhật cấu hình mạng mặc định theo ví (nếu là mạng hợp lệ)
-          if (cleanChainId === '42161' || cleanChainId === '421614') {
-            this.configuredChainId.set(cleanChainId);
-          }
           
           // Khi đổi chain, cập nhật lại số dư ví sau một khoảng trễ nhỏ
           const currentAddr = this.currentAccount();
@@ -428,12 +427,9 @@ export class Web3Service {
       if (this.modal) {
         const net = targetChainId === '42161' ? arbitrum : arbitrumSepolia;
         if (this.walletConnected()) {
-          // Nếu ví đã kết nối, gọi ví switch và đợi sự kiện subscribeNetwork cập nhật configuredChainId
           await this.modal.switchNetwork(net);
-        } else {
-          // Nếu ví chưa kết nối, tự cập nhật cấu hình mạng mặc định của dApp
-          this.configuredChainId.set(targetChainId);
         }
+        this.configuredChainId.set(targetChainId);
       }
     } catch (err: any) {
       console.error('[Web3] Chuyển mạng thất bại:', err);
@@ -455,16 +451,27 @@ export class Web3Service {
     return new Contract(address, PROOF_RANDOM_ABI, jsonRpcProvider);
   }
 
-  private getSignerAddress(): string | undefined {
-    const addr = this.currentAccount();
-    if (!addr || !addr.startsWith('0x') || addr.length !== 42) {
-      return undefined;
+  /**
+   * Lấy BrowserProvider tương ứng từ ví đã kết nối (ưu tiên AppKit provider)
+   * Áp dụng pattern giống cafe-blockchain: dùng cờ appKitIsConnected
+   */
+  private getBrowserProvider(): BrowserProvider | null {
+    if (typeof window === 'undefined') return null;
+
+    // Nếu có AppKit modal và đã kết nối, lấy provider từ AppKit
+    if (this.modal && this.appKitIsConnected) {
+      const walletProvider = this.modal.getWalletProvider();
+      if (walletProvider) {
+        return new BrowserProvider(walletProvider);
+      }
     }
-    try {
-      return getAddress(addr);
-    } catch (e) {
-      return undefined;
+
+    // Fallback về window.ethereum
+    if ((window as any).ethereum) {
+      return new BrowserProvider((window as any).ethereum);
     }
+
+    return null;
   }
 
   /**
@@ -479,22 +486,13 @@ export class Web3Service {
     if (!this.walletConnected()) {
       throw new Error('Vui lòng kết nối ví điện tử trước khi thực hiện.');
     }
-    
-    const accountAddress = this.getSignerAddress();
-    
-    // Ưu tiên sử dụng provider thực tế của WalletConnect AppKit nếu khả dụng
-    const walletProvider = this.modal?.getWalletProvider();
-    if (!walletProvider) {
-      if (typeof window !== 'undefined' && (window as any).ethereum) {
-        const browserProvider = new BrowserProvider((window as any).ethereum);
-        const signer = await browserProvider.getSigner(accountAddress);
-        return new Contract(address, PROOF_RANDOM_ABI, signer);
-      }
+
+    const browserProvider = this.getBrowserProvider();
+    if (!browserProvider) {
       throw new Error('Không thể tìm thấy provider của ví.');
     }
-    
-    const browserProvider = new BrowserProvider(walletProvider);
-    const signer = await browserProvider.getSigner(accountAddress);
+
+    const signer = await browserProvider.getSigner();
     return new Contract(address, PROOF_RANDOM_ABI, signer);
   }
 
