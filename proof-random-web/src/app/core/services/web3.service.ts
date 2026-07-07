@@ -130,6 +130,8 @@ export class Web3Service {
     this.loadGasSettings();
     this.initAppKit();
     this.setupEthereumListeners();
+    this.restoreSessionFromStorage();
+    this.checkConnectedAccounts();
 
     // Hoàn tất giai đoạn khởi tạo AppKit sau 2 giây để tránh nháy sai chain blocker
     setTimeout(() => {
@@ -174,6 +176,49 @@ export class Web3Service {
       if (mult) this.gasMultiplier.set(parseFloat(mult));
     } catch (e) {
       console.warn('[Web3] Không thể đọc cài đặt gas từ localStorage:', e);
+    }
+  }
+
+  /**
+   * Khôi phục phiên kết nối ví đã lưu ở localStorage
+   */
+  private async restoreSessionFromStorage() {
+    if (typeof window === 'undefined') return;
+    try {
+      const savedAccount = localStorage.getItem('proof_random_connected_account');
+      if (savedAccount) {
+        this.currentAccount.set(savedAccount);
+        this.walletConnected.set(true);
+        this.appKitIsConnected = false;
+        await this.updateBalanceAndStatus(savedAccount);
+      }
+    } catch (e) {
+      console.warn('[Web3] Không thể khôi phục phiên kết nối ví:', e);
+    }
+  }
+
+  /**
+   * Chủ động truy vấn window.ethereum xem đã có tài khoản nào được kết nối sẵn từ trước chưa (đặc biệt hữu ích khi reload trong In-App Browser ví di động)
+   */
+  private async checkConnectedAccounts() {
+    if (typeof window === 'undefined' || !(window as any).ethereum) return;
+    try {
+      const provider = new BrowserProvider((window as any).ethereum);
+      const accounts = await provider.listAccounts();
+      if (accounts && accounts.length > 0) {
+        const address = await accounts[0].getAddress();
+        
+        // Chỉ tự động kết nối nếu tài khoản trùng khớp với tài khoản đã kết nối lần cuối
+        const savedAccount = localStorage.getItem('proof_random_connected_account');
+        if (savedAccount && savedAccount.toLowerCase() === address.toLowerCase()) {
+          this.currentAccount.set(address);
+          this.walletConnected.set(true);
+          this.appKitIsConnected = false; // Đang kết nối trực tiếp qua window.ethereum
+          await this.updateBalanceAndStatus(address);
+        }
+      }
+    } catch (e) {
+      console.warn('[Web3] Kiểm tra kết nối sẵn qua window.ethereum thất bại:', e);
     }
   }
 
@@ -346,6 +391,10 @@ export class Web3Service {
           this.currentAccount.set(address);
           this.walletConnected.set(true);
 
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('proof_random_connected_account', address);
+          }
+
           // Cập nhật chainId đồng bộ trực tiếp từ AppKit state trước
           const state = this.modal.getState();
           if (state && state.selectedNetworkId) {
@@ -363,6 +412,9 @@ export class Web3Service {
           this.walletConnected.set(false);
           this.currentAccount.set('');
           this.walletBalance.set('0.00');
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('proof_random_connected_account');
+          }
         }
       });
 
@@ -395,7 +447,7 @@ export class Web3Service {
       // Đồng bộ phiên kết nối cưỡng bức sau khi load trang (Timeout 1 giây)
       setTimeout(async () => {
         try {
-          if (this.modal) {
+          if (this.modal && this.appKitIsConnected) {
             const walletProvider = this.modal.getWalletProvider();
             const state = this.modal.getState();
             
@@ -451,11 +503,17 @@ export class Web3Service {
         const account = accounts[0];
         this.currentAccount.set(account);
         this.walletConnected.set(true);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('proof_random_connected_account', account);
+        }
         this.updateBalanceAndStatus(account);
       } else {
         this.walletConnected.set(false);
         this.currentAccount.set('');
         this.walletBalance.set('0.00');
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('proof_random_connected_account');
+        }
       }
     });
 
@@ -520,6 +578,10 @@ export class Web3Service {
     this.walletConnected.set(false);
     this.currentAccount.set('');
     this.walletBalance.set('0.00');
+    this.appKitIsConnected = false;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('proof_random_connected_account');
+    }
   }
 
   /**
@@ -652,7 +714,7 @@ export class Web3Service {
   public getBrowserProvider(): BrowserProvider | null {
     if (typeof window === 'undefined') return null;
 
-    if (this.modal) {
+    if (this.modal && this.appKitIsConnected) {
       try {
         const walletProvider = this.modal.getWalletProvider();
         if (walletProvider) {

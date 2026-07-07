@@ -143,3 +143,5 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Viết mới hoàn toàn Web3Service từ đầu dựa trên cấu trúc dự án cafe-blockchain. Sửa logic computed isWrongChain an toàn (không chặn khi chainId của ví đang rỗng ""), loại bỏ hoàn toàn cơ chế JWT Auth Token dư thừa và đồng bộ trạng thái trực tiếp từ Reown AppKit làm nguồn chân lý duy nhất.
 - [x] Viết mới hoàn toàn file Web3Service dựa trên mã nguồn sao lưu hoàn chỉnh nhất, tích hợp tối ưu kết nối ví và tương tác blockchain.
 - [x] Xác minh biên dịch Angular thành công 100% không phát sinh lỗi cú pháp hay TypeScript.
+- [x] Khắc phục lỗi báo "Sai mạng lưới blockchain" khi reload trang và khi đăng nhập ví đúng chain bằng cách tối ưu hóa `getBrowserProvider` chỉ lấy provider từ AppKit khi ví thực sự kết nối qua WalletConnect (`appKitIsConnected === true`), đồng thời bổ sung cơ chế khôi phục phiên kết nối tự động từ `localStorage` và truy vấn tài khoản active từ `window.ethereum` khi load trang.
+- [x] Khắc phục triệt để lỗi treo/đứng im nút bốc thăm, không gửi được giao dịch tương tác Smart Contract bằng cách khắc phục việc lấy sai provider ví và signer của `getBrowserProvider`. Đã biên dịch kiểm tra dự án thành công.
