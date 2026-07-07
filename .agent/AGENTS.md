@@ -145,3 +145,6 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Xác minh biên dịch Angular thành công 100% không phát sinh lỗi cú pháp hay TypeScript.
 - [x] Khắc phục lỗi báo "Sai mạng lưới blockchain" khi reload trang và khi đăng nhập ví đúng chain bằng cách tối ưu hóa `getBrowserProvider` chỉ lấy provider từ AppKit khi ví thực sự kết nối qua WalletConnect (`appKitIsConnected === true`), đồng thời bổ sung cơ chế khôi phục phiên kết nối tự động từ `localStorage` và truy vấn tài khoản active từ `window.ethereum` khi load trang.
 - [x] Khắc phục triệt để lỗi treo/đứng im nút bốc thăm, không gửi được giao dịch tương tác Smart Contract bằng cách khắc phục việc lấy sai provider ví và signer của `getBrowserProvider`. Đã biên dịch kiểm tra dự án thành công.
+- [x] Sửa lỗi không tìm thấy provider ví trên Chrome di động bằng cách lưu flag `proof_random_connection_type` ('appkit' / 'metamask') vào localStorage khi kết nối thành công để khôi phục chính xác trạng thái `appKitIsConnected` khi reload trang.
+- [x] Khắc phục lỗi reload trang bị reset mạng dApp về mặc định bằng cách xóa bỏ hoàn toàn việc tự động ghi đè ngược `configuredChainId` từ các sự kiện lắng nghe chainId của ví và AppKit. Mạng dApp hiện tại sẽ luôn được ghi nhớ chính xác theo lựa chọn trước đó của người dùng.
+

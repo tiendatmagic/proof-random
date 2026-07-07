@@ -186,10 +186,11 @@ export class Web3Service {
     if (typeof window === 'undefined') return;
     try {
       const savedAccount = localStorage.getItem('proof_random_connected_account');
+      const connectionType = localStorage.getItem('proof_random_connection_type');
       if (savedAccount) {
         this.currentAccount.set(savedAccount);
         this.walletConnected.set(true);
-        this.appKitIsConnected = false;
+        this.appKitIsConnected = connectionType === 'appkit';
         await this.updateBalanceAndStatus(savedAccount);
       }
     } catch (e) {
@@ -214,6 +215,9 @@ export class Web3Service {
           this.currentAccount.set(address);
           this.walletConnected.set(true);
           this.appKitIsConnected = false; // Đang kết nối trực tiếp qua window.ethereum
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('proof_random_connection_type', 'metamask');
+          }
           await this.updateBalanceAndStatus(address);
         }
       }
@@ -393,6 +397,7 @@ export class Web3Service {
 
           if (typeof window !== 'undefined') {
             localStorage.setItem('proof_random_connected_account', address);
+            localStorage.setItem('proof_random_connection_type', 'appkit');
           }
 
           // Cập nhật chainId đồng bộ trực tiếp từ AppKit state trước
@@ -401,9 +406,6 @@ export class Web3Service {
             const selectedIdStr = state.selectedNetworkId.toString();
             const cleanChainId = selectedIdStr.includes(':') ? selectedIdStr.split(':').pop() || '' : selectedIdStr;
             this.chainId.set(cleanChainId);
-            if (cleanChainId === '42161' || cleanChainId === '421614') {
-              this.configuredChainId.set(cleanChainId);
-            }
           }
 
           // Cập nhật chi tiết số dư và chainId thực tế bất đồng bộ
@@ -414,6 +416,7 @@ export class Web3Service {
           this.walletBalance.set('0.00');
           if (typeof window !== 'undefined') {
             localStorage.removeItem('proof_random_connected_account');
+            localStorage.removeItem('proof_random_connection_type');
           }
         }
       });
@@ -432,9 +435,6 @@ export class Web3Service {
 
           if (cleanChainId) {
             this.chainId.set(cleanChainId);
-            if (cleanChainId === '42161' || cleanChainId === '421614') {
-              this.configuredChainId.set(cleanChainId);
-            }
 
             const currentAddr = this.currentAccount();
             if (currentAddr) {
@@ -455,9 +455,6 @@ export class Web3Service {
               const selectedIdStr = state.selectedNetworkId.toString();
               const cleanChainId = selectedIdStr.includes(':') ? selectedIdStr.split(':').pop() || '' : selectedIdStr;
               this.chainId.set(cleanChainId);
-              if (cleanChainId === '42161' || cleanChainId === '421614') {
-                this.configuredChainId.set(cleanChainId);
-              }
             }
 
             if (walletProvider) {
@@ -473,9 +470,6 @@ export class Web3Service {
                 this.appKitIsConnected = true;
                 this.chainId.set(chainIdStr);
                 
-                if (chainIdStr === '42161' || chainIdStr === '421614') {
-                  this.configuredChainId.set(chainIdStr);
-                }
                 this.updateBalanceAndStatus(address);
               }
             }
@@ -505,6 +499,7 @@ export class Web3Service {
         this.walletConnected.set(true);
         if (typeof window !== 'undefined') {
           localStorage.setItem('proof_random_connected_account', account);
+          localStorage.setItem('proof_random_connection_type', 'metamask');
         }
         this.updateBalanceAndStatus(account);
       } else {
@@ -513,6 +508,7 @@ export class Web3Service {
         this.walletBalance.set('0.00');
         if (typeof window !== 'undefined') {
           localStorage.removeItem('proof_random_connected_account');
+          localStorage.removeItem('proof_random_connection_type');
         }
       }
     });
@@ -581,6 +577,7 @@ export class Web3Service {
     this.appKitIsConnected = false;
     if (typeof window !== 'undefined') {
       localStorage.removeItem('proof_random_connected_account');
+      localStorage.removeItem('proof_random_connection_type');
     }
   }
 
