@@ -135,4 +135,6 @@ Xây dựng DApp ProofRandom hoàn chỉnh:
 - [x] Cấu trúc lại toàn bộ Web3Service để hỗ trợ 2 mạng Arbitrum One và Arbitrum Sepolia, tự động ánh xạ RPC, Explorer và Contract Address động theo chainId được chọn.
 - [x] Khắc phục triệt để lỗi không lưu chain mạng lưới đã switch khi reload trang bằng cách đặt defaultNetwork động khi khởi tạo Reown AppKit và đồng bộ hóa chiều ngược lại khi người dùng đổi chain trên ví (hoặc chọn trên dApp).
 - [x] Cập nhật dropdown chọn mạng ở Header (cả trên Desktop và Mobile) hiển thị tinh gọn 2 mạng Arbitrum One và Arbitrum Sepolia, đồng bộ hóa Wrong Chain blocker modal hoạt động động dựa theo chain của dApp mà không bị code cứng.
-- [x] Điều chỉnh độ rộng của dropdown chọn mạng ở Header Desktop từ w-64 sang w-72 md:w-80 giúp không bị vỡ dòng tiêu đề và tên mạng lưới, tương thích thẩm mỹ giống cafe-blockchain.
+- [x] Điều chỉnh độ rộng của dropdown chọn mạng ở Header Desktop lên w-80 md:w-[350px] và giảm khoảng cách chữ tiêu đề xuống tracking-wider giúp tiêu đề và tên mạng hiển thị thẳng hàng không bị rớt dòng.
+- [x] Khắc phục triệt để lỗi reload trang bị reset mạng lưới bằng cách chỉ đồng bộ configuredChainId từ ví khi ví thực sự đã kết nối thành công, tránh bị đè dữ liệu bởi sự kiện ban đầu của AppKit.
+- [x] Giải quyết lỗi 'no such account' khi chuyển chain bằng cách gọi eth_requestAccounts để ép ví đồng bộ tài khoản trước khi lấy signer, kết hợp cơ chế fallback tự động sang window.ethereum nếu provider chính bị lỗi.

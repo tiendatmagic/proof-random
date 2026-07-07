@@ -368,9 +368,9 @@ export class Web3Service {
           const cleanChainId = caipId.split(':').pop() || '';
           this.chainId.set(cleanChainId);
 
-          // Cập nhật configuredChainId sang chain của ví nếu mạng được hỗ trợ
+          // Cập nhật configuredChainId sang chain của ví nếu mạng được hỗ trợ VÀ ví đang thực sự kết nối
           const supportedChains = ['42161', '421614'];
-          if (supportedChains.includes(cleanChainId)) {
+          if (this.walletConnected() && supportedChains.includes(cleanChainId)) {
             this.configuredChainId.set(cleanChainId);
           }
 
@@ -510,7 +510,31 @@ export class Web3Service {
       throw new Error('Không thể tìm thấy provider của ví.');
     }
 
-    const signer = await browserProvider.getSigner();
+    try {
+      // Yêu cầu ví cấp/đồng bộ tài khoản hiện hành trước khi lấy signer để tránh lỗi "no such account"
+      await browserProvider.send("eth_requestAccounts", []);
+    } catch (reqAccErr) {
+      console.warn('[Web3] Cảnh báo eth_requestAccounts:', reqAccErr);
+    }
+
+    let signer: any;
+    try {
+      signer = await browserProvider.getSigner();
+    } catch (signerErr: any) {
+      console.warn('[Web3] getSigner từ primary provider lỗi, thử fallback window.ethereum:', signerErr);
+      if (typeof window !== 'undefined' && (window as any).ethereum) {
+        try {
+          const fallbackProvider = new BrowserProvider((window as any).ethereum);
+          await fallbackProvider.send("eth_requestAccounts", []);
+          signer = await fallbackProvider.getSigner();
+        } catch (fallbackErr) {
+          throw signerErr; // Nếu fallback cũng lỗi, ném lỗi gốc
+        }
+      } else {
+        throw signerErr;
+      }
+    }
+
     return new Contract(address, PROOF_RANDOM_ABI, signer);
   }
 
