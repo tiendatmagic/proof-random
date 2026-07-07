@@ -127,6 +127,8 @@ export class Web3Service {
   constructor() {
     this.loadGasSettings();
     this.initAppKit();
+    this.setupEthereumListeners();
+    this.checkConnectedAccounts();
 
     // Tự động nạp cache từ sessionStorage khi configuredChainId thay đổi
     effect(() => {
@@ -382,15 +384,75 @@ export class Web3Service {
     try {
       if (typeof window === 'undefined') return;
 
-      // Sử dụng JsonRpcProvider công cộng thay vì truy vấn qua ví đối với tác vụ đọc số dư
+      // 1. Sử dụng JsonRpcProvider công cộng thay vì truy vấn qua ví đối với tác vụ đọc số dư
       // Điều này loại bỏ hoàn toàn các xung đột RPC (previous request is still active) khi kết nối ví
       const rpc = this.rpcUrl();
       const tempProvider = new JsonRpcProvider(rpc);
       const balanceBigInt = await tempProvider.getBalance(address);
       const balance = formatEther(balanceBigInt);
       this.walletBalance.set(parseFloat(balance).toFixed(4));
+
+      // 2. Cập nhật chainId thực tế của ví
+      const browserProvider = this.getBrowserProvider();
+      if (browserProvider) {
+        const network = await browserProvider.getNetwork();
+        const activeChainId = network.chainId.toString();
+        this.chainId.set(activeChainId);
+      }
     } catch (err) {
-      console.warn('[Web3] Lấy số dư ví lỗi:', err);
+      console.warn('[Web3] Lấy số dư ví hoặc chainId lỗi:', err);
+    }
+  }
+
+  /**
+   * Thiết lập lắng nghe các sự kiện đổi tài khoản và mạng lưới trực tiếp từ window.ethereum
+   */
+  private setupEthereumListeners() {
+    if (typeof window === 'undefined' || !(window as any).ethereum) return;
+
+    const eth = (window as any).ethereum;
+
+    // Lắng nghe thay đổi tài khoản
+    eth.on('accountsChanged', (accounts: string[]) => {
+      if (accounts && accounts.length > 0) {
+        const account = accounts[0];
+        this.currentAccount.set(account);
+        this.walletConnected.set(true);
+        this.updateBalanceAndStatus(account);
+      } else {
+        this.walletConnected.set(false);
+        this.currentAccount.set('');
+        this.walletBalance.set('0.00');
+      }
+    });
+
+    // Lắng nghe thay đổi mạng lưới
+    eth.on('chainChanged', (chainIdHex: string) => {
+      const decimalChainId = BigInt(chainIdHex).toString();
+      this.chainId.set(decimalChainId);
+      const account = this.currentAccount();
+      if (account) {
+        this.updateBalanceAndStatus(account);
+      }
+    });
+  }
+
+  /**
+   * Kiểm tra xem ví đã được cấp quyền từ trước trong trình duyệt tích hợp ví không
+   */
+  private async checkConnectedAccounts() {
+    if (typeof window === 'undefined' || !(window as any).ethereum) return;
+    try {
+      const eth = (window as any).ethereum;
+      const accounts = await eth.request({ method: 'eth_accounts' });
+      if (accounts && accounts.length > 0) {
+        const address = accounts[0];
+        this.currentAccount.set(address);
+        this.walletConnected.set(true);
+        this.updateBalanceAndStatus(address);
+      }
+    } catch (e) {
+      console.warn('[Web3] Lỗi check accounts tự động:', e);
     }
   }
 
