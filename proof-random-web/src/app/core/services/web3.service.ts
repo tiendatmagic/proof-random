@@ -90,9 +90,9 @@ export class Web3Service {
     if (this.isInitializing()) return false;
     if (!this.walletConnected()) return false;
     const connectedChain = this.chainId().toString().trim();
-    const configChain = this.configuredChainId().toString().trim();
     if (!connectedChain) return false;
-    return connectedChain !== configChain;
+    // Mạng được hỗ trợ là Arbitrum One (42161) và Arbitrum Sepolia (421614)
+    return connectedChain !== '42161' && connectedChain !== '421614' && connectedChain !== '31337' && connectedChain !== '1337';
   });
 
   // Tên mạng đang được sử dụng
@@ -685,10 +685,10 @@ export class Web3Service {
             const address = accounts[0];
             this.currentAccount.set(address);
             this.walletConnected.set(true);
-            this.appKitIsConnected = true;
+            this.appKitIsConnected = false;
             if (typeof window !== 'undefined') {
               localStorage.setItem('proof_random_connected_account', address);
-              localStorage.setItem('proof_random_connection_type', 'appkit');
+              localStorage.setItem('proof_random_connection_type', 'metamask');
             }
             await this.updateBalanceAndStatus(address);
             return;
