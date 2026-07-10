@@ -1,0 +1,80 @@
+<div [id]="isMobile ? 'mobile-chain-dropdown-container' : 'chain-dropdown-container'" class="relative">
+  <button
+    type="button"
+    (click)="isChainDropdownOpen.set(!isChainDropdownOpen())"
+    [class]="'flex items-center justify-center bg-slate-50 dark:bg-slate-950/40 text-slate-500 dark:text-slate-400 border border-slate-200/40 dark:border-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-[var(--color-primary)] dark:hover:text-[var(--color-primary)] transition-all duration-200 active:scale-95 cursor-pointer shadow-sm '"
+    [ngClass]="isMobile ? 'w-[38px] h-[38px] rounded-xl' : 'w-[44px] h-[44px] rounded-2xl'"
+    title="Chọn mạng Blockchain"
+  >
+    <svg
+      [ngClass]="isMobile ? 'h-4.5 w-4.5' : 'h-5 w-5'"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      stroke-width="2.2"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+      />
+    </svg>
+  </button>
+
+  <!-- Dropdown Menu Mạng lưới -->
+  <div
+    *ngIf="isChainDropdownOpen()"
+    [ngClass]="isMobile ? 'fixed left-4 right-4 top-[60px]' : 'absolute right-0 mt-2 w-80 md:w-[350px] md:mt-2'"
+    class="z-[9995] rounded-[15px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 shadow-2xl shadow-slate-900/10 dark:shadow-black/50 overflow-hidden animate-fadeIn"
+  >
+    <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60">
+      <p
+        class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none"
+      >
+        -- Chọn nhanh mạng phổ biến nhất --
+      </p>
+    </div>
+    
+    <div class="py-1.5 px-1.5 space-y-0.5">
+      <!-- Arbitrum One Mainnet -->
+      <button
+        type="button"
+        (click)="switchNetwork('42161')"
+        class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
+        [class.bg-purple-50]="web3Service.configuredChainId() === '42161'"
+        [class.dark:bg-purple-950/20]="web3Service.configuredChainId() === '42161'"
+        [class.text-[var(--color-primary)]]="web3Service.configuredChainId() === '42161'"
+      >
+        <div class="flex items-center gap-3">
+          <span class="w-3 h-3 rounded-full bg-sky-500 shrink-0"></span>
+          <span class="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[var(--color-primary)]">Arbitrum One</span>
+        </div>
+        <span
+          class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
+        >
+          42161
+        </span>
+      </button>
+
+      <!-- Arbitrum Sepolia -->
+      <button
+        type="button"
+        (click)="switchNetwork('421614')"
+        class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm text-slate-700 dark:text-slate-300 hover:bg-[var(--color-primary)]/5 hover:text-[var(--color-primary)] transition-all text-left cursor-pointer group"
+        [class.bg-purple-50]="web3Service.configuredChainId() === '421614'"
+        [class.dark:bg-purple-950/20]="web3Service.configuredChainId() === '421614'"
+        [class.text-[var(--color-primary)]]="web3Service.configuredChainId() === '421614'"
+      >
+        <div class="flex items-center gap-3">
+          <span class="w-3 h-3 rounded-full bg-rose-500 shrink-0"></span>
+          <span class="font-semibold text-slate-700 dark:text-slate-300 group-hover:text-[var(--color-primary)]">Arbitrum Sepolia</span>
+        </div>
+        <span
+          class="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 rounded font-mono shrink-0"
+        >
+          421614
+        </span>
+      </button>
+    </div>
+  </div>
+</div>

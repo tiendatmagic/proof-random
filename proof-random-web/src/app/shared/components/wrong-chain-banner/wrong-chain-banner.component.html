@@ -1,0 +1,34 @@
+<!-- BANNER CẢNH BÁO SAI CHAIN (Tràn viền sang trọng, không che màn hình) -->
+<div
+  *ngIf="web3Service.isWrongChain()"
+  class="bg-gradient-to-r from-rose-500/95 to-pink-600/95 backdrop-blur-md text-white px-4 py-3 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm font-bold shadow-lg border-b border-white/10 transition-all duration-300 gap-3 shrink-0 relative z-40"
+>
+  <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0">
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <span class="tracking-tight">
+      <strong class="font-extrabold text-white">Sai mạng kết nối:</strong> Ví của bạn đang ở mạng khác. dApp yêu cầu kết nối mạng
+      <span class="underline decoration-wavy decoration-white/50 text-white font-black">
+        {{ web3Service.configuredChainId() === '42161' ? 'Arbitrum One' : 'Arbitrum Sepolia' }}
+      </span>
+      (ID: {{ web3Service.configuredChainId() }}) để có thể đồng bộ Blockchain!
+    </span>
+  </div>
+  <div class="flex items-center gap-2 w-full sm:w-auto shrink-0">
+    <button
+      (click)="switchNetwork(web3Service.configuredChainId())"
+      class="bg-white hover:bg-white/90 text-rose-600 font-extrabold text-xs px-4 py-2.5 rounded-xl transition-all duration-200 shadow-md shadow-black/10 active:scale-95 hover:scale-[1.03] flex items-center justify-center gap-1.5 w-full sm:w-auto cursor-pointer"
+    >
+      Chuyển mạng tự động
+    </button>
+    <button
+      (click)="disconnectWallet()"
+      class="bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-3.5 py-2.5 rounded-xl transition-all duration-200 active:scale-95 flex items-center justify-center gap-1 w-full sm:w-auto cursor-pointer"
+    >
+      Ngắt kết nối
+    </button>
+  </div>
+</div>
