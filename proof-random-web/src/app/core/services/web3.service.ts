@@ -112,6 +112,7 @@ export class Web3Service {
 
   private modal: any = null;
   private appKitIsConnected = false;
+  private isSwitchingNetwork = false;
 
   // Cache lưu trữ lịch sử bốc thăm đã quét theo chainId
   private _allDrawsCache: Record<string, any[]> = {};
@@ -171,17 +172,30 @@ export class Web3Service {
         this.gasMode.set(savedMode || 'fast');
       }
     }, { allowSignalWrites: true });
-
     // Tự động đồng bộ configuredChainId xuống AppKit modal để modal gọi đúng chain khi bấm connect
+    // CHÚ Ý: Chỉ đồng bộ khi người dùng chủ động đổi mạng (configuredChainId thay đổi).
+    // Dùng untracked() cho walletConnected để effect không bị trigger lại khi ví đang trong quá trình kết nối.
+    let previousChainId = this.configuredChainId();
     effect(() => {
-      const targetChainId = this.configuredChainId();
-      if (this.modal && !this.walletConnected()) {
-        const net = this.getAppKitNetworkByChainId(targetChainId);
-        if (net) {
-          this.modal.switchNetwork(net).catch(() => {});
+      const currentChainId = this.configuredChainId();
+      if (currentChainId !== previousChainId) {
+        previousChainId = currentChainId;
+        // Import untracked dynamically if needed, or use a workaround if untracked is not imported in proof-random
+        // Wait, I might not have imported untracked in proof-random! Let's check imports.
+        // Actually I can just avoid `untracked` if I only rely on `previousChainId`.
+        // Wait, if I don't use `untracked`, then `this.walletConnected()` WILL be tracked!
+        // But since I use `currentChainId !== previousChainId`, the block inside the `if` ONLY executes when `currentChainId` changes!
+        // So even if the effect runs because `walletConnected` changed, the `if` condition will be FALSE, so it does nothing!
+        // THIS IS BRILLIANT and doesn't require `untracked`!
+        if (this.modal && !this.walletConnected()) {
+          const net = this.getAppKitNetworkByChainId(currentChainId);
+          if (net) {
+            this.modal.switchNetwork(net).catch(() => {});
+          }
         }
       }
     });
+
   }
 
   /**
@@ -482,12 +496,30 @@ export class Web3Service {
           // Cập nhật chi tiết số dư và chainId thực tế bất đồng bộ
           await this.updateBalanceAndStatus(address);
         } else {
-          this.walletConnected.set(false);
-          this.currentAccount.set('');
-          this.walletBalance.set('0.00');
-          if (typeof window !== 'undefined') {
-            localStorage.removeItem('proof_random_connected_account');
-            localStorage.removeItem('proof_random_connection_type');
+          // Nếu có address nhưng isConnected = false (do ví chuyển sang mạng không hỗ trợ)
+          // Chúng ta giữ kết nối ví ở chế độ Wrong Chain thay vì ngắt kết nối hoàn toàn
+          if (address) {
+            this.currentAccount.set(address);
+            this.walletConnected.set(true);
+            this.appKitIsConnected = true; // Cho phép giữ provider của AppKit để gọi lệnh switch tiếp theo
+            
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('proof_random_connected_account', address);
+              localStorage.setItem('proof_random_connection_type', 'appkit');
+            }
+            await this.updateBalanceAndStatus(address);
+            return;
+          }
+
+          // Thực sự ngắt kết nối khi không còn address và không đang trong quá trình chuyển mạng
+          if (!this.isSwitchingNetwork) {
+            this.walletConnected.set(false);
+            this.currentAccount.set('');
+            this.walletBalance.set('0.00');
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('proof_random_connected_account');
+              localStorage.removeItem('proof_random_connection_type');
+            }
           }
         }
       });
@@ -625,10 +657,51 @@ export class Web3Service {
   }
 
   public async connectWallet(): Promise<void> {
-    if (this.modal) {
-      await this.modal.open();
-    } else {
+    if (!this.modal) {
       this.walletError.set('WalletConnect AppKit chưa được khởi tạo.');
+      return;
+    }
+
+    try {
+      // Phát hiện môi trường in-app browser của các app ví di động
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isInAppBrowser = typeof window !== 'undefined' && (
+        (window as any).ethereum && (
+          (window as any).bitkeep || 
+          (window as any).ethereum.isBitKeep ||
+          ((window as any).ethereum.isMetaMask && isMobile) ||
+          (window as any).ethereum.isTrust ||
+          navigator.userAgent.includes('Bitget') || 
+          navigator.userAgent.includes('OKX') ||
+          navigator.userAgent.includes('TokenPocket')
+        )
+      );
+
+      if (isInAppBrowser && (window as any).ethereum) {
+        try {
+          const eth = (window as any).ethereum;
+          const accounts = await eth.request({ method: 'eth_requestAccounts' });
+          if (accounts && accounts.length > 0) {
+            const address = accounts[0];
+            this.currentAccount.set(address);
+            this.walletConnected.set(true);
+            this.appKitIsConnected = true;
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('proof_random_connected_account', address);
+              localStorage.setItem('proof_random_connection_type', 'appkit');
+            }
+            await this.updateBalanceAndStatus(address);
+            return;
+          }
+        } catch (inAppErr) {
+          console.warn('[Web3] Kết nối trực tiếp qua window.ethereum thất bại, fallback sang AppKit:', inAppErr);
+        }
+      }
+
+      await this.modal.open();
+    } catch (e: any) {
+      console.error('Lỗi khi mở modal kết nối:', e);
+      this.walletError.set(e.message || 'Lỗi kết nối ví.');
     }
   }
 
@@ -657,89 +730,109 @@ export class Web3Service {
    */
   public async ensureCorrectNetwork(targetChainId?: string): Promise<boolean> {
     this.walletError.set('');
+    this.isSwitchingNetwork = true;
     const chainIdToUse = targetChainId || this.configuredChainId();
     const chainIdHex = `0x${BigInt(chainIdToUse).toString(16)}`;
 
-    // Ưu tiên dùng switchNetwork của AppKit để đồng bộ trạng thái an toàn
-    if (this.modal && this.appKitIsConnected) {
-      try {
-        const net = this.getAppKitNetworkByChainId(chainIdToUse);
-        if (net) {
-          await this.modal.switchNetwork(net);
-          this.chainId.set(chainIdToUse);
-          const addr = this.currentAccount();
-          if (addr) await this.updateBalanceAndStatus(addr);
-          return true;
-        }
-      } catch (appKitSwitchError) {
-        console.warn('Switch network via AppKit failed, attempting direct request:', appKitSwitchError);
-      }
-    }
-
-    // Fallback switch trực tiếp qua provider request
-    let provider: any = null;
-    if (this.modal && this.appKitIsConnected) {
-      provider = this.modal.getWalletProvider();
-    }
-    if (!provider && typeof window !== 'undefined' && (window as any).ethereum) {
-      provider = (window as any).ethereum;
-    }
-
-    if (!provider) {
-      this.walletError.set('Không tìm thấy provider ví Web3!');
-      return false;
-    }
-
     try {
-      await provider.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: chainIdHex }],
-      });
-      this.chainId.set(chainIdToUse);
-      const addr = this.currentAccount();
-      if (addr) await this.updateBalanceAndStatus(addr);
-      return true;
-    } catch (directSwitchError: any) {
-      console.warn('Switch network failed, attempting to add network:', directSwitchError);
-      const isNetworkNotAdded = directSwitchError.code === 4902 ||
-        directSwitchError.data?.originalError?.code === 4902 ||
-        directSwitchError.message?.includes('4902');
-
-      if (isNetworkNotAdded) {
+      // Ưu tiên dùng switchNetwork của AppKit để đồng bộ trạng thái an toàn
+      if (this.modal) {
         try {
-          const netName = chainIdToUse === '42161' ? 'Arbitrum One' : 'Arbitrum Sepolia';
-          const rpcUrl = chainIdToUse === '42161' ? 'https://arb1.arbitrum.io/rpc' : 'https://sepolia-rollup.arbitrum.io/rpc';
-          const explorerUrl = chainIdToUse === '42161' ? 'https://arbiscan.io' : 'https://sepolia.arbiscan.io';
-
-          await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: chainIdHex,
-              chainName: netName,
-              rpcUrls: [rpcUrl],
-              blockExplorerUrls: [explorerUrl],
-              nativeCurrency: {
-                name: 'ETH',
-                symbol: 'ETH',
-                decimals: 18
-              }
-            }],
-          });
-          this.chainId.set(chainIdToUse);
-          const addr = this.currentAccount();
-          if (addr) await this.updateBalanceAndStatus(addr);
-          return true;
-        } catch (addError: any) {
-          console.error('Add network failed:', addError);
-          this.walletError.set('Không thể tự động thêm mạng mới vào ví!');
-          return false;
+          const net = this.getAppKitNetworkByChainId(chainIdToUse);
+          if (net) {
+            await this.modal.switchNetwork(net);
+            this.chainId.set(chainIdToUse);
+            this.configuredChainId.set(chainIdToUse);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('proof_random_configured_chain_id', chainIdToUse);
+            }
+            const addr = this.currentAccount();
+            if (addr) await this.updateBalanceAndStatus(addr);
+            return true;
+          }
+        } catch (appKitSwitchError) {
+          console.warn('Switch network via AppKit failed, attempting direct request:', appKitSwitchError);
         }
-      } else if (directSwitchError.code === 4001 || directSwitchError.message?.includes('user rejected') || directSwitchError.message?.includes('rejected')) {
-        this.walletError.set('Giao dịch chuyển mạng bị hủy bởi người dùng.');
+      }
+
+      // Fallback switch trực tiếp qua provider request
+      let provider: any = null;
+      if (this.modal) {
+        provider = this.modal.getWalletProvider();
+      }
+      if (!provider && typeof window !== 'undefined' && (window as any).ethereum) {
+        provider = (window as any).ethereum;
+      }
+
+      if (!provider) {
+        this.walletError.set('Không tìm thấy provider ví Web3!');
         return false;
       }
-      this.walletError.set(directSwitchError.message || 'Lỗi chuyển mạng.');
-      return false;
+
+      try {
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: chainIdHex }],
+        });
+        this.chainId.set(chainIdToUse);
+        this.configuredChainId.set(chainIdToUse);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('proof_random_configured_chain_id', chainIdToUse);
+        }
+        const addr = this.currentAccount();
+        if (addr) await this.updateBalanceAndStatus(addr);
+        return true;
+      } catch (directSwitchError: any) {
+        console.warn('Switch network failed, attempting to add network:', directSwitchError);
+        const isNetworkNotAdded = directSwitchError.code === 4902 ||
+          directSwitchError.data?.originalError?.code === 4902 ||
+          directSwitchError.message?.includes('4902');
+
+        if (isNetworkNotAdded) {
+          try {
+            const netName = chainIdToUse === '42161' ? 'Arbitrum One' : 'Arbitrum Sepolia';
+            const rpcUrl = chainIdToUse === '42161' ? 'https://arb1.arbitrum.io/rpc' : 'https://sepolia-rollup.arbitrum.io/rpc';
+            const explorerUrl = chainIdToUse === '42161' ? 'https://arbiscan.io' : 'https://sepolia.arbiscan.io';
+
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: chainIdHex,
+                chainName: netName,
+                rpcUrls: [rpcUrl],
+                blockExplorerUrls: [explorerUrl],
+                nativeCurrency: {
+                  name: 'ETH',
+                  symbol: 'ETH',
+                  decimals: 18
+                }
+              }],
+            });
+            this.chainId.set(chainIdToUse);
+            this.configuredChainId.set(chainIdToUse);
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('proof_random_configured_chain_id', chainIdToUse);
+            }
+            const addr = this.currentAccount();
+            if (addr) await this.updateBalanceAndStatus(addr);
+            return true;
+          } catch (addError: any) {
+            console.error('Add network failed:', addError);
+            this.walletError.set('Không thể tự động thêm mạng mới vào ví!');
+            return false;
+          }
+        } else if (directSwitchError.code === 4001 || directSwitchError.message?.includes('user rejected') || directSwitchError.message?.includes('rejected')) {
+          this.walletError.set('Giao dịch chuyển mạng bị hủy bởi người dùng.');
+          return false;
+        }
+        this.walletError.set(directSwitchError.message || 'Lỗi chuyển mạng.');
+        return false;
+      }
+    } finally {
+      // Đợi 2.5 giây để ví di động ổn định kết nối lại trước khi tắt cờ chuyển mạng
+      setTimeout(() => {
+        this.isSwitchingNetwork = false;
+      }, 2500);
     }
   }
 
