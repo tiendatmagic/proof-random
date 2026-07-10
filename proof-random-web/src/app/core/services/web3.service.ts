@@ -214,6 +214,7 @@ export class Web3Service {
   // Helper đồng bộ hóa và kiểm tra trạng thái mạng EVM
   private checkAndUpdateNetworkState(chainId: number, showToastAlert = true) {
     const prevChainId = this.chainId();
+    const prevWrongChain = this.isWrongChain();
     this.chainId.set(chainId);
 
     const supportedChain = this.supportedChains.find(c => Number(c.id) === chainId);
@@ -230,9 +231,12 @@ export class Web3Service {
         localStorage.setItem('proof_random_configured_chain_id', chainIdStr);
       }
 
-      try {
-        this.modal.close();
-      } catch (e) {}
+      // Chỉ tự động đóng modal nếu trước đó đang ở sai mạng lưới và nay đã chuyển về đúng mạng
+      if (prevWrongChain) {
+        try {
+          this.modal.close();
+        } catch (e) {}
+      }
     } else {
       this.networkName.set('Mạng không hỗ trợ');
       if (this.isConnected()) {

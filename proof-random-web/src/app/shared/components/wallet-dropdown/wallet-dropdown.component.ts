@@ -36,9 +36,12 @@ export class WalletDropdownComponent {
     this.isWalletDropdownOpen.set(false);
   }
 
-  public openWalletModal() {
-    this.web3Service.openWalletModal();
+  public openWalletModal(event: Event) {
+    event.stopPropagation();
     this.isWalletDropdownOpen.set(false);
+    setTimeout(() => {
+      this.web3Service.openWalletModal();
+    }, 100);
   }
 
   @HostListener('document:click', ['$event'])
