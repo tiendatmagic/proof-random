@@ -1,326 +1,360 @@
-      <!-- ================= STANDARD DRAW TYPES (IF NO SKIN OR SPECIFIC MULTI SKINS) ================= -->
-      <div *ngIf="!skinType || skinType === 'Dice' || skinType === 'RandomLetter' || skinType === 'CoinFlip'" class="w-full flex flex-col items-center justify-center text-center">
-        <!-- 1. Random Number Display -->
+<!-- ================= STANDARD DRAW TYPES (IF NO SKIN OR SPECIFIC MULTI SKINS) ================= -->
+<div
+  *ngIf="
+    !skinType ||
+    skinType === 'RandomNumber' ||
+    skinType === 'Dice' ||
+    skinType === 'RandomLetter' ||
+    skinType === 'CoinFlip'
+  "
+  class="w-full flex flex-col items-center justify-center text-center"
+>
+  <!-- 1. Random Number Display -->
+  <div *ngIf="sessionDetails().drawType === 1 && clientResult()" class="space-y-4 animate-fade-in">
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+      Con số may mắn trúng giải
+    </p>
+    <div
+      class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] drop-shadow-[0_10px_25px_rgba(255,0,221,0.25)] select-all font-mono"
+    >
+      {{ clientResult().result }}
+    </div>
+    <div class="text-xs font-bold text-slate-400">
+      Thuộc khoảng: [{{ sessionDetails().param1 }} - {{ sessionDetails().param2 }}]
+    </div>
+  </div>
+
+  <!-- 2. Random Name Display -->
+  <div *ngIf="sessionDetails().drawType === 2 && clientResult()" class="space-y-6 animate-fade-in">
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+      Người chiến thắng duy nhất
+    </p>
+
+    <div class="space-y-3">
+      <div
+        class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto"
+      >
+        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"
+          />
+        </svg>
+      </div>
+      <h3
+        class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
+      >
+        {{ clientResult().winners[0] }}
+      </h3>
+      <p class="text-xs font-bold text-slate-400">Chỉ số danh sách: {{ clientResult().result }}</p>
+    </div>
+  </div>
+
+  <!-- 3. Multiple Winners Display (Exclude Dice, Letter, and CoinFlip) -->
+  <div
+    *ngIf="
+      sessionDetails().drawType === 3 &&
+      skinType !== 'Dice' &&
+      skinType !== 'RandomLetter' &&
+      skinType !== 'CoinFlip' &&
+      clientResult()
+    "
+    class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
+  >
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+      {{
+        isNumberWinners() ? 'Danh sách các con số trúng giải' : 'Danh sách những người chiến thắng'
+      }}
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div
+        *ngFor="let name of clientResult().winners; let i = index"
+        class="p-4.5 rounded-xl border border-[var(--color-primary)]/15 bg-gradient-to-tr from-purple-50/50 to-white dark:from-purple-950/10 dark:to-slate-900 shadow-sm flex items-center gap-3"
+      >
+        <!-- Badge số thứ tự -->
         <div
-          *ngIf="sessionDetails().drawType === 1 && clientResult()"
-          class="space-y-4 animate-fade-in"
+          class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center font-extrabold text-sm"
         >
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            Con số may mắn trúng giải
-          </p>
-          <div
-            class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] drop-shadow-[0_10px_25px_rgba(255,0,221,0.25)] select-all font-mono"
+          {{ i + 1 }}
+        </div>
+        <div class="text-left">
+          <span class="font-extrabold text-sm text-slate-800 dark:text-white block select-all">{{
+            isNumberWinners() ? 'Số ' + name : name
+          }}</span>
+          <span
+            *ngIf="!isNumberWinners()"
+            class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block"
+            >Index: {{ clientResult().result.split(',')[i] }}</span
           >
-            {{ clientResult().result }}
-          </div>
-          <div class="text-xs font-bold text-slate-400">
-            Thuộc khoảng: [{{ sessionDetails().param1 }} - {{ sessionDetails().param2 }}]
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Coin Flip Display (With Animation) -->
+  <div
+    *ngIf="(sessionDetails().drawType === 4 || skinType === 'CoinFlip') && clientResult()"
+    class="space-y-6 w-full max-w-4xl px-4 flex flex-col items-center animate-fade-in"
+  >
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kết quả lật đồng xu</p>
+
+    <!-- Danh sách đồng xu -->
+    <div class="flex flex-wrap items-center justify-center gap-6 py-4">
+      <!-- Trước khi bắt đầu quay: hiện các đồng xu rỗng hoặc ? -->
+      <ng-container *ngIf="!coinDone() && !isCoinRunning()">
+        <div
+          *ngFor="
+            let idx of [].constructor(sessionDetails().drawType === 3 ? sessionDetails().param2 : 1)
+          "
+          class="w-24 h-24 rounded-full bg-white/40 dark:bg-slate-950/40 border-2 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600 flex items-center justify-center text-2xl font-black shadow-sm font-mono"
+        >
+          ?
+        </div>
+      </ng-container>
+
+      <!-- Khi đang quay hoặc đã quay xong -->
+      <ng-container *ngIf="isCoinRunning() || coinDone()">
+        <div
+          *ngFor="let val of tempCoinValues(); let i = index"
+          [ngClass]="{ 'animate-spin': isCoinRunning() }"
+          class="w-24 h-24 rounded-full bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 shadow-md dark:shadow-slate-950/50 flex items-center justify-center select-none border-4 border-slate-200 dark:border-slate-800 transform transition-transform"
+          [style.animationDelay]="i * 150 + 'ms'"
+        >
+          <div class="flex flex-col items-center justify-center gap-0.5">
+            <span class="text-2xl">🪙</span>
+            <span
+              *ngIf="!isCoinRunning()"
+              class="text-xs font-black tracking-wider uppercase animate-fade-in"
+            >
+              {{ val === 'Heads' ? 'HEADS' : 'TAILS' }}
+            </span>
           </div>
         </div>
+      </ng-container>
+    </div>
 
-        <!-- 2. Random Name Display -->
+    <!-- Label kết quả sau khi dừng -->
+    <div *ngIf="coinDone()" class="animate-fade-in text-center space-y-1">
+      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kết quả</p>
+      <p
+        class="text-2xl font-black text-slate-800 dark:text-white"
+        *ngIf="tempCoinValues().length === 1"
+      >
+        {{ tempCoinValues()[0] === 'Heads' ? 'Ngửa (Heads)' : 'Sấp (Tails)' }}
+      </p>
+      <p
+        class="text-2xl font-black text-slate-800 dark:text-white"
+        *ngIf="tempCoinValues().length > 1"
+      >
+        {{ getHeadsCount() }} Ngửa (Heads) - {{ tempCoinValues().length - getHeadsCount() }} Sấp
+        (Tails)
+      </p>
+    </div>
+
+    <!-- Nút điều khiển: luôn hiện 2 nút khi chưa xong, disable nút chính khi đang lật -->
+    <div class="flex gap-3 justify-center w-full" *ngIf="!coinDone()">
+      <button
+        (click)="startCoinFlip()"
+        [disabled]="isCoinRunning()"
+        class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"
+          />
+        </svg>
+        <span>{{ isCoinRunning() ? 'ĐANG LẬT...' : 'LẬT ĐỒNG XU' }}</span>
+      </button>
+      <button
+        (click)="skipCoinFlip()"
+        class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+      >
+        <span>Bỏ qua</span>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 5l7 7-7 7M5 5l7 7-7 7"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 5. Dice Display (With Animation - Support 1 or Multiple Dice) -->
+  <div
+    *ngIf="(sessionDetails().drawType === 5 || skinType === 'Dice') && clientResult()"
+    class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
+  >
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Quân xúc xắc lật được</p>
+
+    <!-- Danh sách xúc xắc -->
+    <div class="flex flex-wrap items-center justify-center gap-6 py-4">
+      <!-- 1 Xúc xắc hoặc Nhiều xúc xắc -->
+      <ng-container *ngIf="!diceDone() && !isDiceRunning()">
+        <!-- Hiện các xúc xắc rỗng chờ tung -->
         <div
-          *ngIf="sessionDetails().drawType === 2 && clientResult()"
-          class="space-y-6 animate-fade-in"
+          *ngFor="
+            let idx of [].constructor(sessionDetails().drawType === 3 ? sessionDetails().param2 : 1)
+          "
+          class="w-20 h-20 rounded-2xl bg-white/40 dark:bg-slate-950/40 border-2 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600 flex items-center justify-center text-3xl font-black shadow-sm font-mono"
         >
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            Người chiến thắng duy nhất
-          </p>
-
-          <div class="space-y-3">
-            <div
-              class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mx-auto"
-            >
-              <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"
-                />
-              </svg>
-            </div>
-            <h3
-              class="text-3xl font-black bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-secondary)] bg-clip-text text-transparent select-all"
-            >
-              {{ clientResult().winners[0] }}
-            </h3>
-            <p class="text-xs font-bold text-slate-400">
-              Chỉ số danh sách: {{ clientResult().result }}
-            </p>
-          </div>
+          ?
         </div>
+      </ng-container>
 
-        <!-- 3. Multiple Winners Display (Exclude Dice, Letter, and CoinFlip) -->
+      <ng-container *ngIf="isDiceRunning() || diceDone()">
         <div
-          *ngIf="sessionDetails().drawType === 3 && skinType !== 'Dice' && skinType !== 'RandomLetter' && skinType !== 'CoinFlip' && clientResult()"
-          class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
+          *ngFor="let val of tempDiceValues(); let i = index"
+          [ngClass]="{ 'animate-bounce': isDiceRunning() }"
+          class="w-20 h-20 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-[var(--color-primary)]/40 text-[var(--color-primary)] flex items-center justify-center text-3xl font-black shadow-lg shadow-[var(--color-primary)]/10 font-mono transform transition-transform"
+          [style.animationDelay]="i * 150 + 'ms'"
         >
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-            {{ isNumberWinners() ? 'Danh sách các con số trúng giải' : 'Danh sách những người chiến thắng' }}
-          </p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div
-              *ngFor="let name of clientResult().winners; let i = index"
-              class="p-4.5 rounded-xl border border-[var(--color-primary)]/15 bg-gradient-to-tr from-purple-50/50 to-white dark:from-purple-950/10 dark:to-slate-900 shadow-sm flex items-center gap-3"
-            >
-              <!-- Badge số thứ tự -->
-              <div
-                class="w-8 h-8 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center font-extrabold text-sm"
-              >
-                {{ i + 1 }}
-              </div>
-              <div class="text-left">
-                <span
-                  class="font-extrabold text-sm text-slate-800 dark:text-white block select-all"
-                  >{{ isNumberWinners() ? 'Số ' + name : name }}</span
-                >
-                <span *ngIf="!isNumberWinners()" class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block"
-                  >Index: {{ clientResult().result.split(',')[i] }}</span
-                >
-              </div>
-            </div>
-          </div>
+          {{ val }}
         </div>
+      </ng-container>
+    </div>
 
-        <!-- 4. Coin Flip Display (With Animation) -->
+    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+      Loại xúc xắc:
+      {{ sessionDetails().drawType === 3 ? sessionDetails().param1 : sessionDetails().param1 }} mặt
+    </p>
+
+    <!-- Nút điều khiển: luôn hiện 2 nút khi chưa xong -->
+    <div class="flex gap-3 justify-center w-full" *ngIf="!diceDone()">
+      <button
+        (click)="startDiceRoll()"
+        [disabled]="isDiceRunning()"
+        class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+          />
+        </svg>
+        <span>{{ isDiceRunning() ? 'ĐANG TUNG...' : 'TUNG XÚC XẮC' }}</span>
+      </button>
+      <button
+        (click)="skipDiceRoll()"
+        class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
+      >
+        <span>Bỏ qua</span>
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M13 5l7 7-7 7M5 5l7 7-7 7"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 6. Even / Odd Display -->
+  <div *ngIf="sessionDetails().drawType === 6 && clientResult()" class="space-y-4 animate-fade-in">
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kết quả bốc được</p>
+
+    <div
+      class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/15 text-2xl font-black uppercase tracking-wider select-all shadow-sm"
+    >
+      {{ clientResult().result === 'Even' ? 'Số Chẵn' : 'Số Lẻ' }}
+    </div>
+  </div>
+
+  <!-- 7. Random Color Display -->
+  <div *ngIf="sessionDetails().drawType === 7 && clientResult()" class="space-y-4 animate-fade-in">
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+      Mã màu ngẫu nhiên sinh ra
+    </p>
+
+    <div class="space-y-3">
+      <div
+        [style.backgroundColor]="clientResult().result"
+        class="w-24 h-24 rounded-2xl border-4 border-white dark:border-slate-900 shadow-xl shadow-slate-300/40 dark:shadow-slate-900/50 mx-auto"
+      ></div>
+      <div class="text-xl font-black font-mono select-all text-slate-800 dark:text-white">
+        {{ clientResult().result }}
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Random Letter Display (Support 1 or Multiple Letters) -->
+  <div
+    *ngIf="(sessionDetails().drawType === 8 || skinType === 'RandomLetter') && clientResult()"
+    class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
+  >
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
+      {{ skinType === 'RandomLetter' ? 'Danh sách các chữ cái bốc được' : 'Chữ cái bốc được' }}
+    </p>
+
+    <!-- 1 chữ cái -->
+    <div
+      *ngIf="skinType !== 'RandomLetter'"
+      class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] font-mono select-all"
+    >
+      {{ clientResult().result }}
+    </div>
+
+    <!-- Nhiều chữ cái -->
+    <div
+      *ngIf="skinType === 'RandomLetter'"
+      class="flex flex-wrap items-center justify-center gap-4 py-2"
+    >
+      <div
+        *ngFor="let letter of clientResult().winners; let i = index"
+        class="w-16 h-16 rounded-full border-2 border-[var(--color-primary)]/40 bg-gradient-to-tr from-purple-50/50 to-white dark:from-purple-950/10 dark:to-slate-900 shadow-sm flex items-center justify-center font-black text-2xl text-[var(--color-primary)] select-all font-mono"
+      >
+        {{ letter }}
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. Random Team Display -->
+  <div
+    *ngIf="sessionDetails().drawType === 9 && clientResult()"
+    class="space-y-6 w-full max-w-5xl px-4 animate-fade-in"
+  >
+    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+      Kết quả phân chia các đội
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div
+        *ngFor="let team of clientResult().teams"
+        class="rounded-xl border border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/20 backdrop-blur-md overflow-hidden shadow-sm"
+      >
         <div
-          *ngIf="(sessionDetails().drawType === 4 || skinType === 'CoinFlip') && clientResult()"
-          class="space-y-6 w-full max-w-4xl px-4 flex flex-col items-center animate-fade-in"
+          class="bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-950/30 dark:to-pink-950/30 px-4.5 py-3 border-b border-slate-200/30 dark:border-slate-800/30 text-left flex items-center justify-between"
         >
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            Kết quả lật đồng xu
-          </p>
-
-          <!-- Danh sách đồng xu -->
-          <div class="flex flex-wrap items-center justify-center gap-6 py-4">
-            <!-- Trước khi bắt đầu quay: hiện các đồng xu rỗng hoặc ? -->
-            <ng-container *ngIf="!coinDone() && !isCoinRunning()">
-              <div
-                *ngFor="let idx of [].constructor(sessionDetails().drawType === 3 ? sessionDetails().param2 : 1)"
-                class="w-24 h-24 rounded-full bg-white/40 dark:bg-slate-950/40 border-2 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600 flex items-center justify-center text-2xl font-black shadow-sm font-mono"
-              >
-                ?
-              </div>
-            </ng-container>
-
-            <!-- Khi đang quay hoặc đã quay xong -->
-            <ng-container *ngIf="isCoinRunning() || coinDone()">
-              <div
-                *ngFor="let val of tempCoinValues(); let i = index"
-                [ngClass]="{ 'animate-spin': isCoinRunning() }"
-                class="w-24 h-24 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] text-white shadow-xl shadow-[var(--color-primary)]/25 flex items-center justify-center select-none border-4 border-white/20 transform transition-transform"
-                [style.animationDelay]="i * 150 + 'ms'"
-              >
-                <div class="flex flex-col items-center justify-center gap-0.5">
-                  <span class="text-2xl">🪙</span>
-                  <span *ngIf="!isCoinRunning()" class="text-[10px] font-black tracking-wider uppercase animate-fade-in">
-                    {{ val === 'Heads' ? 'HEADS' : 'TAILS' }}
-                  </span>
-                </div>
-              </div>
-            </ng-container>
-          </div>
-
-          <!-- Label kết quả sau khi dừng -->
-          <div *ngIf="coinDone()" class="animate-fade-in text-center space-y-1">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kết quả</p>
-            <p class="text-2xl font-black text-[var(--color-primary)]" *ngIf="tempCoinValues().length === 1">
-              {{ tempCoinValues()[0] === 'Heads' ? 'Ngửa (Heads)' : 'Sấp (Tails)' }}
-            </p>
-            <p class="text-2xl font-black text-[var(--color-primary)]" *ngIf="tempCoinValues().length > 1">
-              {{ getHeadsCount() }} Ngửa (Heads) - {{ tempCoinValues().length - getHeadsCount() }} Sấp (Tails)
-            </p>
-          </div>
-
-          <!-- Nút điều khiển: luôn hiện 2 nút khi chưa xong, disable nút chính khi đang lật -->
-          <div class="flex gap-3 justify-center w-full" *ngIf="!coinDone()">
-            <button
-              (click)="startCoinFlip()"
-              [disabled]="isCoinRunning()"
-              class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
-              </svg>
-              <span>{{ isCoinRunning() ? 'ĐANG LẬT...' : 'LẬT ĐỒNG XU' }}</span>
-            </button>
-            <button
-              (click)="skipCoinFlip()"
-              class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
-            >
-              <span>Bỏ qua</span>
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- 5. Dice Display (With Animation - Support 1 or Multiple Dice) -->
-        <div
-          *ngIf="(sessionDetails().drawType === 5 || skinType === 'Dice') && clientResult()"
-          class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
-        >
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            Quân xúc xắc lật được
-          </p>
-
-          <!-- Danh sách xúc xắc -->
-          <div class="flex flex-wrap items-center justify-center gap-6 py-4">
-            <!-- 1 Xúc xắc hoặc Nhiều xúc xắc -->
-            <ng-container *ngIf="!diceDone() && !isDiceRunning()">
-              <!-- Hiện các xúc xắc rỗng chờ tung -->
-              <div
-                *ngFor="let idx of [].constructor(sessionDetails().drawType === 3 ? sessionDetails().param2 : 1)"
-                class="w-20 h-20 rounded-2xl bg-white/40 dark:bg-slate-950/40 border-2 border-slate-200/50 dark:border-slate-800/50 text-slate-400 dark:text-slate-600 flex items-center justify-center text-3xl font-black shadow-sm font-mono"
-              >
-                ?
-              </div>
-            </ng-container>
-
-            <ng-container *ngIf="isDiceRunning() || diceDone()">
-              <div
-                *ngFor="let val of tempDiceValues(); let i = index"
-                [ngClass]="{ 'animate-bounce': isDiceRunning() }"
-                class="w-20 h-20 rounded-2xl bg-slate-50 dark:bg-slate-950 border-2 border-[var(--color-primary)]/40 text-[var(--color-primary)] flex items-center justify-center text-3xl font-black shadow-lg shadow-[var(--color-primary)]/10 font-mono transform transition-transform"
-                [style.animationDelay]="i * 150 + 'ms'"
-              >
-                {{ val }}
-              </div>
-            </ng-container>
-          </div>
-
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            Loại xúc xắc: {{ sessionDetails().drawType === 3 ? sessionDetails().param1 : sessionDetails().param1 }} mặt
-          </p>
-
-          <!-- Nút điều khiển: luôn hiện 2 nút khi chưa xong -->
-          <div class="flex gap-3 justify-center w-full" *ngIf="!diceDone()">
-            <button
-              (click)="startDiceRoll()"
-              [disabled]="isDiceRunning()"
-              class="btn btn-primary cursor-pointer font-black text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
-              </svg>
-              <span>{{ isDiceRunning() ? 'ĐANG TUNG...' : 'TUNG XÚC XẮC' }}</span>
-            </button>
-            <button
-              (click)="skipDiceRoll()"
-              class="btn btn-secondary cursor-pointer font-bold text-sm flex items-center gap-1.5"
-            >
-              <span>Bỏ qua</span>
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-
-        </div>
-
-
-
-        <!-- 6. Even / Odd Display -->
-        <div
-          *ngIf="sessionDetails().drawType === 6 && clientResult()"
-          class="space-y-4 animate-fade-in"
-        >
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Kết quả bốc được</p>
-
-          <div
-            class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[var(--color-primary)]/10 to-[var(--color-secondary)]/10 text-[var(--color-primary)] border border-[var(--color-primary)]/15 text-2xl font-black uppercase tracking-wider select-all shadow-sm"
+          <span class="font-extrabold text-sm text-[var(--color-primary)]">{{ team.name }}</span>
+          <span class="text-[10px] font-bold text-slate-400"
+            >{{ team.members.length }} thành viên</span
           >
-            {{ clientResult().result === 'Even' ? 'Số Chẵn' : 'Số Lẻ' }}
-          </div>
         </div>
 
-        <!-- 7. Random Color Display -->
-        <div
-          *ngIf="sessionDetails().drawType === 7 && clientResult()"
-          class="space-y-4 animate-fade-in"
+        <ul
+          class="p-3.5 space-y-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300"
         >
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            Mã màu ngẫu nhiên sinh ra
-          </p>
-
-          <div class="space-y-3">
-            <div
-              [style.backgroundColor]="clientResult().result"
-              class="w-24 h-24 rounded-2xl border-4 border-white dark:border-slate-900 shadow-xl shadow-slate-300/40 dark:shadow-slate-900/50 mx-auto"
-            ></div>
-            <div class="text-xl font-black font-mono select-all text-slate-800 dark:text-white">
-              {{ clientResult().result }}
-            </div>
-          </div>
-        </div>
-
-        <!-- 8. Random Letter Display (Support 1 or Multiple Letters) -->
-        <div
-          *ngIf="(sessionDetails().drawType === 8 || skinType === 'RandomLetter') && clientResult()"
-          class="space-y-6 w-full max-w-4xl px-4 animate-fade-in"
-        >
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">
-            {{ skinType === 'RandomLetter' ? 'Danh sách các chữ cái bốc được' : 'Chữ cái bốc được' }}
-          </p>
-
-          <!-- 1 chữ cái -->
-          <div
-            *ngIf="skinType !== 'RandomLetter'"
-            class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] font-mono select-all"
+          <li
+            *ngFor="let member of team.members; let idx = index"
+            class="flex items-center gap-2 py-1 select-all hover:text-[var(--color-primary)]"
           >
-            {{ clientResult().result }}
-          </div>
-
-          <!-- Nhiều chữ cái -->
-          <div *ngIf="skinType === 'RandomLetter'" class="flex flex-wrap items-center justify-center gap-4 py-2">
-            <div
-              *ngFor="let letter of clientResult().winners; let i = index"
-              class="w-16 h-16 rounded-full border-2 border-[var(--color-primary)]/40 bg-gradient-to-tr from-purple-50/50 to-white dark:from-purple-950/10 dark:to-slate-900 shadow-sm flex items-center justify-center font-black text-2xl text-[var(--color-primary)] select-all font-mono"
-            >
-              {{ letter }}
-            </div>
-          </div>
-        </div>
-
-        <!-- 9. Random Team Display -->
-        <div
-          *ngIf="sessionDetails().drawType === 9 && clientResult()"
-          class="space-y-6 w-full max-w-5xl px-4 animate-fade-in"
-        >
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
-            Kết quả phân chia các đội
-          </p>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div
-              *ngFor="let team of clientResult().teams"
-              class="rounded-xl border border-slate-200/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-950/20 backdrop-blur-md overflow-hidden shadow-sm"
-            >
-              <div
-                class="bg-gradient-to-r from-purple-100/50 to-pink-100/50 dark:from-purple-950/30 dark:to-pink-950/30 px-4.5 py-3 border-b border-slate-200/30 dark:border-slate-800/30 text-left flex items-center justify-between"
-              >
-                <span class="font-extrabold text-sm text-[var(--color-primary)]">{{
-                  team.name
-                }}</span>
-                <span class="text-[10px] font-bold text-slate-400"
-                  >{{ team.members.length }} thành viên</span
-                >
-              </div>
-
-              <ul
-                class="p-3.5 space-y-2 text-left text-xs font-semibold text-slate-600 dark:text-slate-300"
-              >
-                <li
-                  *ngFor="let member of team.members; let idx = index"
-                  class="flex items-center gap-2 py-1 select-all hover:text-[var(--color-primary)]"
-                >
-                  <span class="w-1 h-1 rounded-full bg-slate-400"></span>
-                  {{ member }}
-                </li>
-              </ul>
-            </div>
-        </div>
-      </div>
+            <span class="w-1 h-1 rounded-full bg-slate-400"></span>
+            {{ member }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
