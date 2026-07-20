@@ -360,12 +360,62 @@ export class Web3Service {
     }
   }
 
+  public async addNetworkToWallet(chainId: number | string): Promise<boolean> {
+    if (typeof window === 'undefined' || !(window as any).ethereum) return false;
+    const idNum = Number(chainId);
+    const hexChainId = '0x' + idNum.toString(16);
+
+    const chainParamsMap: Record<number, any> = {
+      421614: {
+        chainId: hexChainId,
+        chainName: 'Arbitrum Sepolia',
+        nativeCurrency: { name: 'Arbitrum Sepolia Ether', symbol: 'ETH', decimals: 18 },
+        rpcUrls: ['https://sepolia-rollup.arbitrum.io/rpc', 'https://arbitrum-sepolia-rpc.publicnode.com'],
+        blockExplorerUrls: ['https://sepolia.arbiscan.io']
+      },
+      97: {
+        chainId: hexChainId,
+        chainName: 'BSC Testnet',
+        nativeCurrency: { name: 'BNB', symbol: 'tBNB', decimals: 18 },
+        rpcUrls: ['https://bsc-testnet-rpc.publicnode.com', 'https://data-seed-prebsc-1-s1.binance.org:8545'],
+        blockExplorerUrls: ['https://testnet.bscscan.com']
+      },
+      42161: {
+        chainId: hexChainId,
+        chainName: 'Arbitrum One',
+        nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+        rpcUrls: ['https://arb1.arbitrum.io/rpc', 'https://arbitrum-one-rpc.publicnode.com'],
+        blockExplorerUrls: ['https://arbiscan.io']
+      }
+    };
+
+    const params = chainParamsMap[idNum];
+    if (!params) return false;
+
+    try {
+      await (window as any).ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [params]
+      });
+      return true;
+    } catch (e) {
+      console.warn('[Web3] Thêm mạng vào ví thất bại:', e);
+      return false;
+    }
+  }
+
   public async switchNetwork(targetChainId: string | number) {
     try {
       const chainIdNum = Number(targetChainId);
       const network = this.supportedChains.find(chain => Number(chain.id) === chainIdNum);
       if (network) {
-        await this.modal.switchNetwork(network as any);
+        try {
+          await this.modal.switchNetwork(network as any);
+        } catch (switchErr: any) {
+          console.warn(`[Web3] AppKit switchNetwork thất bại cho chain ${targetChainId}, thử addNetworkToWallet:`, switchErr);
+          const added = await this.addNetworkToWallet(chainIdNum);
+          if (!added) throw switchErr;
+        }
         this.configuredChainId.set(targetChainId.toString());
         if (typeof window !== 'undefined') {
           localStorage.setItem('proof_random_configured_chain_id', targetChainId.toString());
