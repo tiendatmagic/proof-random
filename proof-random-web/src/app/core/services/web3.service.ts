@@ -141,15 +141,53 @@ export class Web3Service {
   }
 
   /**
+   * Tự động dọn dẹp dữ liệu kẹt trong IndexedDB & LocalStorage nếu chưa đăng nhập (Self-Healing)
+   */
+  private async clearWalletConnectStorage() {
+    if (typeof window === 'undefined') return;
+
+    try {
+      if ('indexedDB' in window) {
+        const dbs = (await indexedDB.databases?.()) || [];
+        for (const db of dbs) {
+          if (db.name && (db.name.includes('WALLET_CONNECT') || db.name.includes('walletconnect') || db.name.includes('reown') || db.name.includes('appkit'))) {
+            indexedDB.deleteDatabase(db.name);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[Web3] Lỗi khi dọn dẹp IndexedDB:', e);
+    }
+
+    try {
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('wc@2') || key.startsWith('@w3m') || key.startsWith('@appkit'))) {
+          if (key.includes('proposal') || key.includes('request') || key.includes('pending')) {
+            keysToRemove.push(key);
+          }
+        }
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch (e) {}
+  }
+
+  /**
    * Khởi tạo Reown AppKit cho ví (Chuẩn 100% theo angular-web3-wallet)
    */
-  private initAppKit() {
+  private async initAppKit() {
     if (typeof window === 'undefined') return;
 
     const projectId = WEB3_CONFIG.walletConnectProjectId;
     if (!projectId) {
       console.warn('[Web3] walletConnectProjectId is missing.');
       return;
+    }
+
+    // Nếu chưa đăng nhập, tự động dọn rác session/proposal treo cũ trong storage
+    if (!this.isConnected()) {
+      await this.clearWalletConnectStorage();
     }
 
     this.modal = createAppKit({
@@ -174,7 +212,8 @@ export class Web3Service {
         socials: ['google', 'facebook', 'x', 'apple'],
         analytics: false,
         reownAuthentication: false
-      }
+      },
+      enableCoinbase: false
     } as any);
 
     // Lắng nghe thay đổi tài khoản
@@ -278,10 +317,24 @@ export class Web3Service {
   }
 
   public async connectWallet() {
+    if (!this.modal) return;
     try {
+      // Ngắt kết nối phiên treo cũ nếu người dùng chưa kết nối active
+      if (!this.isConnected()) {
+        try {
+          await this.modal.disconnect();
+        } catch (e) {}
+      }
       await this.modal.open();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Lỗi mở modal kết nối ví:', error);
+      // Nếu dính lỗi Connection declined do request cũ active, tự động ngắt phiên treo và mở lại
+      if (error?.message?.includes('declined') || error?.message?.includes('active')) {
+        try {
+          await this.modal.disconnect();
+          await this.modal.open();
+        } catch (e) {}
+      }
     }
   }
 
