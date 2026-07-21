@@ -244,7 +244,6 @@ export class Web3Service {
       }
     });
 
-    // Lắng nghe thay đổi mạng lưới
     this.modal.subscribeNetwork((networkState: any) => {
       if (networkState.chainId) {
         const id = Number(networkState.chainId);
@@ -253,6 +252,20 @@ export class Web3Service {
 
       if (this.isConnected()) {
         this.updateBalanceAndNetwork();
+      }
+    });
+
+    this.modal.subscribeEvents(async (event: any) => {
+      const eventName = event.data?.event;
+      const errorMsg = event.data?.properties?.message || event.data?.error || '';
+      const isConnectionError = eventName === 'CONNECT_ERROR' || errorMsg.toString().toLowerCase().includes('declined') || errorMsg.toString().toLowerCase().includes('active');
+      
+      if (isConnectionError) {
+        console.warn('[Web3] Phát hiện lỗi kết nối hoặc treo session từ AppKit, tự động giải phóng...');
+        try {
+          await this.modal.disconnect();
+          await this.clearWalletConnectStorage();
+        } catch (e) {}
       }
     });
   }
@@ -326,6 +339,15 @@ export class Web3Service {
   public async connectWallet() {
     if (!this.modal) return;
     try {
+      const defaultChain = this.supportedChains.find(c => !(c as any).testnet && !c.name.toLowerCase().includes('sepolia') && !c.name.toLowerCase().includes('testnet')) || this.supportedChains[0];
+      if (defaultChain) {
+        try {
+          await this.modal.switchNetwork(defaultChain as any);
+        } catch (e) {
+          console.warn('[Web3] Ép mạng mặc định trước khi mở modal thất bại:', e);
+        }
+      }
+
       // Ngắt kết nối phiên treo cũ nếu người dùng chưa kết nối active
       if (!this.isConnected()) {
         try {
