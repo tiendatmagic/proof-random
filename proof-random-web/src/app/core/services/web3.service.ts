@@ -193,7 +193,7 @@ export class Web3Service {
     this.modal = createAppKit({
       adapters: [new EthersAdapter()],
       networks: this.supportedChains as any,
-      defaultNetwork: this.getAppKitNetworkByChainId(this.configuredChainId()) as any,
+      defaultNetwork: arbitrum as any,
       allowUnsupportedChain: true,
       metadata: {
         name: 'ProofRandom',
@@ -225,7 +225,14 @@ export class Web3Service {
         await this.updateBalanceAndNetwork();
         
         const currentChainId = this.chainId();
-        if (currentChainId) {
+        const targetChainId = Number(this.configuredChainId());
+
+        if (currentChainId && currentChainId !== targetChainId) {
+          // Tự động chuyển sang mạng mong muốn sau khi kết nối thành công để ví không bị lỗi treo unknown network lúc chưa connect
+          setTimeout(async () => {
+            await this.switchNetwork(targetChainId);
+          }, 500);
+        } else if (currentChainId) {
           this.checkAndUpdateNetworkState(currentChainId, false);
         }
       } else {
@@ -319,17 +326,6 @@ export class Web3Service {
   public async connectWallet() {
     if (!this.modal) return;
     try {
-      // Tự động kiểm tra và thêm mạng vào ví MetaMask/Extension nếu mạng cấu hình là Arbitrum Sepolia (421614)
-      // Điều này giúp tránh lỗi "unknown network" gây treo request trên MetaMask khi ví chưa lưu mạng này
-      const targetChainId = this.configuredChainId();
-      if (targetChainId === '421614' && typeof window !== 'undefined' && (window as any).ethereum) {
-        try {
-          await this.addNetworkToWallet(targetChainId);
-        } catch (addErr) {
-          console.warn('[Web3] Thử thêm mạng trước khi kết nối ví thất bại:', addErr);
-        }
-      }
-
       // Ngắt kết nối phiên treo cũ nếu người dùng chưa kết nối active
       if (!this.isConnected()) {
         try {
